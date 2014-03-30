@@ -1,0 +1,53 @@
+header {
+	#include <cstdlib> 
+}
+
+token {
+	COMMENT;
+	IDENTIFIER;
+	FLOAT;
+	INT;
+	SEMICOLON;
+	BRACKET_OPEN;
+	BRACKET_CLOSE;
+}
+
+define {
+	TOKENS [;:,.\[\]()|^&+-/*=%!~$<>?@]
+	WHITESPACE	[ \n\r\t]+
+	NEWLINE		("\r"|"\n"|"\r\n")
+	LABEL		[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
+	FLOAT		([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
+	INT			[0-9]+
+	HEX			"0x"[0-9a-fA-F]+
+	BINARY		"0b"[01]+
+}
+
+start = SCAN;
+
+mode SCAN
+{
+	<<EOF>>		=> QUEX_TKN_TERMINATION;
+	"<?php"		=> GOTO(PHP);
+}
+
+mode PHP
+{
+    <<EOF>>		=> QUEX_TKN_TERMINATION;
+    "?>"		=> GOTO(SCAN);
+
+    WHITESPACE	{ }
+    "#|//"		=> QUEX_TKN_COMMENT;
+    LABEL		=> QUEX_TKN_IDENTIFIER(Lexeme);
+    FLOAT		=> QUEX_TKN_FLOAT(Lexeme);
+    INT			=> QUEX_TKN_INT(Lexeme);
+    "/*"		=> GOTO(COMMENT);
+    ";"			=> QUEX_TKN_SEMICOLON;
+    "{"			=> QUEX_TKN_BRACKET_OPEN;
+    "}"			=> QUEX_TKN_BRACKET_CLOSE;
+}
+
+mode COMMENT
+{
+	"*/"		=> GOTO(PHP);
+}

@@ -18,13 +18,8 @@ set -e
 DIR=`pwd`
 TOOLDIR="$DIR/tmp"
 
-KEEP=0 # keep stuff or not
-
-while getopts "ckva:b:" opt; do
+while getopts "cv" opt; do
 	case "$opt" in
-		k) # keep downloaded archives
-			KEEP=1
-		;;
 		c) # clean build tools dir
 			rm -rf $TOOLDIR/llvm*
 			rm -rf $TOOLDIR/re2c-code-git*
@@ -36,9 +31,8 @@ while getopts "ckva:b:" opt; do
 	esac
 done
 
-
 # check for tools
-TOOLS="curl git bison flex make gcc gdb texindex tar xzcat python patch cmake svn"
+TOOLS="curl git bison flex make gcc python svn curl"
 for TOOL in $TOOLS; do
 	if ! which "$TOOL"; then
 		echo "$TOOL not found; exiting"
@@ -50,34 +44,52 @@ mkdir -p "$TOOLDIR"
 
 # build re2c
 cd "$TOOLDIR"
-test -d "$TOOLDIR/re2c-code-git" || git clone git://git.code.sf.net/p/re2c/code-git re2c-code-git
-cd "$TOOLDIR/re2c-code-git/re2c"
-./autogen.sh
-./configure
-make
-make install
-
+if ! test -d "$TOOLDIR/re2c-code-git"; then
+	git clone git://git.code.sf.net/p/re2c/code-git re2c-code-git
+	cd "$TOOLDIR/re2c-code-git/re2c"
+	./autogen.sh
+	./configure
+	make -j -l 2.5
+	make install
+fi
 
 # build llvm
 cd "$TOOLDIR"
-test -d "$TOOLDIR/llvm" || svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
+LLVMDIR="$TOOLDIR/llvm-3.4"
+LLVMARCHIVE="$TOOLDIR/llvm-3.4.src.tar.gz"
+CLANGARCHIVE="$TOOLDIR/clang-3.4.src.tar.gz"
+CLANGEARCHIVE="$TOOLDIR/clang-tools-extra-3.4.src.tar.gz"
+RTARCHIVE="$TOOLDIR/compiler-rt-3.4.src.tar.gz"
 
-cd "$TOOLDIR/llvm/tools"
-test -d "$TOOLDIR/llvm/tools/clang" || svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
+if [ ! -d "$LLVMDIR" ]; then
+	test -f "$LLVMARCHIVE" || curl -v -o "$LLVMARCHIVE" "http://llvm.org/releases/3.4/llvm-3.4.src.tar.gz"
+	tar -xzf "$LLVMARCHIVE" -C "$TOOLDIR"
+fi
 
-cd "$TOOLDIR/llvm/tools/clang/tools"
-test -d "$TOOLDIR/llvm/tools/clang/tools/extra" || svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra
+if [ ! -d "$LLVMDIR/tools/clang" ]; then
+	test -f "$CLANGARCHIVE" || curl -v -o "$CLANGARCHIVE" "http://llvm.org/releases/3.4/clang-3.4.src.tar.gz"
+	tar -xzf "$CLANGARCHIVE" -C "$LLVMDIR/tools"
+	mv "$LLVMDIR/tools/clang-3.4" "$LLVMDIR/tools/clang"
+fi
 
-cd "$TOOLDIR/llvm/projects" 
-test -d "$TOOLDIR/llvm/projects/compiler-rt" || svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt
+if [ ! -d "$LLVMDIR/tools/clang/tools/extra" ]; then
+	test -f "$CLANGEARCHIVE" || curl -v -o "$CLANGEARCHIVE" "http://llvm.org/releases/3.4/clang-tools-extra-3.4.src.tar.gz"
+	tar -xzf "$CLANGEARCHIVE" -C "$LLVMDIR/tools/clang/tools"
+	mv "$LLVMDIR/tools/clang/tools/clang-tools-extra-3.4" "$LLVMDIR/tools/clang/tools/extra"
+fi
+
+if [ ! -d "$LLVMDIR/projects/compiler-rt" ]; then
+	test -f "$RTARCHIVE" || curl -v -o "$RTARCHIVE" "http://llvm.org/releases/3.4/compiler-rt-3.4.src.tar.gz"
+	tar -xzf "$RTARCHIVE" -C "$LLVMDIR/projects"
+	mv "$LLVMDIR/projects/compiler-rt-3.4" "$LLVMDIR/projects/compiler-rt"
+fi
 
 mkdir -p "$TOOLDIR/llvm-build"
 cd "$TOOLDIR/llvm-build"
 
-CC=cc CXX=c++ ../llvm/configure --enable-optimized --enable-jit --enable-targets=host-only
-make -j2
+CC=cc CXX=c++ ../llvm-3.4/configure --enable-optimized --enable-jit --enable-targets=host-only
+make -j -l 2.5
 make install
-
 
 # done
 cd "$DIR"
