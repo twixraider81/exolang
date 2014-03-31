@@ -28,23 +28,27 @@ SRCDIR = 'src/'
 # load options
 def options( opt ):
 	opt.load( 'compiler_cxx' )
+	opt.add_option( '--mode', action = 'store', default = 'debug', help = 'the mode to compile in (debug or release)' )
 
 # configure
 def configure( conf ):
+	conf.env.CXX = 'clang++'
+	conf.env.CC = 'clang'
+
+	if conf.options.mode == 'release':
+		conf.env.append_value( 'DFLAGS', ['-O2'] )
+	elif conf.options.mode == 'debug':
+		conf.env.append_value( 'DFLAGS', ['-O0', '-g'] )
+
 	conf.find_program( 'lemon', var = 'LEMON', path_list=BINDIR + 'lemon', mandatory = True )
-
-	cxx = conf.find_program( 'clang++', var='CXX', mandatory = True )
-	conf.env.CXX_NAME = 'clang'
-
-	cc = conf.find_program( 'clang', var='CC', mandatory = True)
-	conf.env.CC_NAME = 'clang'
+	conf.find_program( 'quex', var = 'QUEX', path_list=BINDIR + 'quex', mandatory = True )
 
 	conf.load( 'compiler_cxx' )
 
 # build
 def build( bld ):
 	sources = bld.path.ant_glob( SRCDIR + '**/*.cpp' )
-	bld.program( features="c c++", target='exolang', source=sources, includes=[SRCDIR] )
+	bld.program( features="c cxx", target='exolang', source=sources, includes=[SRCDIR,'bin/quex'] )
 
 # todo target
 def todo( ctx ):
