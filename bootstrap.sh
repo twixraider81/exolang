@@ -19,21 +19,31 @@ DIR=`pwd`
 UNAME=`uname -s | grep -m1 -ioE '[a-z]+' | awk 'NR==1{print $0}'` # detection of OS
 BINDIR="$DIR/bin"
 TMPDIR="$DIR/tmp"
+LLVM=0
 
-while getopts "cv" opt; do
+while getopts "cvl" opt; do
 	case "$opt" in
-		c) # clean build tools dir
-			rm -rf "$TMPDIR"
+		c) # clean dir
+			rm -rf $TMPDIR
+			rm -rf $BINDIR
+			rm -rf $DIR/build
+			rm -rf $DIR/waf
+			rm -rf $DIR/src/lexer/lexer $DIR/src/lexer/lexer.cpp $DIR/src/lexer/lexer-configuration $DIR/src/lexer/lexer-token $DIR/src/lexer/lexer-token_ids
+			rm -rf $DIR/.lock-*
+			rm -rf $DIR/.waf-*
 			exit 0
 		;;
 		v) # set verbosity
 			set -x
 		;;
+		l) # build llvm
+			LLVM=1
+		;;
 	esac
 done
 
 # check for tools
-TOOLS="curl gcc python clang"
+TOOLS="curl gcc python make bison flex"
 for TOOL in $TOOLS; do
 	if ! which "$TOOL"; then
 		echo "$TOOL not found; exiting"
@@ -50,7 +60,6 @@ if ! test -d "$BINDIR/quex"; then
 	test -f "$TMPDIR/quex.tar.gz" || curl -v -L -o "$TMPDIR/quex.tar.gz" "http://downloads.sourceforge.net/project/quex/DOWNLOAD/quex-0.64.8.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fquex%2Ffiles%2FDOWNLOAD%2F&ts=1396263676&use_mirror=cznic"
 	tar -xzf "$TMPDIR/quex.tar.gz" -C "$BINDIR"
 	mv "$BINDIR/quex-0.64.8" "$BINDIR/quex"
-	mv "$BINDIR/quex/quex-exe.py" "$BINDIR/quex/quex.py"
 fi
 
 if ! test -f "$BINDIR/lemon/lemon"; then
@@ -59,6 +68,46 @@ if ! test -f "$BINDIR/lemon/lemon"; then
 	curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=01ca97f87610d1dac6d8cd96ab109ab1130e76dc"
 	curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=07aba6270d5a5016ba8107b09e431eea4ecdc123"
 	gcc -o lemon lemon.c
+fi
+
+# build llvm
+if [ "$LLVM" == "1" ]; then
+	cd "$TMPDIR"
+	LLVMDIR="$TMPDIR/llvm-3.4"
+	LLVMARCHIVE="$TMPDIR/llvm-3.4.src.tar.gz"
+	CLANGARCHIVE="$TMPDIR/clang-3.4.src.tar.gz"
+	CLANGEARCHIVE="$TMPDIR/clang-tools-extra-3.4.src.tar.gz"
+	RTARCHIVE="$TMPDIR/compiler-rt-3.4.src.tar.gz"
+
+	if [ ! -d "$LLVMDIR" ]; then
+		test -f "$LLVMARCHIVE" || curl -v -o "$LLVMARCHIVE" "http://llvm.org/releases/3.4/llvm-3.4.src.tar.gz"
+		tar -xzf "$LLVMARCHIVE" -C "$TMPDIR"
+	fi
+
+	if [ ! -d "$LLVMDIR/tools/clang" ]; then
+		test -f "$CLANGARCHIVE" || curl -v -o "$CLANGARCHIVE" "http://llvm.org/releases/3.4/clang-3.4.src.tar.gz"
+		tar -xzf "$CLANGARCHIVE" -C "$LLVMDIR/tools"
+		mv "$LLVMDIR/tools/clang-3.4" "$LLVMDIR/tools/clang"
+	fi
+
+	if [ ! -d "$LLVMDIR/tools/clang/tools/extra" ]; then
+		test -f "$CLANGEARCHIVE" || curl -v -o "$CLANGEARCHIVE" "http://llvm.org/releases/3.4/clang-tools-extra-3.4.src.tar.gz"
+		tar -xzf "$CLANGEARCHIVE" -C "$LLVMDIR/tools/clang/tools"
+		mv "$LLVMDIR/tools/clang/tools/clang-tools-extra-3.4" "$LLVMDIR/tools/clang/tools/extra"
+	fi
+
+	if [ ! -d "$LLVMDIR/projects/compiler-rt" ]; then
+		test -f "$RTARCHIVE" || curl -v -o "$RTARCHIVE" "http://llvm.org/releases/3.4/compiler-rt-3.4.src.tar.gz"
+		tar -xzf "$RTARCHIVE" -C "$LLVMDIR/projects"
+		mv "$LLVMDIR/projects/compiler-rt-3.4" "$LLVMDIR/projects/compiler-rt"
+	fi
+
+	mkdir -p "$TMPDIR/llvm-build"
+	cd "$TMPDIR/llvm-build"
+
+	CC=cc CXX=c++ ../llvm-3.4/configure --prefix=/usr --enable-optimized --enable-jit
+	make
+	make install
 fi
 
 cd "$DIR"
