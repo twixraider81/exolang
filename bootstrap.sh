@@ -16,13 +16,14 @@ set -u
 set -e
 
 DIR=`pwd`
-TOOLDIR="$DIR/tmp"
+UNAME=`uname -s | grep -m1 -ioE '[a-z]+' | awk 'NR==1{print $0}'` # detection of OS
+BINDIR="$DIR/bin"
+TMPDIR="$DIR/tmp"
 
 while getopts "cv" opt; do
 	case "$opt" in
 		c) # clean build tools dir
-			rm -rf $TOOLDIR/llvm*
-			rm -rf $TOOLDIR/re2c-code-git*
+			rm -rf "$TMPDIR"
 			exit 0
 		;;
 		v) # set verbosity
@@ -32,7 +33,7 @@ while getopts "cv" opt; do
 done
 
 # check for tools
-TOOLS="curl git bison flex make gcc python svn curl"
+TOOLS="curl gcc python clang"
 for TOOL in $TOOLS; do
 	if ! which "$TOOL"; then
 		echo "$TOOL not found; exiting"
@@ -40,30 +41,36 @@ for TOOL in $TOOLS; do
 	fi
 done
 
-mkdir -p "$TOOLDIR"
+mkdir -p "$BINDIR"
+mkdir -p "$TMPDIR"
 
-# build re2c
-cd "$TOOLDIR"
-if ! test -d "$TOOLDIR/re2c-code-git"; then
-	git clone git://git.code.sf.net/p/re2c/code-git re2c-code-git
-	cd "$TOOLDIR/re2c-code-git/re2c"
-	./autogen.sh
-	./configure
-	make -j -l 2.5
-	make install
+# fetch quex
+cd "$TMPDIR"
+if ! test -d "$BINDIR/quex"; then
+	test -f "$TMPDIR/quex.tar.gz" || curl -v -L -o "$TMPDIR/quex.tar.gz" "http://downloads.sourceforge.net/project/quex/DOWNLOAD/quex-0.64.8.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fquex%2Ffiles%2FDOWNLOAD%2F&ts=1396263676&use_mirror=cznic"
+	tar -xzf "$TMPDIR/quex.tar.gz" -C "$BINDIR"
+	mv "$BINDIR/quex-0.64.8" "$BINDIR/quex"
+fi
+
+if ! test -f "$BINDIR/lemon/lemon"; then
+	mkdir -p "$BINDIR/lemon"
+	cd "$BINDIR/lemon"
+	curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=01ca97f87610d1dac6d8cd96ab109ab1130e76dc"
+	curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=07aba6270d5a5016ba8107b09e431eea4ecdc123"
+	gcc -o lemon lemon.c
 fi
 
 # build llvm
-cd "$TOOLDIR"
-LLVMDIR="$TOOLDIR/llvm-3.4"
-LLVMARCHIVE="$TOOLDIR/llvm-3.4.src.tar.gz"
-CLANGARCHIVE="$TOOLDIR/clang-3.4.src.tar.gz"
-CLANGEARCHIVE="$TOOLDIR/clang-tools-extra-3.4.src.tar.gz"
-RTARCHIVE="$TOOLDIR/compiler-rt-3.4.src.tar.gz"
+cd "$TMPDIR"
+LLVMDIR="$TMPDIR/llvm-3.4"
+LLVMARCHIVE="$TMPDIR/llvm-3.4.src.tar.gz"
+CLANGARCHIVE="$TMPDIR/clang-3.4.src.tar.gz"
+CLANGEARCHIVE="$TMPDIR/clang-tools-extra-3.4.src.tar.gz"
+RTARCHIVE="$TMPDIR/compiler-rt-3.4.src.tar.gz"
 
 if [ ! -d "$LLVMDIR" ]; then
 	test -f "$LLVMARCHIVE" || curl -v -o "$LLVMARCHIVE" "http://llvm.org/releases/3.4/llvm-3.4.src.tar.gz"
-	tar -xzf "$LLVMARCHIVE" -C "$TOOLDIR"
+	tar -xzf "$LLVMARCHIVE" -C "$TMPDIR"
 fi
 
 if [ ! -d "$LLVMDIR/tools/clang" ]; then
@@ -84,15 +91,15 @@ if [ ! -d "$LLVMDIR/projects/compiler-rt" ]; then
 	mv "$LLVMDIR/projects/compiler-rt-3.4" "$LLVMDIR/projects/compiler-rt"
 fi
 
-mkdir -p "$TOOLDIR/llvm-build"
-cd "$TOOLDIR/llvm-build"
+mkdir -p "$TMPDIR/llvm-build"
+cd "$TMPDIR/llvm-build"
 
 CC=cc CXX=c++ ../llvm-3.4/configure --enable-optimized --enable-jit --enable-targets=host-only
 make -j -l 2.5
 make install
 
-# done
 cd "$DIR"
+rm -rf "$TMPDIR"
 
 # fetch waf
 if [ ! -f "waf" ]; then

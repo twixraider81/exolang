@@ -1,2 +1,6 @@
 /tmp
 /waf
+/bin
+/build
+/.waf*
+/.lock*
