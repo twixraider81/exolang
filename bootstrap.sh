@@ -111,7 +111,6 @@ if [ "$LLVM" == "1" ]; then
 fi
 
 cd "$DIR"
-rm -rf "$TMPDIR"
 
 # fetch waf
 if [ ! -f "waf" ]; then
