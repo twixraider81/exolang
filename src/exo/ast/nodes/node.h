@@ -12,22 +12,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef EXO_H_
-#define EXO_H_
+#ifndef NODE_H_
+#define NODE_H_
 
-#include <fstream>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <exception>
-#include <cassert>
+#include "context.h"
 
-#ifdef DEBUG
-# define DEBUGMSG(msg) std::cout << msg << std::endl;
-#else
-# define DEBUGMSG(msg)
-#endif
+namespace exo
+{
+	namespace ast
+	{
 
-# define ERRORMSG(msg,retval) std::cout << msg << std::endl; return(retval);
+		class Node
+		{
+			public:
+				virtual ~Node() { };
+				llvm::Value* Emit( Context& context );
+		};
+	}
+}
 
-#endif /* EXO_H_ */
+#endif /* NODE_H_ */

@@ -13,37 +13,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "exo/exo.h"
-#include "ast.h"
+#include "token.h"
+#include "../parser/parser.h"
+#include "../lexer/lexer"
 
 namespace exo
 {
 	namespace ast
 	{
-		bool buildFromFile( std::string	fileName )
-		{
-			quex::Token*	token = 0x0;
-DEBUGMSG( "Parsing file: " << fileName );
-			quex::lexer		qlex( fileName );
-
-			void* lemon	= ParseAlloc( malloc );
-
-			if( lemon == NULL ) {
-ERRORMSG( "Unable to allocate parser", false );
-			}
-
-			qlex.receive( &token );
-			while( token->type_id() != QUEX_TKN_TERMINATION ) {
-DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token->line_number() << ":" << token->column_number() );
-				Parse( lemon, getTokenId( token->type_id() ), token );
-				qlex.receive( &token );
-			}
-
-			Parse( lemon, 0, token );
-			ParseFree( lemon, free );
-			return( true );
-		}
-
-		int getTokenId( int lexerId )
+		int Token::getId( int lexerId )
 		{
 			switch( lexerId )
 			{
@@ -89,7 +67,7 @@ DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token-
 			}
 		}
 
-		const char* getTokenName( int lexerId )
+		const char* Token::getName( int lexerId )
 		{
 			switch( lexerId )
 			{
@@ -136,3 +114,4 @@ DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token-
 		}
 	}
 }
+

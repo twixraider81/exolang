@@ -10,24 +10,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along
  */
-#ifndef EXO_H_
-#define EXO_H_
+#ifndef NODESTATEMENT_H_
+#define NODESTATEMENT_H_
 
-#include <fstream>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <exception>
-#include <cassert>
+namespace exo
+{
+	namespace ast
+	{
+		class NodeStatement : public Node
+		{
+		};
+	}
+}
 
-#ifdef DEBUG
-# define DEBUGMSG(msg) std::cout << msg << std::endl;
-#else
-# define DEBUGMSG(msg)
-#endif
-
-# define ERRORMSG(msg,retval) std::cout << msg << std::endl; return(retval);
-
-#endif /* EXO_H_ */
+#endif /* NODESTATEMENT_H_ */

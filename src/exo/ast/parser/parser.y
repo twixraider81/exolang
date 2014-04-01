@@ -22,9 +22,10 @@
 
 %default_type { quex::Token* }
 %token_type { quex::Token* }
+%extra_argument { exo::ast::Tree *ast }
 
 %syntax_error {
-DEBUGMSG( "Syntax error, unexpected " << exo::ast::getTokenName( yymajor ) << " on " << TOKEN->line_number() << ":" << TOKEN->column_number() );
+DEBUGMSG( "Syntax error, unexpected " << exo::ast::Token::getName( yymajor ) << " on " << TOKEN->line_number() << ":" << TOKEN->column_number() );
 }
 
 %stack_overflow {
@@ -52,10 +53,12 @@ DEBUGMSG( "Parsing variable ($" << i->get_text().c_str() << ")" );
 /* a number may be an integer or a float */
 number ::= INT(i). {
 DEBUGMSG( "Parsing integer number (" << i->get_text().c_str() << ")" );
+ast->addNode( new exo::ast::NodeInteger( i ) );
 }
 
 number ::= FLOAT(f). {
 DEBUGMSG( "Parsing floating number (" << f->get_text().c_str() << ")" );
+ast->addNode( new exo::ast::NodeFloat( f ) );
 }
 
 

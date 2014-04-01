@@ -13,36 +13,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "../ast.h"
 
-#include "exo/help/help.h"
-
-#include "getoptpp/getoptpp/getopt_pp.h"
-
-int main( int argc, char **argv )
+namespace exo
 {
-	std::string	sourceFile;
-
-	// build optionlist
-	GetOpt::GetOpt_pp ops( argc, argv );
-
-	// show help & exit
-	if (ops >> GetOpt::OptionPresent( 'h', "help" )) {
-		return( exo::help::print() );
+	namespace ast
+	{
+		llvm::Value* Node::Emit( Context& context )
+		{
+			llvm::Value* value = NULL;
+			return( value );
+		}
 	}
-
-	// no file, interactive mode miiight come, exit for now
-	if( !(ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
-ERRORMSG( "No input file specified, try -h to show help", 0 );
-	}
-
-
-	try {
-		exo::ast::Tree* tree = new exo::ast::Tree( sourceFile );
-		delete tree;
-	} catch( std::exception& e ) {
-ERRORMSG( "Exception: " << e.what(), -1 );
-	}
-
-	return( 0 );
 }

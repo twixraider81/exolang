@@ -15,23 +15,29 @@
 #ifndef AST_H_
 #define AST_H_
 
+#include <llvm/Analysis/Verifier.h>
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Value.h>
+
 #include <cstring>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <map>
+#include <vector>
 
 #include "lexer/lexer"
 #include "parser/parser.h"
 
-void* ParseAlloc( void *(*mallocProc)(size_t) );
-void  ParseFree( void *p, void (*freeProc)(void*) );
-void  Parse( void *yyp, int yymajor, quex::Token* yyminor );
-
-namespace exo
-{
-	namespace ast
-	{
-		bool buildFromFile( std::string	fileName );
-		int getTokenId( int lexerId );
-		const char* getTokenName( int lexerId );
-	}
-}
+#include "nodes/token.h"
+#include "nodes/node.h"
+#include "nodes/nodeexpression.h"
+#include "nodes/nodestatement.h"
+#include "nodes/nodeinteger.h"
+#include "nodes/nodefloat.h"
+#include "nodes/tree.h"
 
 #endif /* AST_H_ */
