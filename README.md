@@ -3,11 +3,8 @@ exolang
 
 Quickstart
 ----------
-- ./bootstrap.sh or ./bootstrap.sh -l (if you want to build llvm for /usr)
-- ./bootstrap -c (If everything went fine)
+- ./bootstrap.sh (you will need to build lemon/quex to rebuild the lexer/parser for now)
+- ./bootstrap.sh -l (if you want to build llvm for /usr)
 - ./waf configure
+- ./waf buildparser buildlexer (for now)
 - ./waf build --mode=debug
-
-Windows
-----------
-Will only work with a recent Cygwin-X86.

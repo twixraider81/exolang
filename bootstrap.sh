@@ -42,8 +42,8 @@ while getopts "cvl" opt; do
 	esac
 done
 
-# check for tools
-TOOLS="curl gcc python make bison flex"
+# check for required tools
+TOOLS="curl gcc python make bison flex cmake"
 for TOOL in $TOOLS; do
 	if ! which "$TOOL"; then
 		echo "$TOOL not found; exiting"
@@ -60,8 +60,10 @@ if ! test -d "$BINDIR/quex"; then
 	test -f "$TMPDIR/quex.tar.gz" || curl -v -L -o "$TMPDIR/quex.tar.gz" "http://downloads.sourceforge.net/project/quex/DOWNLOAD/quex-0.64.8.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fquex%2Ffiles%2FDOWNLOAD%2F&ts=1396263676&use_mirror=cznic"
 	tar -xzf "$TMPDIR/quex.tar.gz" -C "$BINDIR"
 	mv "$BINDIR/quex-0.64.8" "$BINDIR/quex"
+	curl -v -L -o "$BINDIR/quex/quex/code_base/token/CppDefault.qx" "https://sourceforge.net/p/quex/code/HEAD/tree/trunk/quex/code_base/token/CppDefault.qx?format=raw"
 fi
 
+# build lemon
 if ! test -f "$BINDIR/lemon/lemon"; then
 	mkdir -p "$BINDIR/lemon"
 	cd "$BINDIR/lemon"
@@ -108,6 +110,12 @@ if [ "$LLVM" == "1" ]; then
 	CC=cc CXX=c++ ../llvm-3.4/configure --prefix=/usr --enable-optimized --enable-jit
 	make
 	make install
+fi
+
+# check if clang installed, shouldn't happen
+if ! which "clang++"; then
+	echo "clang++ not found; exiting"
+	exit 0;
 fi
 
 cd "$DIR"

@@ -17,7 +17,7 @@ import os, subprocess, sys, re, platform, pipes
 from waflib import Build, Context, Scripting, Utils, Task, TaskGen
 from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
 from waflib.ConfigSet import ConfigSet
-from waflib.TaskGen import extension
+from waflib.TaskGen import extension, before_method
 from waflib.Task import Task
 
 APPNAME = 'exolang'
@@ -37,10 +37,21 @@ class quex(Task):
 	shell = True
 	run_str = 'QUEX_PATH=${QUEX_PATH} ${PYTHON} ${QUEX} -i ${SRC} --odir ' + os.path.abspath( SRCDIR ) + '/lexer -o lexer'
 	color = 'CYAN'
+	after = ['lemon']
+
+class lemon(Task):
+	shell = True
+	run_str = '${LEMON} -l -s ${SRC}; mv ' + os.path.abspath( SRCDIR ) + '/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/parser/parser.cpp'
+	color = 'CYAN'
 
 @extension('qx')
 def process_quex( self, node ):
 	task = self.create_task( 'quex', src = node, tgt = node.change_ext( '.cpp' ) )
+	self.source.extend( task.outputs )
+
+@extension('y')
+def process_lemon( self, node ):
+	task = self.create_task( 'lemon', src = node, tgt = node.change_ext( '.cpp' ) )
 	self.source.extend( task.outputs )
 
 # configure
@@ -48,23 +59,25 @@ def configure( conf ):
 	conf.env.CXX = 'clang++'
 	conf.env.CC = 'clang'
 
-	conf.load( 'compiler_cxx compiler_c python' )
-	conf.check_python_version((2,7,0))
+	conf.load( 'compiler_cxx compiler_c' )
+#	conf.load( 'python' )
+#	conf.check_python_version((2,7,0))
 	
 	if conf.options.mode == 'release':
-		conf.env.append_value( 'CXXFLAGS', ['-O2', '-std=c++11'] )
+		conf.env.append_value( 'CXXFLAGS', ['-O2', '-std=c++11','-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED'] )
 	elif conf.options.mode == 'debug':
-		conf.env.append_value( 'CXXFLAGS', ['-O0', '-g', '-std=c++11'] )
+		conf.env.append_value( 'CXXFLAGS', ['-O0', '-g', '-std=c++11','-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED','-DDEBUG'] )
 
-	conf.find_program( 'lemon', var = 'LEMON', path_list=BINDIR + 'lemon', mandatory = True )
-	conf.find_program( 'quex-exe.py', var = 'QUEX', path_list=BINDIR + 'quex', mandatory = True )
-	conf.env['QUEX_PATH'] = os.path.dirname( conf.env.QUEX )
+#	conf.find_program( 'lemon', var = 'LEMON', path_list=, mandatory = False )
+#	conf.find_program( 'quex-exe.py', var = 'QUEX', path_list=BINDIR + 'quex', mandatory = False )
+#	conf.env['QUEX_PATH'] = os.path.dirname( conf.env.QUEX )
 
 # build
 def build( bld ):
-	sources = bld.path.ant_glob( SRCDIR + 'lexer/*.qx' )
-	sources += bld.path.ant_glob( SRCDIR + '**/*.cpp' )
-	bld.program( features="c cxx", target='exolang', source=sources, includes=[ TOP, SRCDIR, BINDIR + 'quex' ] )
+	sources = bld.path.ant_glob( SRCDIR + '**/*.cpp' )
+#	sources += bld.path.ant_glob( SRCDIR + '**/*.y' )
+#	sources += bld.path.ant_glob( SRCDIR + '**/*.qx' )
+	bld.program( features='cxx', target='exolang', source=sources, includes=[ TOP, SRCDIR, BINDIR + 'quex' ] )
 
 # todo target
 def todo( ctx ):
@@ -75,3 +88,13 @@ def todo( ctx ):
 def backup( ctx ):
 	"Create backup at ~/backup/"
 	subprocess.call( 'tar --exclude bin -vcj '  + TOP + ' -f ~/backup/exolang-$(date +%Y-%m-%d-%H-%M).tar.bz2', shell=True )
+
+# (re)create parser
+def buildparser( ctx ):
+	"Recreate Parser (needs lemon binary)"
+	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/parser/parser.y; mv ' + os.path.abspath( SRCDIR ) + '/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/parser/parser.cpp', shell=True )
+
+# (re)create lexer
+def buildlexer( ctx ):
+	"Recreate Lexer (needs quex binary)"
+	subprocess.call( 'QUEX_PATH=' + BINDIR + '/quex python ' + BINDIR + '/quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/lexer/lexer.qx --odir ' + os.path.abspath( SRCDIR ) + '/lexer -o lexer', shell=True )

@@ -1,10 +1,26 @@
+/*
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 header {
-	#include <cstdlib> 
+	#include <cstdlib>
+	#include "error/error.h"
 }
 
+start = EXO;
+
 token {
-	COMMENT;
-	IDENTIFIER;
 	FLOAT;
 	INT;
 	SEMICOLON;
@@ -13,41 +29,28 @@ token {
 }
 
 define {
-	TOKENS [;:,.\[\]()|^&+-/*=%!~$<>?@]
-	WHITESPACE	[ \n\r\t]+
-	NEWLINE		("\r"|"\n"|"\r\n")
-	LABEL		[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 	FLOAT		([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
 	INT			[0-9]+
 	HEX			"0x"[0-9a-fA-F]+
 	BINARY		"0b"[01]+
 }
 
-start = SCAN;
-
-mode SCAN
+mode EXO:
+<skip:       [ \r\n\t]>		/* skip whitespace */
+<skip_range: "/*" "*/">		/* skip multiline comments */
+<skip_range: "//" "\n">		/* skip singleline comments */
+<skip_range: "#" "\n">		/* skip singleline comments */
 {
+	FLOAT		=> QUEX_TKN_FLOAT(Lexeme);
+	INT			=> QUEX_TKN_INT(Lexeme);
+	";"			=> QUEX_TKN_SEMICOLON;
+	"{"			=> QUEX_TKN_BRACKET_OPEN;
+	"}"			=> QUEX_TKN_BRACKET_CLOSE;
+
 	<<EOF>>		=> QUEX_TKN_TERMINATION;
-	"<?php"		=> GOTO(PHP);
-}
 
-mode PHP
-{
-    <<EOF>>		=> QUEX_TKN_TERMINATION;
-    "?>"		=> GOTO(SCAN);
-
-    WHITESPACE	{ }
-    "#|//"		=> QUEX_TKN_COMMENT;
-    LABEL		=> QUEX_TKN_IDENTIFIER(Lexeme);
-    FLOAT		=> QUEX_TKN_FLOAT(Lexeme);
-    INT			=> QUEX_TKN_INT(Lexeme);
-    "/*"		=> GOTO(COMMENT);
-    ";"			=> QUEX_TKN_SEMICOLON;
-    "{"			=> QUEX_TKN_BRACKET_OPEN;
-    "}"			=> QUEX_TKN_BRACKET_CLOSE;
-}
-
-mode COMMENT
-{
-	"*/"		=> GOTO(PHP);
+	<<FAIL>> {
+DEBUGMSG( "Unknown token: " << Lexeme );
+		return;
+	}
 }
