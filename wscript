@@ -58,15 +58,27 @@ def configure( conf ):
 	conf.env.CC = 'clang'
 
 	conf.load( 'compiler_cxx compiler_c' )
-	
-	if conf.options.mode == 'release':
-		conf.env.append_value( 'CXXFLAGS', ['-O2', '-std=c++11', '-DVERSION='+VERSION,'-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED'] )
-	elif conf.options.mode == 'debug':
-		conf.env.append_value( 'CXXFLAGS', ['-O0', '-g', '-std=c++11', '-DVERSION='+VERSION,'-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED','-DDEBUG'] )
 
+#	conf.find_program( 'llvm-config', var = 'LLVM', mandatory = True )#
+#	process = subprocess.Popen([conf.env.LLVM, '--cppflags'], stdout=subprocess.PIPE)
+#	flags = process.communicate()[0]
+#	conf.msg( 'llvm-config flags:', flags, 'CYAN' )
+#	
+#	flags = flags.split(' ');
+	flags = [ '-DVERSION='+VERSION, '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-D__STDC_CONSTANT_MACROS', '-D__STDC_LIMIT_MACROS' ]
+
+	if conf.options.mode == 'release':
+		flags += [ '-O2' ]
+	elif conf.options.mode == 'debug':
+		flags += [ '-O0', '-g', '-DDEBUG' ]
+
+	conf.env.append_value( 'CXXFLAGS', flags )
+
+#	conf.msg( 'final compiler:', ' '.join( flags ), 'CYAN' )
+#
 #	conf.load( 'python' )
 #	conf.check_python_version((2,7,0))
-#	conf.find_program( 'lemon', var = 'LEMON', path_list=, mandatory = False )
+#	conf.find_program( 'lemon', var = 'LEMON', path_list=BINDIR + 'lemon', mandatory = False )
 #	conf.find_program( 'quex-exe.py', var = 'QUEX', path_list=BINDIR + 'quex', mandatory = False )
 #	conf.env['QUEX_PATH'] = os.path.dirname( conf.env.QUEX )
 

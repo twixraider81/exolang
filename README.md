@@ -14,3 +14,4 @@ Quickstart
 Thanks & 3rd Party licenses
 ---------------------------
 Getopt_pp - http://code.google.com/p/getoptpp/
+Loren Segal - http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/
