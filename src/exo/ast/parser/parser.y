@@ -14,9 +14,8 @@
  */
 
 %include {
-	#include <cassert>
-	#include <iostream>
-	#include "../lexer/lexer"
+	#include "exo/exo.h"
+	#include "../ast.h"
 }
 
 %token_prefix LEMON_TKN_
@@ -24,7 +23,11 @@
 %token_type { quex::Token* }
 
 %syntax_error {
-    std::cout << "Parse error." << std::endl;
+DEBUGMSG( "Parse error" );
+}
+
+%stack_overflow {
+DEBUGMSG( "Parser stack overflown" );
 }
 
 program ::= statements . { ; }

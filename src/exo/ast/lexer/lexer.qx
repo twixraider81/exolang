@@ -14,8 +14,8 @@
  */
 
 header {
-	#include <cstdlib>
-	#include "error/error.h"
+	#include "exo/exo.h"
+	#include "../ast.h"
 }
 
 start = EXO;

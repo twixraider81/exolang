@@ -28,7 +28,6 @@ while getopts "cvl" opt; do
 			rm -rf $BINDIR
 			rm -rf $DIR/build
 			rm -rf $DIR/waf
-			rm -rf $DIR/src/lexer/lexer $DIR/src/lexer/lexer.cpp $DIR/src/lexer/lexer-configuration $DIR/src/lexer/lexer-token $DIR/src/lexer/lexer-token_ids
 			rm -rf $DIR/.lock-*
 			rm -rf $DIR/.waf-*
 			exit 0

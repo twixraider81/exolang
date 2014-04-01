@@ -12,41 +12,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <fstream>
-#include <cstring>
-#include <iostream>
-#include <exception>
+#include "exo/exo.h"
+#include "exo/ast/ast.h"
 
-using namespace std;
-
-#include "error/error.h"
-#include "lexer/lexer"
-#include "parser/parser.h"
-
-extern void *ParseAlloc( void *(*mallocProc)(size_t) );
-extern void ParseFree( void *p, void (*freeProc)(void*) );
-extern void Parse( void *yyp, int yymajor, quex::Token* yyminor );
+#include "getoptpp/getoptpp/getopt_pp.h"
 
 int main( int argc, char **argv )
 {
 	quex::Token*	token = 0x0;
 	std::string		sourceFile;
 
-	try{
-		switch( argc ) {
-			case 2:
-				sourceFile = argv[1];
-			break;
+	// build optionlist
+	GetOpt::GetOpt_pp ops( argc, argv );
 
-			default:
-DEBUGMSG( "Invalid Argument count" << argc );
-				return( -1 );
-		};
+	// show help & exit
+	if (ops >> GetOpt::OptionPresent( 'h', "help" )) {
+		return( exo::help::print() );
+	}
 
-		quex::lexer		qlex( sourceFile );
+	// no file, interactive mode miiight come, exit for now
+	if( !(ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
+ERRORMSG( "No input file specified, try -h to show help", 0 );
+	}
 
+
+	try {
 DEBUGMSG( "Parsing file: " << sourceFile );
-
+		quex::lexer		qlex( sourceFile );
 		void* pParser	= ParseAlloc( malloc );
 
 		do {
@@ -59,8 +51,8 @@ DEBUGMSG( "Got token " << token->type_id_name() << " on line " << token->line_nu
 		} while( token->type_id() != QUEX_TKN_TERMINATION );
 
 		ParseFree( pParser, free );
-	} catch(exception& e) {
-		cout << e.what() << '\n';
+	} catch( std::exception& e ) {
+DEBUGMSG( "Exception: " << e.what() );
 	}
 
 	return( 0 );
