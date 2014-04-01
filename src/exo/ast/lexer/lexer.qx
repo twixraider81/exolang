@@ -21,18 +21,18 @@ header {
 start = EXO;
 
 token {
-	FLOAT;
-	INT;
+	DOLLAR;
+	IDENTIFIER;
+	ASSIGN;
 	SEMICOLON;
-	BRACKET_OPEN;
-	BRACKET_CLOSE;
-}
-
-define {
-	FLOAT		([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
-	INT			[0-9]+
-	HEX			"0x"[0-9a-fA-F]+
-	BINARY		"0b"[01]+
+	INT;
+	FLOAT;
+	ADD;
+	SUB;
+	MUL;
+	DIV;
+	ABRACKET_OPEN;
+	ABRACKET_CLOSE;
 }
 
 mode EXO:
@@ -41,13 +41,20 @@ mode EXO:
 <skip_range: "//" "\n">		/* skip singleline comments */
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
-	FLOAT		=> QUEX_TKN_FLOAT(Lexeme);
-	INT			=> QUEX_TKN_INT(Lexeme);
-	";"			=> QUEX_TKN_SEMICOLON;
-	"{"			=> QUEX_TKN_BRACKET_OPEN;
-	"}"			=> QUEX_TKN_BRACKET_CLOSE;
+	[0-9]+				=> QUEX_TKN_INT(Lexeme);
+	([0-9]+[.,][0-9]*)	=> QUEX_TKN_FLOAT(Lexeme);
+	"+"					=> QUEX_TKN_ADD;
+	"-"					=> QUEX_TKN_SUB;
+	"*"					=> QUEX_TKN_MUL;
+	"/"					=> QUEX_TKN_DIV;
+	"="					=> QUEX_TKN_ASSIGN;
+	";"					=> QUEX_TKN_SEMICOLON;
+	"$"					=> QUEX_TKN_DOLLAR;
+	[_a-zA-Z]+			=> QUEX_TKN_IDENTIFIER(Lexeme);
+	"("					=> QUEX_TKN_ABRACKET_OPEN;
+	")"					=> QUEX_TKN_ABRACKET_CLOSE;
 
-	<<EOF>>		=> QUEX_TKN_TERMINATION;
+	<<EOF>>				=> QUEX_TKN_TERMINATION;
 
 	<<FAIL>> {
 DEBUGMSG( "Unknown token: " << Lexeme );

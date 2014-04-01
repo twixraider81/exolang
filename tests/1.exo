@@ -2,6 +2,16 @@
  * Multi line comments
  */
 // single line comment
- # single line comment too
-{
-}
+# single line comment too
+
+// different simple expressions
+$a = 1;
+$b = 2.5;
+$c = $d;
+$e = 1 + $c;
+$f = 3 - 2;
+$g = 3 * $a;
+$h = ( 4 / 2 );
+
+// nested expressions
+$i = 5 * ( 2 + 2 );

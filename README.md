@@ -9,6 +9,8 @@ Quickstart
 - ./waf clean configure --mode=debug
 - ./waf buildparser buildlexer build
 
+- build/exolang -i tests/1.exo
+
 Thanks & 3rd Party licenses
 ---------------------------
 Getopt_pp - http://code.google.com/p/getoptpp/

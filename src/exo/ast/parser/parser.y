@@ -20,19 +20,76 @@
 
 %token_prefix LEMON_TKN_
 
+%default_type { quex::Token* }
 %token_type { quex::Token* }
 
 %syntax_error {
-DEBUGMSG( "Parse error" );
+DEBUGMSG( "Syntax error, unexpected " << exo::ast::getTokenName( yymajor ) << " on " << TOKEN->line_number() << ":" << TOKEN->column_number() );
 }
 
 %stack_overflow {
 DEBUGMSG( "Parser stack overflown" );
 }
 
-program ::= statements . { ; }
+/* a program is build out of statements. */
+program ::= statements. { ; }
 
-statements ::= BRACKET_OPEN statement BRACKET_CLOSE . { ; }
-statement ::= SEMICOLON . { ; }
-number ::= FLOAT . { ; }
-number ::= INT . { ; }
+/* statements are either a single statement or a statement followed by ; and other statements */
+statements ::= statement.
+statements ::= statement statements.
+
+/* a statement may be an assignment of a variable to an expression */
+statement ::= variable(v) ASSIGN expression(e) SEMICOLON. {
+DEBUGMSG( "Parsing assignment " << v << " with value " << e );
+}
+
+
+/* a variable may be a $ sign followed by an identifier */
+variable ::= DOLLAR IDENTIFIER(i). {
+DEBUGMSG( "Parsing variable ($" << i->get_text().c_str() << ")" );
+}
+
+/* a number may be an integer or a float */
+number ::= INT(i). {
+DEBUGMSG( "Parsing integer number (" << i->get_text().c_str() << ")" );
+}
+
+number ::= FLOAT(f). {
+DEBUGMSG( "Parsing floating number (" << f->get_text().c_str() << ")" );
+}
+
+
+/* an expression may a variable */
+expression ::= variable(v). {
+DEBUGMSG( "Parsing variable expression (" << v << ")" );
+}
+
+/* an expression may be a number */
+expression ::= number(n). {
+DEBUGMSG( "Parsing number expression (" << n << ")" );
+}
+
+/* an expression may be an addition */
+expression(a) ::= expression(b) ADD expression(c). {
+DEBUGMSG( "Parsing addition expression " << a << "=" << b << "+" << c );
+}
+
+/* an expression may be a subtraction */
+expression(a) ::= expression(b) SUB expression(c). {
+DEBUGMSG( "Parsing subtraction expression " << a << "=" << b << "-" << c );
+}
+
+/* an expression may be a multiplication */
+expression(a) ::= expression(b) MUL expression(c). {
+DEBUGMSG( "Parsing multiplication expression " << a << "=" << b << "*" << c );
+}
+
+/* an expression may be a division */
+expression(a) ::= expression(b) DIV expression(c). {
+DEBUGMSG( "Parsing division expression " << a << "=" << b << "/" << c );
+}
+
+/* an expression can be surrounded by angular brackets a variable */
+expression ::= ABRACKET_OPEN expression(e) ABRACKET_CLOSE. {
+DEBUGMSG( "Parsing bracketed expression (" << e << ")" );
+}

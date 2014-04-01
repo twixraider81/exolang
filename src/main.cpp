@@ -19,8 +19,7 @@
 
 int main( int argc, char **argv )
 {
-	quex::Token*	token = 0x0;
-	std::string		sourceFile;
+	std::string	sourceFile;
 
 	// build optionlist
 	GetOpt::GetOpt_pp ops( argc, argv );
@@ -37,22 +36,9 @@ ERRORMSG( "No input file specified, try -h to show help", 0 );
 
 
 	try {
-DEBUGMSG( "Parsing file: " << sourceFile );
-		quex::lexer		qlex( sourceFile );
-		void* pParser	= ParseAlloc( malloc );
-
-		do {
-			qlex.receive( &token );
-
-			if( token->type_id() != QUEX_TKN_TERMINATION ) {
-DEBUGMSG( "Got token " << token->type_id_name() << " on line " << token->line_number() << ", " << token->column_number() );
-			} else {
-			}
-		} while( token->type_id() != QUEX_TKN_TERMINATION );
-
-		ParseFree( pParser, free );
+		exo::ast::buildFromFile( sourceFile );
 	} catch( std::exception& e ) {
-DEBUGMSG( "Exception: " << e.what() );
+ERRORMSG( "Exception: " << e.what(), -1 );
 	}
 
 	return( 0 );

@@ -15,11 +15,23 @@
 #ifndef AST_H_
 #define AST_H_
 
+#include <cstring>
+
 #include "lexer/lexer"
 #include "parser/parser.h"
 
 void* ParseAlloc( void *(*mallocProc)(size_t) );
 void  ParseFree( void *p, void (*freeProc)(void*) );
 void  Parse( void *yyp, int yymajor, quex::Token* yyminor );
+
+namespace exo
+{
+	namespace ast
+	{
+		bool buildFromFile( std::string	fileName );
+		int getTokenId( int lexerId );
+		const char* getTokenName( int lexerId );
+	}
+}
 
 #endif /* AST_H_ */
