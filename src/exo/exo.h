@@ -17,17 +17,18 @@
 
 #include <fstream>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
+#include <string>
 #include <exception>
 #include <cassert>
 
 #ifdef DEBUG
-# define DEBUGMSG(msg) std::cout << msg << std::endl;
+#define DEBUGMSG(msg) std::cout << msg << std::endl;
 #else
-# define DEBUGMSG(msg)
+#define DEBUGMSG(msg)
 #endif
 
-# define ERRORMSG(msg,retval) std::cout << msg << std::endl; return(retval);
+#define ERRORMSG(msg) std::cerr << msg << std::endl;
+#define ERRORRET(msg,retval) std::cerr << msg << std::endl; return(retval);
 
 #endif /* EXO_H_ */
