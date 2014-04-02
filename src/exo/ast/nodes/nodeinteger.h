@@ -23,8 +23,7 @@ namespace exo
 		{
 			public:
 				long long value;
-				NodeInteger( long long value );
-				NodeInteger( quex::Token* token );
+				NodeInteger( const char* intVal );
 		};
 	}
 }

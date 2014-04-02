@@ -26,7 +26,6 @@ namespace exo
 		{
 			public:
 				VariableAssignment( std::string varName );
-				VariableAssignment( quex::Token* tokenName, quex::Token* tokenType );
 		};
 	}
 }

@@ -19,15 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		VariableDeclaration::VariableDeclaration( std::string varName, std::string typeName )
+		VariableDeclaration::VariableDeclaration( std::string varName, std::string varType )
 		{
-DEBUGMSG( "Declaring " << typeName << "variable (" << varName << ")" );
-		}
-
-		VariableDeclaration::VariableDeclaration( quex::Token* tokenName, quex::Token* tokenType )
-		{
-
-DEBUGMSG( "Declaring " << tokenName->get_text().c_str() << "variable (" << tokenType->get_text().c_str() << ")" );
+DEBUGMSG( "Declaring $" << varName << " to be of type " << varType );
 		}
 	}
 }

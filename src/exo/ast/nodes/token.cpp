@@ -25,9 +25,12 @@ namespace exo
 		{
 			switch( lexerId )
 			{
+				case QUEX_TKN_UNINITIALIZED:
 				default:
-				case 0:
-					return( "EOF" );
+					return( "uninitilized token" );
+
+				case QUEX_TKN_TERMINATION:
+					return( "end of file" );
 
 				case QUEX_TKN_INT:
 					return( "integer number" );
@@ -53,7 +56,7 @@ namespace exo
 				case QUEX_TKN_SEMICOLON:
 					return( ";" );
 
-				case QUEX_TKN_LABEL:
+				case QUEX_TKN_VARIABLE:
 					return( "variable" );
 
 				case QUEX_TKN_ABRACKET_OPEN:

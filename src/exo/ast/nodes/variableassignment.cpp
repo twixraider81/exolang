@@ -23,10 +23,5 @@ namespace exo
 		{
 DEBUGMSG( "Assigning " << varName );
 		}
-
-		VariableAssignment::VariableAssignment( quex::Token* tokenName, quex::Token* tokenType )
-		{
-DEBUGMSG( "Assigning " << tokenName->get_text().c_str() << " expression (" << tokenType->get_text().c_str() << ")" );
-		}
 	}
 }

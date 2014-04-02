@@ -39,7 +39,7 @@ DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token-
 					qlex.receive( &token );
 				}
 
-				Parse( lemon, 0, token, this );
+				//Parse( lemon, QUEX_TKN_TERMINATION, token, this );
 				ParseFree( lemon, free );
 			}
 		}

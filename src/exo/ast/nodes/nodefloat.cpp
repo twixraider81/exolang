@@ -19,11 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		NodeFloat::NodeFloat( quex::Token* token )
+		NodeFloat::NodeFloat( const char* floatVal )
 		{
-DEBUGMSG( "Creating float (" << token->get_text().c_str() << ")" );
-			const char *str = reinterpret_cast<const char *>( token->get_text().c_str() );
-			value = atof( str );
+DEBUGMSG( "Creating float (" << floatVal << ")" );
+			value = atof( floatVal );
 		}
 	}
 }

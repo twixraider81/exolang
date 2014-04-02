@@ -22,8 +22,7 @@ namespace exo
 		class VariableDeclaration : public Node
 		{
 			public:
-				VariableDeclaration( std::string varName, std::string typeName );
-				VariableDeclaration( quex::Token* tokenName, quex::Token* tokenType );
+				VariableDeclaration( std::string varName, std::string varType );
 		};
 	}
 }

@@ -19,11 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		NodeInteger::NodeInteger( quex::Token* token )
+		NodeInteger::NodeInteger( const char* intVal )
 		{
-DEBUGMSG( "Creating integer (" << token->get_text().c_str() << ")" );
-			const char *str = reinterpret_cast<const char *>( token->get_text().c_str() );
-			value = atol( str );
+DEBUGMSG( "Creating integer (" << intVal << ")" );
+			value = atol( intVal );
 		}
 	}
 }

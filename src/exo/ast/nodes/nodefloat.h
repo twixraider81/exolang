@@ -23,8 +23,7 @@ namespace exo
 		{
 			public:
 				double value;
-				NodeFloat( double value );
-				NodeFloat( quex::Token* token );
+				NodeFloat( const char* intVal );
 		};
 	}
 }
