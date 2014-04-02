@@ -33,11 +33,7 @@ int main( int argc, char **argv )
 
 	// no file, interactive mode miiight come, exit for now
 	if( !(ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
-#if DEBUG
-		sourceFile = "tests/1.exo";
-#else
-ERRORMSG( "No input file specified, try -h to show help", 0 );
-#endif
+ERRORRET( "No input file specified, try -h to show help", 0 );
 	}
 
 
@@ -45,7 +41,7 @@ ERRORMSG( "No input file specified, try -h to show help", 0 );
 		exo::ast::Tree* tree = new exo::ast::Tree( sourceFile );
 		delete tree;
 	} catch( std::exception& e ) {
-ERRORMSG( "Exception: " << e.what(), -1 );
+ERRORRET( "Exception: " << e.what(), -1 );
 	}
 
 	return( 0 );
