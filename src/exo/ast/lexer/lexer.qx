@@ -19,7 +19,102 @@ header {
 
 start = EXO;
 
-/* for reference http://quex.sourceforge.net/doc/html/usage/patterns/context-free.html */
+
+/* verbatim copy quex/code_base/token/CppDefault.qx */
+token_type {
+   header {
+$INCLUDE_CONVERTER_DECLARATION
+   }
+
+   standard {
+        id            : uint32_t;
+        line_number   : size_t;
+        column_number : size_t;
+   }
+
+   distinct {
+       text		: std::basic_string<QUEX_TYPE_CHARACTER>;
+       lValue	: long long;
+       dValue	: double;
+       typeId	: ushort;
+   }
+
+   inheritable;
+
+   copy {
+        self._id    = Other._id;
+        self.text   = Other.text;
+        self.lValue = Other.lValue;
+        self.dValue = Other.dValue;
+        self.typeId = Other.typeId;
+		self._line_n = Other._line_n;
+        self._column_n = Other._column_n;
+   }
+
+   body {
+        typedef std::basic_string<QUEX_TYPE_CHARACTER> __string;
+
+        operator 
+        const std::string() const
+        { return get_string(); }
+
+        const std::string
+        get_string() const 
+        {
+            std::string             tmp;
+
+            tmp = map_id_to_name(self._id);
+
+            tmp += " '" + pretty_char_text() + "' ";
+
+            return tmp;
+        }
+    
+        const std::string 
+        pretty_char_text() const
+        /* Provides a somehow pretty-print of the text in the token. */
+        {
+            std::string             tmp = $CONVERTER_STRING(self.text);
+            std::string::size_type  pos = 0;
+
+            while( (pos = tmp.find("\n") ) != __string::npos ) tmp.replace(pos, (size_t)1, "\\n");
+            while( (pos = tmp.find("\t") ) != __string::npos ) tmp.replace(pos, (size_t)1, "\\t");
+            while( (pos = tmp.find("\r") ) != __string::npos ) tmp.replace(pos, (size_t)1, "\\r");
+
+            return tmp;
+        }
+   }
+
+   take_text {
+        /* It cannot be assumed that the lexeme is zero terminated. */
+        __quex_assert(End >= Begin);
+        self.text.assign(Begin, End-Begin);
+
+        /* This token copied the text from the chunk into the string, 
+         * so we do not claim owneship over it.                       */
+        return false;      
+   }
+
+   repetition_set {
+       self.number = N;
+   }
+
+   repetition_get {
+       return self.number;
+   }
+
+   footer {
+        $NAMESPACE_OPEN
+        inline std::ostream&
+        operator<<(std::ostream& ostr, const $TOKEN_CLASS& Tok)
+        { ostr << Tok.get_string(); return ostr; }
+        $NAMESPACE_CLOSE
+
+$INCLUDE_CONVERTER_IMPLEMENTATION
+   }
+}
+
+
 
 mode EXO:
 <skip:       [ \r\n\t]>		/* skip whitespace */
@@ -27,23 +122,22 @@ mode EXO:
 <skip_range: "//" "\n">		/* skip singleline comments */
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
-	"int"				=> QUEX_TKN_TYPE_INT;
-	[0-9]+				=> QUEX_TKN_INT(Lexeme);
-	([0-9]+[.,][0-9]*)	=> QUEX_TKN_FLOAT(Lexeme);
+	"int"				=> QUEX_TKN_TYPE_INT(Lexeme);
+	[0-9]+				=> QUEX_TKN_INT( lValue=atoi(reinterpret_cast<const char *>(Lexeme)) );
+	([0-9]+[.,][0-9]*)	=> QUEX_TKN_FLOAT( dValue=atof(reinterpret_cast<const char *>(Lexeme)) );
 	"+"					=> QUEX_TKN_ADD;
 	"-"					=> QUEX_TKN_SUB;
 	"*"					=> QUEX_TKN_MUL;
 	"/"					=> QUEX_TKN_DIV;
 	"="					=> QUEX_TKN_ASSIGN;
 	";"					=> QUEX_TKN_SEMICOLON;
-	"$"([_a-zA-Z]+)		=> QUEX_TKN_LABEL(Lexeme);
+	"$"([_a-zA-Z]+)		=> QUEX_TKN_VARIABLE(LexemeBegin+1,LexemeEnd);
 	"("					=> QUEX_TKN_ABRACKET_OPEN;
 	")"					=> QUEX_TKN_ABRACKET_CLOSE;
 
 	<<EOF>>				=> QUEX_TKN_TERMINATION;
 
 	<<FAIL>> {
-DEBUGMSG( "Unknown token: " << Lexeme );
-		return;
+ERRORMSG( "Unknown token: " << Lexeme );
 	}
 }
