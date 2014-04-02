@@ -35,7 +35,7 @@ DEBUGMSG( "Parsing file: " << fileName );
 				qlex.receive( &token );
 				while( token->type_id() != QUEX_TKN_TERMINATION ) {
 DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token->line_number() << ":" << token->column_number() );
-					Parse( lemon, Token::getId( token->type_id() ), token, this );
+					Parse( lemon, token->type_id(), token, this );
 					qlex.receive( &token );
 				}
 

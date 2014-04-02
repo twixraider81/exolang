@@ -18,7 +18,7 @@
 	#include "../ast.h"
 }
 
-%token_prefix LEMON_TKN_
+%token_prefix QUEX_TKN_
 
 %default_type { quex::Token* }
 %token_type { quex::Token* }
@@ -32,67 +32,66 @@ DEBUGMSG( "Syntax error, unexpected " << exo::ast::Token::getName( yymajor ) << 
 DEBUGMSG( "Parser stack overflown" );
 }
 
+%start_symbol program
+
+/* garbage to get needed quex tokes, err somewhat not cool */
+garbage ::= UNINITIALIZED TERMINATION.
+
+
+
 /* a program is build out of statements. */
-program ::= statements. { ; }
+program ::= statements TERMINATION. { ; }
+
 
 /* statements are either a single statement or a statement followed by ; and other statements */
 statements ::= statement.
 statements ::= statement statements.
 
+
+/* a statement may be an declaration of a variable type */
+statement ::= type(t) variable(v). {
+	ast->addNode( new exo::ast::VariableDeclaration( v, t ) );
+}
+
 /* a statement may be an assignment of a variable to an expression */
 statement ::= variable(v) ASSIGN expression(e) SEMICOLON. {
-DEBUGMSG( "Parsing assignment " << v << " with value " << e );
+	ast->addNode( new exo::ast::VariableAssignment( v, e ) );
 }
 
 
-/* a variable may be a $ sign followed by an identifier */
-variable ::= DOLLAR IDENTIFIER(i). {
-DEBUGMSG( "Parsing variable ($" << i->get_text().c_str() << ")" );
+/* a variable is a $ sign followed by an identifier */
+variable ::= LABEL(l).{
+DEBUGMSG( "Declaring " << l->get_text().c_str() );
 }
 
 /* a number may be an integer or a float */
 number ::= INT(i). {
-DEBUGMSG( "Parsing integer number (" << i->get_text().c_str() << ")" );
-ast->addNode( new exo::ast::NodeInteger( i ) );
+	ast->addNode( new exo::ast::NodeInteger( i ) );
 }
 
 number ::= FLOAT(f). {
-DEBUGMSG( "Parsing floating number (" << f->get_text().c_str() << ")" );
-ast->addNode( new exo::ast::NodeFloat( f ) );
+	ast->addNode( new exo::ast::NodeFloat( f ) );
 }
 
 
-/* an expression may a variable */
-expression ::= variable(v). {
-DEBUGMSG( "Parsing variable expression (" << v << ")" );
-}
+/* a type may be an integer */
+type ::= TYPE_INT.
+
 
 /* an expression may be a number */
-expression ::= number(n). {
-DEBUGMSG( "Parsing number expression (" << n << ")" );
-}
+expression ::= number(n). 
 
 /* an expression may be an addition */
-expression(a) ::= expression(b) ADD expression(c). {
-DEBUGMSG( "Parsing addition expression " << a << "=" << b << "+" << c );
-}
+expression(a) ::= expression(b) ADD expression(c). 
 
 /* an expression may be a subtraction */
-expression(a) ::= expression(b) SUB expression(c). {
-DEBUGMSG( "Parsing subtraction expression " << a << "=" << b << "-" << c );
-}
+expression(a) ::= expression(b) SUB expression(c). 
 
 /* an expression may be a multiplication */
-expression(a) ::= expression(b) MUL expression(c). {
-DEBUGMSG( "Parsing multiplication expression " << a << "=" << b << "*" << c );
-}
+expression(a) ::= expression(b) MUL expression(c).
 
 /* an expression may be a division */
-expression(a) ::= expression(b) DIV expression(c). {
-DEBUGMSG( "Parsing division expression " << a << "=" << b << "/" << c );
-}
+expression(a) ::= expression(b) DIV expression(c).
 
 /* an expression can be surrounded by angular brackets a variable */
-expression ::= ABRACKET_OPEN expression(e) ABRACKET_CLOSE. {
-DEBUGMSG( "Parsing bracketed expression (" << e << ")" );
-}
+expression ::= ABRACKET_OPEN expression(e) ABRACKET_CLOSE.

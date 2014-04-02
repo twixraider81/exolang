@@ -21,52 +21,6 @@ namespace exo
 {
 	namespace ast
 	{
-		int Token::getId( int lexerId )
-		{
-			switch( lexerId )
-			{
-				default:
-				case QUEX_TKN_TERMINATION:
-					return( 0 );
-
-				case QUEX_TKN_INT:
-					return( LEMON_TKN_INT );
-
-				case QUEX_TKN_FLOAT:
-					return( LEMON_TKN_FLOAT );
-
-				case QUEX_TKN_ADD:
-					return( LEMON_TKN_ADD );
-
-				case QUEX_TKN_SUB:
-					return( LEMON_TKN_SUB );
-
-				case QUEX_TKN_MUL:
-					return( LEMON_TKN_MUL );
-
-				case QUEX_TKN_DIV:
-					return( LEMON_TKN_DIV );
-
-				case QUEX_TKN_ASSIGN:
-					return( LEMON_TKN_ASSIGN );
-
-				case QUEX_TKN_SEMICOLON:
-					return( LEMON_TKN_SEMICOLON );
-
-				case QUEX_TKN_IDENTIFIER:
-					return( LEMON_TKN_IDENTIFIER );
-
-				case QUEX_TKN_DOLLAR:
-					return( LEMON_TKN_DOLLAR );
-
-				case QUEX_TKN_ABRACKET_OPEN:
-					return( LEMON_TKN_ABRACKET_OPEN );
-
-				case QUEX_TKN_ABRACKET_CLOSE:
-					return( LEMON_TKN_ABRACKET_CLOSE );
-			}
-		}
-
 		const char* Token::getName( int lexerId )
 		{
 			switch( lexerId )
@@ -75,41 +29,41 @@ namespace exo
 				case 0:
 					return( "EOF" );
 
-				case LEMON_TKN_INT:
-					return( "integer" );
+				case QUEX_TKN_INT:
+					return( "integer number" );
 
-				case LEMON_TKN_FLOAT:
-					return( "float" );
+				case QUEX_TKN_FLOAT:
+					return( "float number" );
 
-				case LEMON_TKN_ADD:
+				case QUEX_TKN_ADD:
 					return( "+" );
 
-				case LEMON_TKN_SUB:
+				case QUEX_TKN_SUB:
 					return( "-" );
 
-				case LEMON_TKN_MUL:
+				case QUEX_TKN_MUL:
 					return( "*" );
 
-				case LEMON_TKN_DIV:
+				case QUEX_TKN_DIV:
 					return( "/" );
 
-				case LEMON_TKN_ASSIGN:
+				case QUEX_TKN_ASSIGN:
 					return( "=" );
 
-				case LEMON_TKN_SEMICOLON:
+				case QUEX_TKN_SEMICOLON:
 					return( ";" );
 
-				case LEMON_TKN_IDENTIFIER:
-					return( "identifier" );
+				case QUEX_TKN_LABEL:
+					return( "variable" );
 
-				case LEMON_TKN_DOLLAR:
-					return( "$" );
-
-				case LEMON_TKN_ABRACKET_OPEN:
+				case QUEX_TKN_ABRACKET_OPEN:
 					return( "(" );
 
-				case LEMON_TKN_ABRACKET_CLOSE:
+				case QUEX_TKN_ABRACKET_CLOSE:
 					return( ")" );
+
+				case QUEX_TKN_TYPE_INT:
+					return( "int" );
 			}
 		}
 	}

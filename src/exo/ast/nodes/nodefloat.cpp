@@ -21,6 +21,7 @@ namespace exo
 	{
 		NodeFloat::NodeFloat( quex::Token* token )
 		{
+DEBUGMSG( "Creating float (" << token->get_text().c_str() << ")" );
 			const char *str = reinterpret_cast<const char *>( token->get_text().c_str() );
 			value = atof( str );
 		}

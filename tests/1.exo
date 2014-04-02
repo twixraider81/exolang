@@ -5,13 +5,19 @@
 # single line comment too
 
 // different simple expressions
+int $a;
 $a = 1;
-$b = 2.5;
-$c = $d;
-$e = 1 + $c;
-$f = 3 - 2;
-$g = 3 * $a;
-$h = ( 4 / 2 );
+float $b = 2.5;
+
+auto $c = auto $d;
+auto $e = 1 + $c;
+auto $f = 3 - 2;
+auto $g = 3 * $a;
+auto $h = ( 4 / 2 );
+string $i = '';
+
+// unknown variable usage creates an auto type
+$k = 9;
 
 // nested expressions
-$i = 5 * ( 2 + 2 );
+auto $k = 5 * ( 2 + 2 );

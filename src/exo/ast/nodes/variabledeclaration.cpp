@@ -12,19 +12,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TOKEN_H_
-#define TOKEN_H_
+#include "exo/exo.h"
+#include "../ast.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		class Token
+		VariableDeclaration::VariableDeclaration( std::string varName, std::string typeName )
 		{
-			public:
-				static const char* getName( int lexerId );
-		};
+DEBUGMSG( "Declaring " << typeName << "variable (" << varName << ")" );
+		}
+
+		VariableDeclaration::VariableDeclaration( quex::Token* tokenName, quex::Token* tokenType )
+		{
+DEBUGMSG( "Declaring " << tokenName->get_text().c_str() << "variable (" << tokenType->get_text().c_str() << ")" );
+		}
 	}
 }
-
-#endif /* TOKEN_H_ */

@@ -38,6 +38,8 @@
 #include "nodes/nodestatement.h"
 #include "nodes/nodeinteger.h"
 #include "nodes/nodefloat.h"
+#include "nodes/variabledeclaration.h"
+#include "nodes/variableassignment.h"
 #include "nodes/tree.h"
 
 #endif /* AST_H_ */

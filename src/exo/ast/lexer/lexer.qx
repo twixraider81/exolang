@@ -15,25 +15,11 @@
 
 header {
 	#include "exo/exo.h"
-	#include "../ast.h"
 }
 
 start = EXO;
 
-token {
-	DOLLAR;
-	IDENTIFIER;
-	ASSIGN;
-	SEMICOLON;
-	INT;
-	FLOAT;
-	ADD;
-	SUB;
-	MUL;
-	DIV;
-	ABRACKET_OPEN;
-	ABRACKET_CLOSE;
-}
+/* for reference http://quex.sourceforge.net/doc/html/usage/patterns/context-free.html */
 
 mode EXO:
 <skip:       [ \r\n\t]>		/* skip whitespace */
@@ -41,6 +27,7 @@ mode EXO:
 <skip_range: "//" "\n">		/* skip singleline comments */
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
+	"int"				=> QUEX_TKN_TYPE_INT;
 	[0-9]+				=> QUEX_TKN_INT(Lexeme);
 	([0-9]+[.,][0-9]*)	=> QUEX_TKN_FLOAT(Lexeme);
 	"+"					=> QUEX_TKN_ADD;
@@ -49,8 +36,7 @@ mode EXO:
 	"/"					=> QUEX_TKN_DIV;
 	"="					=> QUEX_TKN_ASSIGN;
 	";"					=> QUEX_TKN_SEMICOLON;
-	"$"					=> QUEX_TKN_DOLLAR;
-	[_a-zA-Z]+			=> QUEX_TKN_IDENTIFIER(Lexeme);
+	"$"([_a-zA-Z]+)		=> QUEX_TKN_LABEL(Lexeme);
 	"("					=> QUEX_TKN_ABRACKET_OPEN;
 	")"					=> QUEX_TKN_ABRACKET_CLOSE;
 

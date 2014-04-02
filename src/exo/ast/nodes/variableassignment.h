@@ -12,19 +12,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TOKEN_H_
-#define TOKEN_H_
+#ifndef VARIABLEASSIGNMENT_H_
+#define VARIABLEASSIGNMENT_H_
+
+#include "nodeexpression.h"
+#include "variabledeclaration.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		class Token
+		class VariableAssignment : public NodeExpression
 		{
 			public:
-				static const char* getName( int lexerId );
+				VariableAssignment( std::string varName );
+				VariableAssignment( quex::Token* tokenName, quex::Token* tokenType );
 		};
 	}
 }
 
-#endif /* TOKEN_H_ */
+#endif /* VARIABLEASSIGNMENT_H_ */

@@ -21,6 +21,7 @@ namespace exo
 	{
 		NodeInteger::NodeInteger( quex::Token* token )
 		{
+DEBUGMSG( "Creating integer (" << token->get_text().c_str() << ")" );
 			const char *str = reinterpret_cast<const char *>( token->get_text().c_str() );
 			value = atol( str );
 		}

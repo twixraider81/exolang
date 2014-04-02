@@ -4,3 +4,4 @@
 /build
 /.waf*
 /.lock*
+/exolang.exe.stackdump
