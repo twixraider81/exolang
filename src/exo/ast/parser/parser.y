@@ -15,7 +15,9 @@
 
 %include {
 	#include "exo/exo.h"
-	#include "../ast.h"
+	#include "exo/ast/ast.h"
+
+	#define TOKENSTR(s) std::string( reinterpret_cast<const char *>( s->get_text().c_str() ) )
 }
 
 %token_prefix QUEX_TKN_
@@ -25,61 +27,47 @@
 %extra_argument { exo::ast::Tree *ast }
 
 %syntax_error {
-DEBUGMSG( "Syntax error, unexpected " << exo::ast::Token::getName( yymajor ) << " on " << TOKEN->line_number() << ":" << TOKEN->column_number() );
+ERRORMSG( "Syntax error, unexpected " << exo::ast::Token::getName( yymajor ) << " on " << TOKEN->line_number() << ":" << TOKEN->column_number() );
 }
 
 %stack_overflow {
-DEBUGMSG( "Parser stack overflown" );
+ERRORMSG( "Parser stack overflown" );
 }
 
 %start_symbol program
 
-/* garbage to get needed quex tokes, err somewhat not cool */
-garbage ::= UNINITIALIZED TERMINATION.
-
 
 
 /* a program is build out of statements. */
-program ::= statements TERMINATION. { ; }
+program ::= statements. { ; }
 
 
 /* statements are either a single statement or a statement followed by ; and other statements */
 statements ::= statement.
-statements ::= statement statements.
+statements ::= statement SEMICOLON statements.
 
 
 /* a statement may be an declaration of a variable type */
-statement ::= type(t) variable(v). {
-	ast->addNode( new exo::ast::VariableDeclaration( v, t ) );
+statement ::= type(t) VARIABLE(l). {
+	ast->addNode( new exo::ast::VariableDeclaration( TOKENSTR(l), TOKENSTR(t) ) );
 }
 
 /* a statement may be an assignment of a variable to an expression */
-statement ::= variable(v) ASSIGN expression(e) SEMICOLON. {
-	ast->addNode( new exo::ast::VariableAssignment( v, e ) );
-}
-
-
-/* a variable is a $ sign followed by an identifier */
-variable ::= LABEL(l).{
-DEBUGMSG( "Declaring " << l->get_text().c_str() );
-}
-
-/* a number may be an integer or a float */
-number ::= INT(i). {
-	ast->addNode( new exo::ast::NodeInteger( i ) );
-}
-
-number ::= FLOAT(f). {
-	ast->addNode( new exo::ast::NodeFloat( f ) );
+statement ::= VARIABLE(v) ASSIGN expression(e). {
+	ast->addNode( new exo::ast::VariableAssignment( TOKENSTR(v) ) );
 }
 
 
 /* a type may be an integer */
 type ::= TYPE_INT.
 
+/* a number may be an integer or a float */
+number ::= INT(i). 
+number ::= FLOAT(f). 
+
 
 /* an expression may be a number */
-expression ::= number(n). 
+expression ::= number. 
 
 /* an expression may be an addition */
 expression(a) ::= expression(b) ADD expression(c). 
