@@ -26,6 +26,7 @@ DEBUGMSG( "Declaring " << typeName << "variable (" << varName << ")" );
 
 		VariableDeclaration::VariableDeclaration( quex::Token* tokenName, quex::Token* tokenType )
 		{
+
 DEBUGMSG( "Declaring " << tokenName->get_text().c_str() << "variable (" << tokenType->get_text().c_str() << ")" );
 		}
 	}

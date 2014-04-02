@@ -33,7 +33,11 @@ int main( int argc, char **argv )
 
 	// no file, interactive mode miiight come, exit for now
 	if( !(ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
+#if DEBUG
+		sourceFile = "tests/1.exo";
+#else
 ERRORMSG( "No input file specified, try -h to show help", 0 );
+#endif
 	}
 
 
