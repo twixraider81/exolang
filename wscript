@@ -31,27 +31,6 @@ def options( opt ):
 	opt.load( 'compiler_cxx compiler_c python' )
 	opt.add_option( '--mode', action = 'store', default = 'debug', help = 'the mode to compile in (debug or release)' )
 
-#class quex(Task):
-#	shell = True
-#	run_str = 'QUEX_PATH=${QUEX_PATH} ${PYTHON} ${QUEX} -i ${SRC} --odir ' + os.path.abspath( SRCDIR ) + 'exo/ast/lexer -o lexer'
-#	color = 'CYAN'
-#	after = ['lemon']
-#
-#class lemon(Task):
-#	shell = True
-#	run_str = '${LEMON} -l -s ${SRC}; mv ' + os.path.abspath( SRCDIR ) + 'exo/ast/parser/parser.c ' + os.path.abspath( SRCDIR ) + 'exo/ast/parser/parser.cpp'
-#	color = 'CYAN'
-#
-#@extension('qx')
-#def process_quex( self, node ):
-#	task = self.create_task( 'quex', src = node, tgt = node.change_ext( '.cpp' ) )
-#	self.source.extend( task.outputs )
-#
-#@extension('y')
-#def process_lemon( self, node ):
-#	task = self.create_task( 'lemon', src = node, tgt = node.change_ext( '.cpp' ) )
-#	self.source.extend( task.outputs )
-
 # configure
 def configure( conf ):
 	conf.env.CXX = 'clang++'
@@ -65,7 +44,14 @@ def configure( conf ):
 #	conf.msg( 'llvm-config flags:', flags, 'CYAN' )
 #	
 #	flags = flags.split(' ');
-	flags = [ '-DVERSION='+VERSION, '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-D__STDC_CONSTANT_MACROS', '-D__STDC_LIMIT_MACROS' ]
+	flags = [
+		'-DVERSION='+VERSION,
+		'-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
+		'-DQUEX_OPTION_LINE_NUMBER_COUNTING'
+		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING'
+		'-D__STDC_CONSTANT_MACROS',
+		'-D__STDC_LIMIT_MACROS'
+	]
 
 	if conf.options.mode == 'release':
 		flags += [ '-O2' ]
@@ -74,19 +60,9 @@ def configure( conf ):
 
 	conf.env.append_value( 'CXXFLAGS', flags )
 
-#	conf.msg( 'final compiler:', ' '.join( flags ), 'CYAN' )
-#
-#	conf.load( 'python' )
-#	conf.check_python_version((2,7,0))
-#	conf.find_program( 'lemon', var = 'LEMON', path_list=BINDIR + 'lemon', mandatory = False )
-#	conf.find_program( 'quex-exe.py', var = 'QUEX', path_list=BINDIR + 'quex', mandatory = False )
-#	conf.env['QUEX_PATH'] = os.path.dirname( conf.env.QUEX )
-
 # build
 def build( bld ):
 	sources = bld.path.ant_glob( SRCDIR + '**/*.cpp' )
-#	sources += bld.path.ant_glob( SRCDIR + '**/*.y' )
-#	sources += bld.path.ant_glob( SRCDIR + '**/*.qx' )
 	bld.program( features='cxx', target='exolang', source=sources, includes=[ TOP, SRCDIR, BINDIR + 'quex' ] )
 
 # todo target
@@ -102,9 +78,14 @@ def backup( ctx ):
 # (re)create parser
 def buildparser( ctx ):
 	"Recreate Parser (needs lemon binary)"
-	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.y; mv ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.cpp', shell=True )
+	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.y; mv ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.cpp; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h', shell=True )
 
 # (re)create lexer
 def buildlexer( ctx ):
 	"Recreate Lexer (needs quex binary)"
 	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer -o lexer', shell=True )
+
+# show lexer/parser tokens
+def showtokens( ctx ):
+	"Show lexer/parser tokens"
+	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --foreign-token-id-file-show', shell=True )
