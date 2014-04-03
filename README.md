@@ -4,14 +4,15 @@ exolang
 
 Quickstart
 ----------
-./bootstrap.sh				(you will need to build lemon/quex to rebuild the lexer/parser for now)
-./bootstrap.sh -l			(if you want to build llvm for /usr)
+./bootstrap.sh						(you will need to build lemon/quex to rebuild the lexer/parser for now)
+./bootstrap.sh -l					(if you want to build llvm for /usr)
 
 ./waf clean configure --mode=debug	(clan & configure for debug release, spits alot of messages currently)
 ./waf buildparser buildlexer build	(parser must be built before the lexer)
 
-build/exolang -i <filename>		(i.e tests/1.exo)
-build/exolang				(to parse stdin)
+build/exolang -i <filename>			(i.e tests/1.exo)
+build/exolang						(to parse stdin)
+build/exolang -h					(to show help)
 
 Thanks & 3rd Party licenses
 ---------------------------

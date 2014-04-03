@@ -16,9 +16,15 @@
 #include "exo/exo.h"
 #include "exo/ast/ast.h"
 #include "exo/signals/signals.h"
-#include "exo/help/help.h"
 
 #include "getoptpp/getoptpp/getopt_pp.h"
+
+void printUsage(void)
+{
+	std::cout << "--help, -h\t\t\t\tshow usage/help" << std::endl;
+	std::cout << "--input=<file>, -i <file>\t\tparse file" << std::endl;
+}
+
 
 int main( int argc, char **argv )
 {
@@ -33,7 +39,8 @@ int main( int argc, char **argv )
 
 	// show help & exit
 	if (ops >> GetOpt::OptionPresent( 'h', "help" )) {
-		return( exo::help::print() );
+		printUsage();
+		return( 0 );
 	}
 
 	try {
