@@ -70,6 +70,7 @@ namespace exo
 					exo::types::typeId typeId;
 					std::string typeName;
 					Type( exo::types::typeId tId );
+					Type( std::string tName );
 			};
 
 			class VarDecl : public Stmt

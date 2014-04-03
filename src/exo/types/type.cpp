@@ -13,32 +13,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TYPES_H_
-#define TYPES_H_
+#include "exo/exo.h"
+#include "exo/types/types.h"
 
-// TODO: BIIIG
 namespace exo
 {
 	namespace types
 	{
-		enum typeId
-		{
-			NIL,
-			BOOLEAN,
-			INTEGER,
-			FLOAT,
-			STRING,
-			AUTO,
-			USER
-		};
 
-		class Type
-		{
-			public:
-				typeId tId;
-				std::string tName;
-		};
 	}
 }
-
-#endif /* TYPES_H_ */

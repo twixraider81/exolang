@@ -28,6 +28,13 @@ namespace exo
 				DEBUGMSG( "typeId " << tId );
 				typeId = tId;
 			}
+
+			Type::Type( std::string tName )
+			{
+				DEBUGMSG( "typeName " << tName );
+				typeId = exo::types::USER;
+				typeName = tName;
+			}
 		}
 	}
 }

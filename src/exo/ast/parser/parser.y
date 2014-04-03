@@ -65,7 +65,7 @@ statement(s) ::= T_VARIABLE(v) S_ASSIGN expression(e). {
 }
 
 
-/* a type may be a bool, integer, float, string or auto */
+/* a type may be a bool, integer, float, string or auto, or a label */
 /* whabbout lists, map, closures? */
 %type type { exo::ast::nodes::Type* }
 type(t) ::= T_TYPE_NULL. { t = new exo::ast::nodes::Type( exo::types::NIL ); ast->addNode( t ); }
@@ -74,6 +74,7 @@ type(t) ::= T_TYPE_INT. { t = new exo::ast::nodes::Type( exo::types::INTEGER ); 
 type(t) ::= T_TYPE_FLOAT. { t = new exo::ast::nodes::Type( exo::types::FLOAT ); ast->addNode( t ); }
 type(t) ::= T_TYPE_STRING. { t = new exo::ast::nodes::Type( exo::types::STRING ); ast->addNode( t ); }
 type(t) ::= T_TYPE_AUTO. { t = new exo::ast::nodes::Type( exo::types::AUTO ); ast->addNode( t ); }
+type(t) ::= T_LABEL(l). { t = new exo::ast::nodes::Type( TOKENSTR(l) ); ast->addNode( t ); }
 
 
 /* a number may be an integer or a float */

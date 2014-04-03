@@ -5,13 +5,26 @@
 # single line comment too
 
 // different simple expressions
+
+// {{{ internal
+// doesnt't make sense..
+null $f;
+nil $b;
+
+bool $e;
+boolean $e;
+
 int $a;
 integer $a;
 
 float $b;
 
-auto $c;
 string $d;
 
-bool $e;
-boolean $e;
+auto $c;
+// }}}
+
+// user defined
+car $car;
+descendent\ns $item;
+\fullqualified\ns $item2;

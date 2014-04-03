@@ -88,8 +88,10 @@ $INCLUDE_CONVERTER_DECLARATION
 		{
 			switch( self._id )
 			{
-				case QUEX_TKN_UNINITIALIZED:
 				default:
+					return( "unknown token" );
+
+				case QUEX_TKN_UNINITIALIZED:
 					return( "uninitilized token" );
 
 				case QUEX_TKN_TERMINATION:
@@ -122,6 +124,9 @@ $INCLUDE_CONVERTER_DECLARATION
 				case QUEX_TKN_T_VARIABLE:
 					return( "variable" );
 
+				case QUEX_TKN_T_LABEL:
+					return( "label" );
+
 				case QUEX_TKN_S_ABRACKET_OPEN:
 					return( "(" );
 
@@ -142,6 +147,9 @@ $INCLUDE_CONVERTER_DECLARATION
 
 				case QUEX_TKN_T_TYPE_STRING:
 					return( "string" );
+				
+				case QUEX_TKN_T_TYPE_NULL:
+					return( "null" );
 			}
 		}
    }
@@ -183,28 +191,29 @@ mode EXO:
 <skip_range: "//" "\n">		/* skip singleline comments */
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
-	"null"				=> QUEX_TKN_T_TYPE_NULL;
-	"nil"				=> QUEX_TKN_T_TYPE_NULL;
-	"bool"				=> QUEX_TKN_T_TYPE_BOOLEAN;
-	"boolean"			=> QUEX_TKN_T_TYPE_BOOLEAN;
-	"int"				=> QUEX_TKN_T_TYPE_INT;
-	"integer"			=> QUEX_TKN_T_TYPE_INT;
-	"float"				=> QUEX_TKN_T_TYPE_FLOAT;
-	"string"			=> QUEX_TKN_T_TYPE_STRING;
-	"auto"				=> QUEX_TKN_T_TYPE_AUTO;
-	[0-9]+				=> QUEX_TKN_I_INT( lValue = atoi( reinterpret_cast<const char*>(Lexeme) ) );
-	([0-9]+[.,][0-9]*)	=> QUEX_TKN_F_FLOAT( dValue = atof( reinterpret_cast<const char*>(Lexeme) ) );
-	"+"					=> QUEX_TKN_S_ADD;
-	"-"					=> QUEX_TKN_S_SUB;
-	"*"					=> QUEX_TKN_S_MUL;
-	"/"					=> QUEX_TKN_S_DIV;
-	"="					=> QUEX_TKN_S_ASSIGN;
-	";"					=> QUEX_TKN_S_SEMICOLON;
-	"$"([_a-zA-Z]+)		=> QUEX_TKN_T_VARIABLE(LexemeBegin+1,LexemeEnd);
-	"("					=> QUEX_TKN_S_ABRACKET_OPEN;
-	")"					=> QUEX_TKN_S_ABRACKET_CLOSE;
+	"null"							=> QUEX_TKN_T_TYPE_NULL;
+	"nil"							=> QUEX_TKN_T_TYPE_NULL;
+	"bool"							=> QUEX_TKN_T_TYPE_BOOLEAN;
+	"boolean"						=> QUEX_TKN_T_TYPE_BOOLEAN;
+	"int"							=> QUEX_TKN_T_TYPE_INT;
+	"integer"						=> QUEX_TKN_T_TYPE_INT;
+	"float"							=> QUEX_TKN_T_TYPE_FLOAT;
+	"string"						=> QUEX_TKN_T_TYPE_STRING;
+	"auto"							=> QUEX_TKN_T_TYPE_AUTO;
+	[0-9]+							=> QUEX_TKN_I_INT( lValue = atoi( reinterpret_cast<const char*>(Lexeme) ) );
+	([0-9]+[.,][0-9]*)				=> QUEX_TKN_F_FLOAT( dValue = atof( reinterpret_cast<const char*>(Lexeme) ) );
+	"$"([_a-zA-Z]+[_a-zA-Z0-9]*)	=> QUEX_TKN_T_VARIABLE(LexemeBegin+1,LexemeEnd);
+	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_LABEL(LexemeBegin+1,LexemeEnd);
+	"+"								=> QUEX_TKN_S_ADD;
+	"-"								=> QUEX_TKN_S_SUB;
+	"*"								=> QUEX_TKN_S_MUL;
+	"/"								=> QUEX_TKN_S_DIV;
+	"="								=> QUEX_TKN_S_ASSIGN;
+	";"								=> QUEX_TKN_S_SEMICOLON;
+	"("								=> QUEX_TKN_S_ABRACKET_OPEN;
+	")"								=> QUEX_TKN_S_ABRACKET_CLOSE;
 
-	<<EOF>>				=> QUEX_TKN_TERMINATION;
+	<<EOF>>							=> QUEX_TKN_TERMINATION;
 
 	<<FAIL>> {
 		ERRORMSG( "unknown token: " << Lexeme );
