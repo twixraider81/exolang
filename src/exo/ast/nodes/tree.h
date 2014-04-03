@@ -23,6 +23,8 @@ namespace exo
 		{
 			public:
 				Tree( std::string fileName );
+				Tree( std::istream& stream );
+
 				virtual ~Tree() {};
 				void addNode( Node* node );
 		};

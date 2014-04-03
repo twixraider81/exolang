@@ -32,41 +32,53 @@ namespace exo
 				case QUEX_TKN_TERMINATION:
 					return( "end of file" );
 
-				case QUEX_TKN_INT:
+				case QUEX_TKN_I_INT:
 					return( "integer number" );
 
-				case QUEX_TKN_FLOAT:
+				case QUEX_TKN_F_FLOAT:
 					return( "float number" );
 
-				case QUEX_TKN_ADD:
+				case QUEX_TKN_S_ADD:
 					return( "+" );
 
-				case QUEX_TKN_SUB:
+				case QUEX_TKN_S_SUB:
 					return( "-" );
 
-				case QUEX_TKN_MUL:
+				case QUEX_TKN_S_MUL:
 					return( "*" );
 
-				case QUEX_TKN_DIV:
+				case QUEX_TKN_S_DIV:
 					return( "/" );
 
-				case QUEX_TKN_ASSIGN:
+				case QUEX_TKN_S_ASSIGN:
 					return( "=" );
 
-				case QUEX_TKN_SEMICOLON:
+				case QUEX_TKN_S_SEMICOLON:
 					return( ";" );
 
-				case QUEX_TKN_VARIABLE:
+				case QUEX_TKN_T_VARIABLE:
 					return( "variable" );
 
-				case QUEX_TKN_ABRACKET_OPEN:
+				case QUEX_TKN_S_ABRACKET_OPEN:
 					return( "(" );
 
-				case QUEX_TKN_ABRACKET_CLOSE:
+				case QUEX_TKN_S_ABRACKET_CLOSE:
 					return( ")" );
 
-				case QUEX_TKN_TYPE_INT:
+				case QUEX_TKN_T_TYPE_INT:
 					return( "int" );
+
+				case QUEX_TKN_T_TYPE_FLOAT:
+					return( "float" );
+
+				case QUEX_TKN_T_TYPE_BOOLEAN:
+					return( "boolean" );
+
+				case QUEX_TKN_T_TYPE_AUTO:
+					return( "auto/mixed" );
+
+				case QUEX_TKN_T_TYPE_STRING:
+					return( "string" );
 			}
 		}
 	}

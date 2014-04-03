@@ -26,10 +26,9 @@ namespace exo
 		Tree::Tree( std::string fileName )
 		{
 			quex::Token*	token = 0x0;
-DEBUGMSG( "Parsing file: " << fileName );
+DEBUGMSG( "Opening <" << fileName << ">" );
 			quex::lexer		qlex( fileName );
-
-			void* lemon	= ParseAlloc( malloc );
+			void* lemon		= ParseAlloc( malloc );
 
 			if( lemon != NULL ) {
 				qlex.receive( &token );
@@ -37,6 +36,38 @@ DEBUGMSG( "Parsing file: " << fileName );
 DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token->line_number() << ":" << token->column_number() );
 					Parse( lemon, token->type_id(), token, this );
 					qlex.receive( &token );
+				}
+
+				//Parse( lemon, QUEX_TKN_TERMINATION, token, this );
+				ParseFree( lemon, free );
+			}
+		}
+
+		Tree::Tree( std::istream& stream )
+		{
+			quex::Token*	token = new quex::Token;
+DEBUGMSG( "Opening <stdin>" );
+			quex::lexer		qlex( (QUEX_TYPE_CHARACTER*)0x0, 0 );
+			void* lemon		= ParseAlloc( malloc );
+
+			if( lemon != NULL ) {
+				while( stream ) {
+					qlex.buffer_fill_region_prepare();
+
+					stream.getline( (char*)qlex.buffer_fill_region_begin(), qlex.buffer_fill_region_size() );
+
+					if( stream.gcount() == 0 ) {
+						return;
+					}
+
+					qlex.buffer_fill_region_finish( stream.gcount() - 1 );
+
+					qlex.receive( &token );
+					while( token->type_id() != QUEX_TKN_TERMINATION ) {
+DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token->line_number() << ":" << token->column_number() );
+						Parse( lemon, token->type_id(), token, this );
+						qlex.receive( &token );
+					}
 				}
 
 				//Parse( lemon, QUEX_TKN_TERMINATION, token, this );

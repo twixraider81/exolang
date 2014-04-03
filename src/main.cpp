@@ -21,6 +21,7 @@
 
 int main( int argc, char **argv )
 {
+	exo::ast::Tree* tree;
 	std::string	sourceFile;
 
 	// build optionlist
@@ -31,14 +32,14 @@ int main( int argc, char **argv )
 		return( exo::help::print() );
 	}
 
-	// no file, interactive mode miiight come, exit for now
-	if( !(ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
-ERRORRET( "No input file specified, try -h to show help", 0 );
-	}
-
-
 	try {
-		exo::ast::Tree* tree = new exo::ast::Tree( sourceFile );
+		// no file, read stdin
+		if( (ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
+			tree = new exo::ast::Tree( sourceFile );
+		} else {
+			tree = new exo::ast::Tree( std::cin );
+		}
+
 		delete tree;
 	} catch( std::exception& e ) {
 ERRORRET( "Exception: " << e.what(), -1 );

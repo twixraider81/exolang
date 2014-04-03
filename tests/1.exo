@@ -6,6 +6,12 @@
 
 // different simple expressions
 int $a;
+integer $a;
+
 float $b;
+
 auto $c;
 string $d;
+
+bool $e;
+boolean $e;

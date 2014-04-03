@@ -22,6 +22,7 @@
 
 %token_prefix QUEX_TKN_
 
+
 %default_type { quex::Token* }
 %token_type { quex::Token* }
 %extra_argument { exo::ast::Tree *ast }
@@ -44,42 +45,47 @@ program ::= statements. { ; }
 
 /* statements are either a single statement or a statement followed by ; and other statements */
 statements ::= statement.
-statements ::= statement SEMICOLON statements.
+statements ::= statement S_SEMICOLON statements.
 
 
 /* a statement may be an declaration of a variable type */
-statement ::= type(t) VARIABLE(l). {
+statement ::= type(t) T_VARIABLE(l). {
 	ast->addNode( new exo::ast::VariableDeclaration( TOKENSTR(l), TOKENSTR(t) ) );
 }
 
 /* a statement may be an assignment of a variable to an expression */
-statement ::= VARIABLE(v) ASSIGN expression(e). {
+statement ::= T_VARIABLE(v) S_ASSIGN expression(e). {
 	ast->addNode( new exo::ast::VariableAssignment( TOKENSTR(v) ) );
 }
 
 
-/* a type may be an integer */
-type ::= TYPE_INT.
+/* a type may be a bool, integer, float, string or auto */
+/* whabbout lists, map, closures? */
+type ::= T_TYPE_BOOLEAN.
+type ::= T_TYPE_INT.
+type ::= T_TYPE_FLOAT.
+type ::= T_TYPE_STRING.
+type ::= T_TYPE_AUTO.
 
 /* a number may be an integer or a float */
-number ::= INT(i). 
-number ::= FLOAT(f). 
+number ::= I_INT(i). 
+number ::= F_FLOAT(f). 
 
 
 /* an expression may be a number */
 expression ::= number. 
 
 /* an expression may be an addition */
-expression(a) ::= expression(b) ADD expression(c). 
+expression(a) ::= expression(b) S_ADD expression(c). 
 
 /* an expression may be a subtraction */
-expression(a) ::= expression(b) SUB expression(c). 
+expression(a) ::= expression(b) S_SUB expression(c). 
 
 /* an expression may be a multiplication */
-expression(a) ::= expression(b) MUL expression(c).
+expression(a) ::= expression(b) S_MUL expression(c).
 
 /* an expression may be a division */
-expression(a) ::= expression(b) DIV expression(c).
+expression(a) ::= expression(b) S_DIV expression(c).
 
 /* an expression can be surrounded by angular brackets a variable */
-expression ::= ABRACKET_OPEN expression(e) ABRACKET_CLOSE.
+expression ::= S_ABRACKET_OPEN expression(e) S_ABRACKET_CLOSE.

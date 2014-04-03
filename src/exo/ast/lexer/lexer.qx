@@ -122,18 +122,24 @@ mode EXO:
 <skip_range: "//" "\n">		/* skip singleline comments */
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
-	"int"				=> QUEX_TKN_TYPE_INT(Lexeme);
-	[0-9]+				=> QUEX_TKN_INT( lValue=atoi(reinterpret_cast<const char *>(Lexeme)) );
-	([0-9]+[.,][0-9]*)	=> QUEX_TKN_FLOAT( dValue=atof(reinterpret_cast<const char *>(Lexeme)) );
-	"+"					=> QUEX_TKN_ADD;
-	"-"					=> QUEX_TKN_SUB;
-	"*"					=> QUEX_TKN_MUL;
-	"/"					=> QUEX_TKN_DIV;
-	"="					=> QUEX_TKN_ASSIGN;
-	";"					=> QUEX_TKN_SEMICOLON;
-	"$"([_a-zA-Z]+)		=> QUEX_TKN_VARIABLE(LexemeBegin+1,LexemeEnd);
-	"("					=> QUEX_TKN_ABRACKET_OPEN;
-	")"					=> QUEX_TKN_ABRACKET_CLOSE;
+	"bool"				=> QUEX_TKN_T_TYPE_BOOLEAN(Lexeme);
+	"boolean"			=> QUEX_TKN_T_TYPE_BOOLEAN(Lexeme);
+	"int"				=> QUEX_TKN_T_TYPE_INT(Lexeme);
+	"integer"			=> QUEX_TKN_T_TYPE_INT(Lexeme);
+	"float"				=> QUEX_TKN_T_TYPE_FLOAT(Lexeme);
+	"auto"				=> QUEX_TKN_T_TYPE_AUTO(Lexeme);
+	"string"			=> QUEX_TKN_T_TYPE_STRING(Lexeme);
+	[0-9]+				=> QUEX_TKN_I_INT( lValue=atoi(reinterpret_cast<const char *>(Lexeme)) );
+	([0-9]+[.,][0-9]*)	=> QUEX_TKN_F_FLOAT( dValue=atof(reinterpret_cast<const char *>(Lexeme)) );
+	"+"					=> QUEX_TKN_S_ADD;
+	"-"					=> QUEX_TKN_S_SUB;
+	"*"					=> QUEX_TKN_S_MUL;
+	"/"					=> QUEX_TKN_S_DIV;
+	"="					=> QUEX_TKN_S_ASSIGN;
+	";"					=> QUEX_TKN_S_SEMICOLON;
+	"$"([_a-zA-Z]+)		=> QUEX_TKN_T_VARIABLE(LexemeBegin+1,LexemeEnd);
+	"("					=> QUEX_TKN_S_ABRACKET_OPEN;
+	")"					=> QUEX_TKN_S_ABRACKET_CLOSE;
 
 	<<EOF>>				=> QUEX_TKN_TERMINATION;
 
