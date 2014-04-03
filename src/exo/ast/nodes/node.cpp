@@ -12,17 +12,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "exo/exo.h"
-#include "../ast.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		llvm::Value* Node::Emit( Context& context )
+		namespace nodes
 		{
-			llvm::Value* value = NULL;
-			return( value );
+			llvm::Value* Node::Emit( exo::ast::Context& context )
+			{
+				llvm::Value* value = NULL;
+				return( value );
+			}
 		}
 	}
 }

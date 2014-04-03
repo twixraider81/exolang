@@ -13,19 +13,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// include internal stuff
 #include "exo/exo.h"
 #include "exo/ast/ast.h"
 #include "exo/signals/signals.h"
 
+// include external stuff
 #include "getoptpp/getoptpp/getopt_pp.h"
 
-void printUsage(void)
-{
-	std::cout << "--help, -h\t\t\t\tshow usage/help" << std::endl;
-	std::cout << "--input=<file>, -i <file>\t\tparse file" << std::endl;
-}
-
-
+/*
+ * Main/CLI Invocation, see -h
+ */
 int main( int argc, char **argv )
 {
 	exo::ast::Tree* tree;
@@ -37,14 +35,26 @@ int main( int argc, char **argv )
 	// build optionlist
 	GetOpt::GetOpt_pp ops( argc, argv );
 
+
+
 	// show help & exit
 	if (ops >> GetOpt::OptionPresent( 'h', "help" )) {
-		printUsage();
+		std::cout << "--help, -h\t\t\t\tshow usage/help" << std::endl;
+		std::cout << "--input=<file>, -i <file>\t\tparse file" << std::endl;
+		std::cout << "--version, -v\t\t\tshow version" << std::endl;
 		return( 0 );
 	}
 
+	// show version & exit
+	if (ops >> GetOpt::OptionPresent( 'v', "help" )) {
+		std::cout << "version " << EXO_VERSION << std::endl;
+		return( 0 );
+	}
+
+
+
 	try {
-		// no file, read stdin
+		// we build the ast from a file given via -i / --input or stdin
 		if( (ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
 			tree = new exo::ast::Tree( sourceFile );
 		} else {
@@ -53,7 +63,7 @@ int main( int argc, char **argv )
 
 		delete tree;
 	} catch( std::exception& e ) {
-ERRORRET( "Exception: " << e.what(), -1 );
+		ERRORRET( e.what(), -1 );
 	}
 
 	return( 0 );

@@ -12,18 +12,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CONTEXT_H_
-#define CONTEXT_H_
+
+#include "exo/exo.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		class Context
+		namespace nodes
 		{
-
-		};
+			VarDecl::VarDecl( std::string varName, Type* varType )
+			{
+				DEBUGMSG( "declaring $" << varName );
+			}
+		}
 	}
 }
-
-#endif /* CONTEXT_H_ */

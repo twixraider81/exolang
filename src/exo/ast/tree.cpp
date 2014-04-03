@@ -12,12 +12,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "exo/exo.h"
-#include "../ast.h"
 
-extern void* ParseAlloc( void *(*mallocProc)(size_t) );
-extern void  ParseFree( void *p, void (*freeProc)(void*) );
-extern void  Parse( void *yyp, int yymajor, quex::Token* yyminor, exo::ast::Tree* ast );
+#include "exo/exo.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {
@@ -26,14 +23,18 @@ namespace exo
 		Tree::Tree( std::string fileName )
 		{
 			quex::Token*	token = 0x0;
-DEBUGMSG( "Opening <" << fileName << ">" );
+
+			DEBUGMSG( "opening <" << fileName << ">" );
+
 			quex::lexer		qlex( fileName );
 			void* lemon		= ParseAlloc( malloc );
+
 
 			if( lemon != NULL ) {
 				qlex.receive( &token );
 				while( token->type_id() != QUEX_TKN_TERMINATION ) {
-DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token->line_number() << ":" << token->column_number() );
+					DEBUGMSG( "received QUEX_TKN_" << token->type_id_name() << " in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
+
 					Parse( lemon, token->type_id(), token, this );
 					qlex.receive( &token );
 				}
@@ -46,7 +47,9 @@ DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token-
 		Tree::Tree( std::istream& stream )
 		{
 			quex::Token*	token = new quex::Token;
-DEBUGMSG( "Opening <stdin>" );
+
+			DEBUGMSG( "opening <stdin>" );
+
 			quex::lexer		qlex( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 			void* lemon		= ParseAlloc( malloc );
 
@@ -64,7 +67,8 @@ DEBUGMSG( "Opening <stdin>" );
 
 					qlex.receive( &token );
 					while( token->type_id() != QUEX_TKN_TERMINATION ) {
-DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token->line_number() << ":" << token->column_number() );
+						DEBUGMSG( "received QUEX_TKN_" << token->type_id_name() << " on " << token->line_number() << ":" << token->column_number() );
+
 						Parse( lemon, token->type_id(), token, this );
 						qlex.receive( &token );
 					}
@@ -75,7 +79,7 @@ DEBUGMSG( "Received token QUEX_TKN_" << token->type_id_name() << " - " << token-
 			}
 		}
 
-		void Tree::addNode( Node* node )
+		void Tree::addNode( exo::ast::nodes::Node* node )
 		{
 		}
 	}

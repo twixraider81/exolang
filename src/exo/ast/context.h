@@ -12,19 +12,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TOKEN_H_
-#define TOKEN_H_
+
+#ifndef CONTEXT_H_
+#define CONTEXT_H_
 
 namespace exo
 {
 	namespace ast
 	{
-		class Token
+		class Context
 		{
-			public:
-				static const char* getName( int lexerId );
+
 		};
 	}
 }
 
-#endif /* TOKEN_H_ */
+#endif /* CONTEXT_H_ */

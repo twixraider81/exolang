@@ -12,16 +12,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef TREE_H_
+#define TREE_H_
+
 #include "exo/exo.h"
-#include "../ast.h"
+#include "exo/ast/nodes/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		VariableAssignment::VariableAssignment( std::string varName )
+		class Tree
 		{
-DEBUGMSG( "Assigning " << varName );
-		}
+			public:
+				Tree( std::string fileName );
+				Tree( std::istream& stream );
+
+				virtual ~Tree() { };
+
+				void addNode( exo::ast::nodes::Node* node );
+		};
 	}
 }
+
+#endif /* TREE_H_ */

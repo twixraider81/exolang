@@ -13,24 +13,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGNALS_H_
-#define SIGNALS_H_
-
-#include <stdio.h>
-#include <string.h>
-#include <signal.h>
-#include <execinfo.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "exo/exo.h"
+#include "exo/ast/nodes/nodes.h"
+#include "exo/types/types.h"
 
 namespace exo
 {
-	namespace signals
+	namespace ast
 	{
-		void segfaultHandler( int signal, siginfo_t *si, void *arg );
-		void registerHandlers();
+		namespace nodes
+		{
+			Type::Type( exo::types::typeId tId )
+			{
+				DEBUGMSG( "typeId " << tId );
+				typeId = tId;
+			}
+		}
 	}
 }
-
-
-#endif /* SIGNALS_H_ */

@@ -36,22 +36,31 @@ def configure( conf ):
 	conf.env.CXX = 'clang++'
 	conf.env.CC = 'clang'
 
-	conf.load( 'compiler_cxx compiler_c' )
+	conf.load( 'compiler_cxx' )
 
-#	conf.find_program( 'llvm-config', var = 'LLVM', mandatory = True )#
-#	process = subprocess.Popen([conf.env.LLVM, '--cppflags'], stdout=subprocess.PIPE)
-#	flags = process.communicate()[0]
-#	conf.msg( 'llvm-config flags:', flags, 'CYAN' )
-#	
-#	flags = flags.split(' ');
-	flags = [ '-DVERSION='+VERSION, '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DQUEX_OPTION_LINE_NUMBER_COUNTING', '-DQUEX_OPTION_COLUMN_NUMBER_COUNTING', '-D__STDC_CONSTANT_MACROS', '-D__STDC_LIMIT_MACROS' ]
+	conf.find_program( 'llvm-config', var = 'LLVMCONFIG', mandatory = True )#
+	process = subprocess.Popen([conf.env.LLVMCONFIG, '--ldflags'], stdout=subprocess.PIPE)
+	ldflags = process.communicate()[0]
+	conf.msg( 'llvm-config ld flags:', ldflags, 'CYAN' )
+
+	flags = [
+		'-DEXO_VERSION="'+VERSION+'"',
+		'-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
+		'-DQUEX_OPTION_LINE_NUMBER_COUNTING',
+		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING',
+		'-std=c++11',
+		'-D__STDC_CONSTANT_MACROS',
+		'-D__STDC_FORMAT_MACROS',
+		'-D__STDC_LIMIT_MACROS'
+	]
 
 	if conf.options.mode == 'release':
-		flags += [ '-O2' ]
+		flags += [ '-O2', '-fvectorize', '-funroll-loops' ]
 	elif conf.options.mode == 'debug':
-		flags += [ '-O0', '-g', '-DDEBUG' ]
+		flags += [ '-DEXO_DEBUG', '-O0', '-g', '-fno-limit-debug-info' ]
 
 	conf.env.append_value( 'CXXFLAGS', flags )
+	conf.env.append_value( 'LINKFLAGS', ldflags.strip().split( ' ' ) )
 
 # build
 def build( bld ):

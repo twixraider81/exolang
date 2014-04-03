@@ -13,24 +13,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGNALS_H_
-#define SIGNALS_H_
+#ifndef TYPES_H_
+#define TYPES_H_
 
-#include <stdio.h>
-#include <string.h>
-#include <signal.h>
-#include <execinfo.h>
-#include <stdlib.h>
-#include <unistd.h>
-
+// TODO: BIIIG
 namespace exo
 {
-	namespace signals
+	namespace types
 	{
-		void segfaultHandler( int signal, siginfo_t *si, void *arg );
-		void registerHandlers();
+		enum typeId
+		{
+			NIL,
+			BOOLEAN,
+			INTEGER,
+			FLOAT,
+			STRING,
+			AUTO
+		};
+
+		class Type
+		{
+		};
 	}
 }
 
-
-#endif /* SIGNALS_H_ */
+#endif /* TYPES_H_ */

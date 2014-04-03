@@ -13,24 +13,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGNALS_H_
-#define SIGNALS_H_
+#ifndef ERROR_H_
+#define ERROR_H_
 
-#include <stdio.h>
-#include <string.h>
-#include <signal.h>
-#include <execinfo.h>
-#include <stdlib.h>
-#include <unistd.h>
+#define ERRORMSG(msg) std::cerr << "Error: " << msg << " in " __FILE__ << ":" << __LINE__ << std::endl;
+#define ERRORRET(msg,retval) ERRORMSG(msg); return(retval);
 
-namespace exo
-{
-	namespace signals
-	{
-		void segfaultHandler( int signal, siginfo_t *si, void *arg );
-		void registerHandlers();
-	}
-}
+#ifdef EXO_DEBUG
+# define DEBUGMSG(msg) std::cout << "Debug: " << msg << std::endl;
+# define POINTERCHECK(p) if(p == NULL) ERRORMSG( "invalid pointer in " << __FILE__ << ":" << __LINE__ )
+#else
+# define DEBUGMSG(msg)
+# define POINTERCHECK(p)
+#endif
 
-
-#endif /* SIGNALS_H_ */
+#endif /* ERROR_H_ */

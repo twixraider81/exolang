@@ -12,17 +12,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "exo/exo.h"
-#include "../ast.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		NodeInteger::NodeInteger( const char* intVal )
+		namespace nodes
 		{
-DEBUGMSG( "Creating integer (" << intVal << ")" );
-			value = atol( intVal );
+			VarAssign::VarAssign( std::string varName, Expr* e )
+			{
+				DEBUGMSG( "assigning " << varName );
+			}
 		}
 	}
 }

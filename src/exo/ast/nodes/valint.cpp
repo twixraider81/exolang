@@ -12,23 +12,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TREE_H_
-#define TREE_H_
+
+#include "exo/exo.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		class Tree
+		namespace nodes
 		{
-			public:
-				Tree( std::string fileName );
-				Tree( std::istream& stream );
-
-				virtual ~Tree() {};
-				void addNode( Node* node );
-		};
+			ValInt::ValInt( long long lVal )
+			{
+				DEBUGMSG( "creating integer (" << lVal << ")" );
+				value = lVal;
+			}
+		}
 	}
 }
-
-#endif /* TREE_H_ */

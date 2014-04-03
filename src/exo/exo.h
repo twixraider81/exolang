@@ -12,23 +12,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef EXO_H_
 #define EXO_H_
 
 #include <fstream>
-#include <cstdlib>
 #include <iostream>
+#include <cstdio>
+#include <cstdint>
 #include <string>
-#include <exception>
 #include <cassert>
+#include <cstdlib>
+#include <exception>
+#include <stdexcept>
 
-#ifdef DEBUG
-#define DEBUGMSG(msg) std::cout << msg << std::endl;
-#else
-#define DEBUGMSG(msg)
-#endif
-
-#define ERRORMSG(msg) std::cerr << msg << std::endl;
-#define ERRORRET(msg,retval) std::cerr << msg << std::endl; return(retval);
+#include "exo/errors/error.h"
 
 #endif /* EXO_H_ */

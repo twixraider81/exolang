@@ -29,17 +29,19 @@
 #include <map>
 #include <vector>
 
-#include "lexer/lexer"
-#include "parser/parser.h"
+#include "exo/ast/lexer/lexer"
+#include "exo/ast/parser/parser.h"
 
-#include "nodes/token.h"
-#include "nodes/node.h"
-#include "nodes/nodeexpression.h"
-#include "nodes/nodestatement.h"
-#include "nodes/nodeinteger.h"
-#include "nodes/nodefloat.h"
-#include "nodes/variabledeclaration.h"
-#include "nodes/variableassignment.h"
-#include "nodes/tree.h"
+#include "exo/ast/context.h"
+#include "exo/ast/tree.h"
+#include "exo/ast/nodes/nodes.h"
+
+/* we need a safe string from our tokens */
+#define TOKENSTR(s) std::string( reinterpret_cast<const char*>( s->get_text().c_str() ) )
+
+/* lemon doesn't define its protos */
+void* ParseAlloc( void *(*mallocProc)(size_t) );
+void  ParseFree( void *p, void (*freeProc)(void*) );
+void  Parse( void *yyp, int yymajor, quex::Token* yyminor, exo::ast::Tree* ast );
 
 #endif /* AST_H_ */

@@ -10,19 +10,23 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef NODESTATEMENT_H_
-#define NODESTATEMENT_H_
+
+#include "exo/exo.h"
+#include "exo/ast/nodes/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		class NodeStatement : public Node
+		namespace nodes
 		{
-		};
+			ValFloat::ValFloat( double dVal )
+			{
+				DEBUGMSG( "creating float (" << dVal << ")" );
+				value = dVal;
+			}
+		}
 	}
 }
-
-#endif /* NODESTATEMENT_H_ */

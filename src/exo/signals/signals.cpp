@@ -14,18 +14,40 @@
  */
 
 #include "exo/exo.h"
-#include "signals.h"
+#include "exo/signals/signals.h"
 
 namespace exo
 {
 	namespace signals
 	{
+		/*
+		 * Register a Segementationfault handler
+		 * TODO: gracefully shutdown in main()
+		 * TODO: http://stackoverflow.com/questions/77005/how-to-generate-a-stacktrace-when-my-gcc-c-app-crashes
+		 */
 		void segfaultHandler( int signal, siginfo_t *si, void *arg )
 		{
-ERRORMSG( "Segmentation fault" )
-			exit(0);
+#ifdef EXO_DEBUG
+			void *array[10];
+			size_t size;
+
+			size = backtrace( array, 10 );
+			ERRORMSG( "stack trace incoming:" );
+
+			/* skip first stack frame (points here) */
+			for( int i = 1; i < size && array != NULL; ++i )
+			{
+				ERRORMSG( "(" << i << ") " << array[i] )
+			}
+#endif
+
+			throw std::runtime_error( "Segmentation fault" );
 		}
 
+		/*
+		 * Register Signal handlers, currently only Segfault registered
+		 * TODO: check which other signals shoud be caught
+		 */
 		void registerHandlers()
 		{
 			struct sigaction sa;
@@ -36,7 +58,7 @@ ERRORMSG( "Segmentation fault" )
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
-ERRORMSG( "Failed to register segementation fault handler" )
+				ERRORMSG( "failed to register segementation fault handler" )
 			}
 		}
 	}
