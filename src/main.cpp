@@ -12,9 +12,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "exo/exo.h"
 #include "exo/ast/ast.h"
-
+#include "exo/signals/signals.h"
 #include "exo/help/help.h"
 
 #include "getoptpp/getoptpp/getopt_pp.h"
@@ -23,6 +24,9 @@ int main( int argc, char **argv )
 {
 	exo::ast::Tree* tree;
 	std::string	sourceFile;
+
+	// register signal handlers
+	exo::signals::registerHandlers();
 
 	// build optionlist
 	GetOpt::GetOpt_pp ops( argc, argv );

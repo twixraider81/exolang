@@ -44,14 +44,7 @@ def configure( conf ):
 #	conf.msg( 'llvm-config flags:', flags, 'CYAN' )
 #	
 #	flags = flags.split(' ');
-	flags = [
-		'-DVERSION='+VERSION,
-		'-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
-		'-DQUEX_OPTION_LINE_NUMBER_COUNTING'
-		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING'
-		'-D__STDC_CONSTANT_MACROS',
-		'-D__STDC_LIMIT_MACROS'
-	]
+	flags = [ '-DVERSION='+VERSION, '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DQUEX_OPTION_LINE_NUMBER_COUNTING', '-DQUEX_OPTION_COLUMN_NUMBER_COUNTING', '-D__STDC_CONSTANT_MACROS', '-D__STDC_LIMIT_MACROS' ]
 
 	if conf.options.mode == 'release':
 		flags += [ '-O2' ]
