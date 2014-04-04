@@ -16,6 +16,8 @@ build/exolang -h					(to show help)
 
 Thanks & 3rd Party licenses
 ---------------------------
-Quex lexer	- <http://quex.sourceforge.net/>
-Getopt_pp	- <http://code.google.com/p/getoptpp/>
-Loren Segal	- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>
+Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>
+Quex lexer generator	- <http://quex.sourceforge.net/>
+Boehm GC				- <https://github.com/ivmai/bdwgc>
+Getopt_pp				- <http://code.google.com/p/getoptpp/>
+Loren Segal				- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>

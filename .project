@@ -56,48 +56,75 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1396427737478</id>
+			<id>1396616706079</id>
 			<name></name>
-			<type>30</type>
+			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-tmp</arguments>
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396427737493</id>
+			<id>1396616706090</id>
 			<name></name>
-			<type>30</type>
+			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-bin</arguments>
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396427737509</id>
+			<id>1396616706094</id>
 			<name></name>
-			<type>30</type>
+			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-build</arguments>
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396427737509</id>
+			<id>1396616706104</id>
 			<name></name>
-			<type>30</type>
+			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-waf-*</arguments>
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396427737525</id>
+			<id>1396616706119</id>
 			<name></name>
 			<type>22</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-*.stackdump</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1396616706129</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-getoptpp</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1396616706138</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-bdwgc</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1396616706145</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-libatomicops</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>
