@@ -16,11 +16,15 @@
 #ifndef EXO_H_
 #define EXO_H_
 
+#include <gc/gc.h>
+#include <gc/gc_cpp.h>
+
 #include <fstream>
 #include <iostream>
 #include <cstdio>
 #include <cstdint>
 #include <string>
+#include <cstring>
 #include <cassert>
 #include <cstdlib>
 #include <exception>

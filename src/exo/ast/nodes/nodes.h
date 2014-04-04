@@ -32,7 +32,7 @@ namespace exo
 	{
 		namespace nodes
 		{
-			class Node
+			class Node : public gc
 			{
 				public:
 					Node() { };
@@ -41,30 +41,30 @@ namespace exo
 					llvm::Value* Emit( exo::ast::Context& context );
 			};
 
-			class Expr : public Node
+			class Expr : public Node, gc
 			{
 			};
 
-			class Stmt : public Node
+			class Stmt : public Node, gc
 			{
 			};
 
 
-			class ValInt : public Expr
+			class ValInt : public Expr, gc
 			{
 				public:
 					long long value;
 					ValInt( long long lVal );
 			};
 
-			class ValFloat : public Expr
+			class ValFloat : public Expr, gc
 			{
 				public:
 					double value;
 					ValFloat( double dVal );
 			};
 
-			class Type : public Node
+			class Type : public Node, gc
 			{
 				public:
 					exo::types::typeId typeId;
@@ -73,13 +73,13 @@ namespace exo
 					Type( std::string tName );
 			};
 
-			class VarDecl : public Stmt
+			class VarDecl : public Stmt, gc
 			{
 				public:
 					VarDecl( std::string varName, Type* varType );
 			};
 
-			class VarAssign : public Expr
+			class VarAssign : public Expr, gc
 			{
 				public:
 					VarAssign( std::string varName, Expr* e );

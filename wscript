@@ -36,7 +36,7 @@ def configure( conf ):
 	conf.env.CXX = 'clang++'
 	conf.env.CC = 'clang'
 
-	conf.load( 'compiler_cxx' )
+	conf.load( 'compiler_cxx compiler_c asm' )
 
 	conf.find_program( 'llvm-config', var = 'LLVMCONFIG', mandatory = True )#
 	process = subprocess.Popen([conf.env.LLVMCONFIG, '--ldflags'], stdout=subprocess.PIPE)
@@ -57,15 +57,38 @@ def configure( conf ):
 	if conf.options.mode == 'release':
 		flags += [ '-O2', '-fvectorize', '-funroll-loops' ]
 	elif conf.options.mode == 'debug':
-		flags += [ '-DEXO_DEBUG', '-O0', '-g', '-fno-limit-debug-info' ]
+		flags += [ '-DEXO_DEBUG=1', '-O0', '-g', '-fno-limit-debug-info', '-DGC_DEBUG=1' ]
 
 	conf.env.append_value( 'CXXFLAGS', flags )
 	conf.env.append_value( 'LINKFLAGS', ldflags.strip().split( ' ' ) )
+	
+	conf.check_cxx( header_name = "fstream" )
+	conf.check_cxx( header_name = "iostream" )
+	conf.check_cxx( header_name = "cstdio" )
+	conf.check_cxx( header_name = "cstdint" )
+	conf.check_cxx( header_name = "string" )
+	conf.check_cxx( header_name = "cstring" )
+	conf.check_cxx( header_name = "cassert" )
+	conf.check_cxx( header_name = "cstdlib" )
+	conf.check_cxx( header_name = "exception" )
+	conf.check_cxx( header_name = "stdexcept" )
+	conf.check_cxx( header_name = "csignal" )
+	conf.check_cxx( header_name = "execinfo.h" )
+	conf.check_cxx( header_name = "unistd.h" )
+
+	conf.check_cxx( header_name = "llvm/IR/Value.h" )
+
+	conf.check_cxx( lib = "gc" )
+	conf.check_cxx( header_name = "gc/gc.h" )
+	conf.check_cxx( header_name = "gc/gc_cpp.h" )
 
 # build
 def build( bld ):
-	sources = bld.path.ant_glob( SRCDIR + '**/*.cpp' )
-	bld.program( features='cxx', target='exolang', source=sources, includes=[ TOP, SRCDIR, BINDIR + 'quex' ] )
+	getoptpp = bld.path.ant_glob( SRCDIR + 'getoptpp/**/*.cpp' )
+	bld.stlib( target = 'getopt_pp', features = 'cxx', source = getoptpp )
+
+	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
+	bld.program( target = 'exolang', features = 'cxx', source = exo, use = 'getopt_pp', includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = [ 'gc' ] )
 
 # todo target
 def todo( ctx ):

@@ -53,7 +53,6 @@ statement(s) ::= type(t) T_VARIABLE(v). {
 	POINTERCHECK(t);
 	POINTERCHECK(v);
 	s = new exo::ast::nodes::VarDecl( TOKENSTR(v), t );
-	ast->addNode( s );
 }
 
 /* a statement may be an assignment of a variable to an expression */
@@ -61,20 +60,19 @@ statement(s) ::= T_VARIABLE(v) S_ASSIGN expression(e). {
 	POINTERCHECK(v);
 	POINTERCHECK(e);
 	s = new exo::ast::nodes::VarAssign( TOKENSTR(v), e );
-	ast->addNode( s );
 }
 
 
 /* a type may be a bool, integer, float, string or auto, or a label */
 /* whabbout lists, map, closures? */
 %type type { exo::ast::nodes::Type* }
-type(t) ::= T_TYPE_NULL. { t = new exo::ast::nodes::Type( exo::types::NIL ); ast->addNode( t ); }
-type(t) ::= T_TYPE_BOOLEAN. { t = new exo::ast::nodes::Type( exo::types::BOOLEAN ); ast->addNode( t ); }
-type(t) ::= T_TYPE_INT. { t = new exo::ast::nodes::Type( exo::types::INTEGER ); ast->addNode( t ); }
-type(t) ::= T_TYPE_FLOAT. { t = new exo::ast::nodes::Type( exo::types::FLOAT ); ast->addNode( t ); }
-type(t) ::= T_TYPE_STRING. { t = new exo::ast::nodes::Type( exo::types::STRING ); ast->addNode( t ); }
-type(t) ::= T_TYPE_AUTO. { t = new exo::ast::nodes::Type( exo::types::AUTO ); ast->addNode( t ); }
-type(t) ::= T_LABEL(l). { t = new exo::ast::nodes::Type( TOKENSTR(l) ); ast->addNode( t ); }
+type(t) ::= T_TYPE_NULL. { t = new exo::ast::nodes::Type( exo::types::NIL ); }
+type(t) ::= T_TYPE_BOOLEAN. { t = new exo::ast::nodes::Type( exo::types::BOOLEAN ); }
+type(t) ::= T_TYPE_INT. { t = new exo::ast::nodes::Type( exo::types::INTEGER ); }
+type(t) ::= T_TYPE_FLOAT. { t = new exo::ast::nodes::Type( exo::types::FLOAT ); }
+type(t) ::= T_TYPE_STRING. { t = new exo::ast::nodes::Type( exo::types::STRING ); }
+type(t) ::= T_TYPE_AUTO. { t = new exo::ast::nodes::Type( exo::types::AUTO ); }
+type(t) ::= T_LABEL(l). { t = new exo::ast::nodes::Type( TOKENSTR(l) ); }
 
 
 /* a number may be an integer or a float */
@@ -93,7 +91,7 @@ number(n) ::= F_FLOAT(f). {
 
 /* an expression may be a number */
 %type expression { exo::ast::nodes::Expr* }
-expression ::= number.
+expression(e) ::= number(n). {  }
 
 /* an expression may be an addition */
 expression ::= expression S_ADD expression. 

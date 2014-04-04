@@ -124,7 +124,3 @@ if [ ! -f "waf" ]; then
 	curl -v -o "$DIR/waf" "http://waf.googlecode.com/files/waf-1.7.15"
 	chmod a+rx "$DIR/waf"
 fi
-
-
-# init libboehmgc & libatomicops
-git submodule init

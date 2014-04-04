@@ -22,7 +22,7 @@ namespace exo
 {
 	namespace ast
 	{
-		class Tree
+		class Tree : public gc
 		{
 			public:
 				Tree( std::string fileName );
@@ -31,6 +31,7 @@ namespace exo
 				virtual ~Tree() { };
 
 				void addNode( exo::ast::nodes::Node* node );
+				void addStatement( exo::ast::nodes::Stmt* stmt );
 		};
 	}
 }

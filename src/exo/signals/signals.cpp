@@ -25,36 +25,38 @@ namespace exo
 		 * TODO: gracefully shutdown in main()
 		 * TODO: http://stackoverflow.com/questions/77005/how-to-generate-a-stacktrace-when-my-gcc-c-app-crashes
 		 */
-		void segfaultHandler( int signal, siginfo_t *si, void *arg )
+		void sigHandler( int signal, siginfo_t *si, void *arg )
 		{
+			if( signal == SIGSEGV ) {
 #ifdef EXO_DEBUG
-			void *array[10];
-			size_t size;
+				void *array[10];
+				size_t size;
 
-			size = backtrace( array, 10 );
-			ERRORMSG( "stack trace incoming:" );
+				size = backtrace( array, 10 );
+				ERRORMSG( "stack trace incoming:" );
 
-			/* skip first stack frame (points here) */
-			for( int i = 1; i < size && array != NULL; ++i )
-			{
-				ERRORMSG( "(" << i << ") " << array[i] )
-			}
+				/* skip first stack frame (points here) */
+				for( int i = 1; i < size && array != NULL; ++i )
+				{
+					ERRORMSG( "(" << i << ") " << array[i] )
+				}
 #endif
 
-			throw std::runtime_error( "Segmentation fault" );
+				throw std::runtime_error( "Segmentation fault" );
+			}
 		}
 
 		/*
 		 * Register Signal handlers, currently only Segfault registered
 		 * TODO: check which other signals shoud be caught
 		 */
-		void registerHandlers()
+		void registerHandler()
 		{
 			struct sigaction sa;
 
 			memset( &sa, 0, sizeof(sigaction) );
 			sigemptyset( &sa.sa_mask );
-			sa.sa_sigaction = segfaultHandler;
+			sa.sa_sigaction = sigHandler;
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {

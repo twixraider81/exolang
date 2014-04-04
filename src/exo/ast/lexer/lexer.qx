@@ -203,7 +203,7 @@ mode EXO:
 	[0-9]+							=> QUEX_TKN_I_INT( lValue = atoi( reinterpret_cast<const char*>(Lexeme) ) );
 	([0-9]+[.,][0-9]*)				=> QUEX_TKN_F_FLOAT( dValue = atof( reinterpret_cast<const char*>(Lexeme) ) );
 	"$"([_a-zA-Z]+[_a-zA-Z0-9]*)	=> QUEX_TKN_T_VARIABLE(LexemeBegin+1,LexemeEnd);
-	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_LABEL(LexemeBegin+1,LexemeEnd);
+	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_LABEL(Lexeme);
 	"+"								=> QUEX_TKN_S_ADD;
 	"-"								=> QUEX_TKN_S_SUB;
 	"*"								=> QUEX_TKN_S_MUL;

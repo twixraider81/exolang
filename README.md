@@ -7,6 +7,8 @@ Quickstart
 ./bootstrap.sh						(you will need to build lemon/quex to rebuild the lexer/parser for now)
 ./bootstrap.sh -l					(if you want to build llvm for /usr)
 
+You will also need libgc			(on Debian do apt-get install libgc-dev)
+
 ./waf clean configure --mode=debug	(clan & configure for debug release, spits alot of messages currently)
 ./waf buildparser buildlexer build	(parser must be built before the lexer)
 

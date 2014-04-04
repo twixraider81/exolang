@@ -19,7 +19,7 @@
 #include "exo/signals/signals.h"
 
 // include external stuff
-#include "getoptpp/getoptpp/getopt_pp.h"
+#include <getoptpp/getoptpp/getopt_pp.h>
 
 /*
  * Main/CLI Invocation, see -h
@@ -29,8 +29,19 @@ int main( int argc, char **argv )
 	exo::ast::Tree* tree;
 	std::string	sourceFile;
 
-	// register signal handlers
-	exo::signals::registerHandlers();
+	// inititalize garbage collector TODO: create initialization framework
+	GC_INIT();
+	GC_enable_incremental();
+
+#ifdef EXO_DEBUG
+	setenv( "GC_PRINT_STATS", "1", 1 );
+	setenv( "GC_DUMP_REGULARLY", "1", 1 );
+	setenv( "GC_FIND_LEAK", "1", 1 );
+#endif
+
+	// register signal handler
+	// FIXME: figure out why libgc sends a SIGSEGV on terminate
+	//exo::signals::registerHandler();
 
 	// build optionlist
 	GetOpt::GetOpt_pp ops( argc, argv );
@@ -48,10 +59,12 @@ int main( int argc, char **argv )
 	// show version & exit
 	if (ops >> GetOpt::OptionPresent( 'v', "help" )) {
 		std::cout << "version " << EXO_VERSION << std::endl;
+
+		unsigned gcVersion = GC_get_version();
+		std::cout << "libgc version " << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
+
 		return( 0 );
 	}
-
-
 
 	try {
 		// we build the ast from a file given via -i / --input or stdin
@@ -61,10 +74,13 @@ int main( int argc, char **argv )
 			tree = new exo::ast::Tree( std::cin );
 		}
 
-		delete tree;
 	} catch( std::exception& e ) {
 		ERRORRET( e.what(), -1 );
 	}
+
+#ifdef EXO_DEBUG
+	GC_gcollect();
+#endif
 
 	return( 0 );
 }

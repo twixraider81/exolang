@@ -82,5 +82,9 @@ namespace exo
 		void Tree::addNode( exo::ast::nodes::Node* node )
 		{
 		}
+
+		void Tree::addStatement( exo::ast::nodes::Stmt* stmt )
+		{
+		}
 	}
 }

@@ -32,7 +32,7 @@ namespace exo
 			USER
 		};
 
-		class Type
+		class Type : public gc
 		{
 			public:
 				typeId tId;

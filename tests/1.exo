@@ -16,8 +16,9 @@ boolean $e;
 
 int $a;
 integer $a;
+$a = 1;
 
-float $b;
+float $b = 2.5;
 
 string $d;
 
