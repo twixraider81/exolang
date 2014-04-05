@@ -21,6 +21,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <cstdio>
 #include <cstdint>
 #include <string>
@@ -29,6 +30,7 @@
 #include <cstdlib>
 #include <exception>
 #include <stdexcept>
+#include <vector>
 
 #include "exo/errors/error.h"
 

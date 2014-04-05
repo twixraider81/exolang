@@ -73,8 +73,10 @@ def configure( conf ):
 	conf.check_cxx( header_name = "exception" )
 	conf.check_cxx( header_name = "stdexcept" )
 	conf.check_cxx( header_name = "csignal" )
+	conf.check_cxx( header_name = "sstream" )
 	conf.check_cxx( header_name = "execinfo.h" )
 	conf.check_cxx( header_name = "unistd.h" )
+	conf.check_cxx( header_name = "vector" )
 
 	conf.check_cxx( header_name = "llvm/IR/Value.h" )
 
