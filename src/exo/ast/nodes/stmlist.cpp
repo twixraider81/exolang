@@ -24,7 +24,7 @@ namespace exo
 		{
 			StmtList::StmtList()
 			{
-				TRACEMSG( "creating statement list" );
+				TRACESECTION( "AST","creating statement list" );
 			}
 		}
 	}

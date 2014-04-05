@@ -22,11 +22,13 @@
 #ifdef EXO_DEBUG
 # define POINTERCHECK(p) if(p == NULL) ERRORMSG( "invalid pointer in " << __FILE__ << ":" << __LINE__ )
 # ifdef EXO_TRACE
-# define TRACEMSG(msg) std::cout << "Debug: " << msg << std::endl;
+# define TRACESECTION(section,msg) std::cout << section << ": " << msg << " in " << __FILE__ << ":" << __LINE__ << std::endl;
+# define TRACE(msg) TRACESECTION("Trace",msg);
 # endif
 #else
 # define POINTERCHECK(p)
-# define TRACEMSG(msg)
+# define TRACESECTION(msg,section)
+# define TRACE(msg)
 #endif
 
 #endif /* ERROR_H_ */

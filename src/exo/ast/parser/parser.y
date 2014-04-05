@@ -21,7 +21,7 @@
 
 %syntax_error {
 	std::stringstream msg;
-	msg << "syntax error, unexpected \"" << TOKEN->get_name() << "\" on " << TOKEN->line_number() << ":" << TOKEN->column_number();
+	msg << "unexpected \"" << TOKEN->get_name() << "\" on " << TOKEN->line_number() << ":" << TOKEN->column_number();
 	throw std::runtime_error( msg.str() );
 }
 
@@ -38,88 +38,137 @@
 %default_type { exo::ast::nodes::Node* }
 
 
-/* Now comes the language spec... */
+%left S_ABRACKET_OPEN.
+%right S_ASSIGN.
+
 
 /* a program is build out of statements. */
-program ::= statements(s) S_SEMICOLON. {
+program ::= statements(s). {
+	TRACESECTION( "PARSER", "program ::= statements(s).");
+
 	ast->stmts = s;
 }
 
 
-/* statements are either a single statement followed by ; and other statements */
+/* statements are a single statement followed by ; and other statements */
 %type statements { exo::ast::nodes::StmtList* }
-statements(b) ::= statement(s) . {
-	POINTERCHECK( s );
-	b = new exo::ast::nodes::StmtList;
-	b->list.push_back( s );
+statements(a) ::= statement(b). {
+	TRACESECTION( "PARSER", "statements(a) ::= statement(b).");
+
+	POINTERCHECK( b );
+	a = new exo::ast::nodes::StmtList;
+	a->list.push_back( b );
+
+	TRACESECTION( "PARSER", "pushing statement; size:" << a->list.size());
 }
 
 statements ::= statements(a) statement(b). {
+	TRACESECTION( "PARSER", "statements ::= statements(a) statement(b).");
+
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	a->list.push_back( b );
+
+	TRACESECTION( "PARSER",  "pushing statement; size:" << a->list.size() );
 }
 
 /* a statement may be an declaration of a variable type */
 %type statement { exo::ast::nodes::Stmt* }
-statement(s) ::= type(t) T_VARIABLE(v). {
+statement(s) ::= type(t) T_VAR(v) S_SEMICOLON. {
+	TRACESECTION( "PARSER", "statement(s) ::= type(t) T_VAR(v) S_SEMICOLON.");
+
 	POINTERCHECK( t );
 	POINTERCHECK( v );
 	s = new exo::ast::nodes::VarDecl( TOKENSTR( v ), t );
 }
 
 /* a statement may be an assignment of a variable to an expression */
-statement(s) ::= T_VARIABLE(v) S_ASSIGN expression(e). {
+statement(s) ::= T_VAR(v) S_ASSIGN expression(e) S_SEMICOLON. {
+	TRACESECTION( "PARSER", "T_VAR(v) S_ASSIGN expression(e) S_SEMICOLON.");
+
 	POINTERCHECK( v );
 	POINTERCHECK( e );
 	s = new exo::ast::nodes::VarAssign( TOKENSTR( v ), e );
 }
 
 
+
 /* a type may be a bool, integer, float, string or auto, or a label */
 /* whabbout lists, map, closures? */
 %type type { exo::ast::nodes::Type* }
-type(t) ::= T_TYPE_NULL. { t = new exo::ast::nodes::Type( exo::types::NIL ); }
-type(t) ::= T_TYPE_BOOLEAN. { t = new exo::ast::nodes::Type( exo::types::BOOLEAN ); }
-type(t) ::= T_TYPE_INT. { t = new exo::ast::nodes::Type( exo::types::INTEGER ); }
-type(t) ::= T_TYPE_FLOAT. { t = new exo::ast::nodes::Type( exo::types::FLOAT ); }
-type(t) ::= T_TYPE_STRING. { t = new exo::ast::nodes::Type( exo::types::STRING ); }
-type(t) ::= T_TYPE_AUTO. { t = new exo::ast::nodes::Type( exo::types::AUTO ); }
-type(t) ::= T_LABEL(l). { t = new exo::ast::nodes::Type( TOKENSTR(l) ); }
+type(t) ::= T_TNULL. {
+	TRACESECTION( "PARSER", "type(t) ::= T_TNULL.");
+
+	t = new exo::ast::nodes::Type( exo::types::NIL );
+}
+
+type(t) ::= T_TBOOL. {
+	TRACESECTION( "PARSER", "type(t) ::= T_TBOOL.");
+
+	t = new exo::ast::nodes::Type( exo::types::BOOLEAN );
+}
+
+type(t) ::= T_TINT. {
+	TRACESECTION( "PARSER", "type(t) ::= T_TINT.");
+
+	t = new exo::ast::nodes::Type( exo::types::INTEGER );
+}
+
+type(t) ::= T_TFLOAT. {
+	TRACESECTION( "PARSER", "type(t) ::= T_TFLOAT.");
+
+	t = new exo::ast::nodes::Type( exo::types::FLOAT );
+}
+
+type(t) ::= T_TSTRING. {
+	TRACESECTION( "PARSER", "type(t) ::= T_TSTRING.");
+
+	t = new exo::ast::nodes::Type( exo::types::STRING );
+}
+
+type(t) ::= T_TAUTO. {
+	TRACESECTION( "PARSER", "type(t) ::= T_TAUTO.");
+
+	t = new exo::ast::nodes::Type( exo::types::AUTO );
+}
+
+type(t) ::= T_ID(l). {
+	TRACESECTION( "PARSER", "type(t) ::= T_ID(l).");
+
+	t = new exo::ast::nodes::Type( TOKENSTR(l) );
+}
+
 
 
 /* a number may be an integer or a float */
 %type number { exo::ast::nodes::Expr* }
-number(n) ::= I_INT(i). {
+number(n) ::= T_VINT(i). {
+	TRACESECTION( "PARSER", "number(n) ::= T_VINT(i).");
+
 	POINTERCHECK( i );
 	n = new exo::ast::nodes::ValInt( i->get_lValue() );
 }
 
-number(n) ::= F_FLOAT(f). {
+number(n) ::= T_VFLOAT(f). {
+	TRACESECTION( "PARSER", "number(n) ::= T_VFLOAT(f).");
+
 	POINTERCHECK( f );
 	n = new exo::ast::nodes::ValFloat( f->get_dValue() );
 }
 
 
+
 /* an expression may be a number */
 %type expression { exo::ast::nodes::Expr* }
 expression(e) ::= number(n). {
+	TRACESECTION( "PARSER", "expression(e) ::= number(n).");
+
 	POINTERCHECK( e );
 	POINTERCHECK( n );
 	e = n;
 }
 
-/* an expression may be an addition */
-expression ::= expression S_ADD expression. { } 
-
-/* an expression may be a subtraction */
-expression ::= expression S_SUB expression. 
-
-/* an expression may be a multiplication */
-expression ::= expression S_MUL expression.
-
-/* an expression may be a division */
-expression ::= expression S_DIV expression.
-
-/* an expression can be surrounded by angular brackets a variable */
-expression ::= S_ABRACKET_OPEN expression S_ABRACKET_CLOSE.
+/* an expression can be surrounded by angular brackets */
+expression ::= S_ABRACKET_OPEN expression S_ABRACKET_CLOSE. {
+	TRACESECTION( "PARSER", "S_ABRACKET_OPEN expression S_ABRACKET_CLOSE.");
+}

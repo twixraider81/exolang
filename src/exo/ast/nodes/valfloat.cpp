@@ -24,7 +24,7 @@ namespace exo
 		{
 			ValFloat::ValFloat( double dVal )
 			{
-				TRACEMSG( "creating float (" << dVal << ")" );
+				TRACESECTION( "AST", "creating float value: " << dVal );
 				value = dVal;
 			}
 		}

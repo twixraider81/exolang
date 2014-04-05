@@ -24,7 +24,7 @@ namespace exo
 		{
 			quex::Token*	token = 0x0;
 
-			TRACEMSG( "opening <" << fileName << ">" );
+			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
 			quex::lexer		qlex( fileName );
 			void* lemon		= ParseAlloc( malloc );
@@ -37,7 +37,7 @@ namespace exo
 			if( lemon != NULL ) {
 				qlex.receive( &token );
 				do {
-					TRACEMSG( "received QUEX_TKN_" << token->type_id_name() << " in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
+					TRACESECTION( "LEXER", "received QUEX_TKN_" << token->type_id_name() << " in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
 
 					Parse( lemon, token->type_id(), token, this );
 					qlex.receive( &token );
@@ -52,10 +52,15 @@ namespace exo
 		{
 			quex::Token*	token = new quex::Token;
 
-			TRACEMSG( "opening <stdin>" );
+			TRACESECTION( "AST", "opening <stdin>" );
 
 			quex::lexer		qlex( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 			void* lemon		= ParseAlloc( malloc );
+
+#ifdef EXO_TRACE
+			char prefix[] = "Debug: ";
+			ParseTrace( stderr, prefix );
+#endif
 
 			if( lemon != NULL ) {
 				while( stream ) {
@@ -71,7 +76,7 @@ namespace exo
 
 					qlex.receive( &token );
 					do {
-						TRACEMSG( "received QUEX_TKN_" << token->type_id_name() << " on " << token->line_number() << ":" << token->column_number() );
+						TRACESECTION( "LEXER", "received QUEX_TKN_" << token->type_id_name() << " on " << token->line_number() << ":" << token->column_number() );
 
 						Parse( lemon, token->type_id(), token, this );
 						qlex.receive( &token );

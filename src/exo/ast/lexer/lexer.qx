@@ -91,18 +91,61 @@ $INCLUDE_CONVERTER_DECLARATION
 				default:
 					return( "unknown token" );
 
+
 				case QUEX_TKN_UNINITIALIZED:
 					return( "uninitilized token" );
 
 				case QUEX_TKN_TERMINATION:
 					return( "end of file" );
 
-				case QUEX_TKN_I_INT:
+
+				case QUEX_TKN_S_SEMICOLON:
+					return( ";" );
+
+
+				case QUEX_TKN_T_TNULL:
+					return( "null" );
+
+				case QUEX_TKN_T_TBOOL:
+					return( "boolean" );
+
+				case QUEX_TKN_T_TINT:
+					return( "int" );
+
+				case QUEX_TKN_T_TFLOAT:
+					return( "float" );
+
+				case QUEX_TKN_T_TSTRING:
+					return( "string" );
+
+				case QUEX_TKN_T_TAUTO:
+					return( "auto/mixed" );
+
+
+				case QUEX_TKN_T_VINT:
 					return( "integer number" );
 
-				case QUEX_TKN_F_FLOAT:
+				case QUEX_TKN_T_VFLOAT:
 					return( "float number" );
 
+
+				case QUEX_TKN_T_VAR:
+					return( "variable" );
+
+				case QUEX_TKN_T_ID:
+					return( "identifier" );
+
+
+				case QUEX_TKN_S_ABRACKET_OPEN:
+					return( "(" );
+
+				case QUEX_TKN_S_ABRACKET_CLOSE:
+					return( ")" );
+
+				case QUEX_TKN_S_ASSIGN:
+					return( "=" );
+
+/*
 				case QUEX_TKN_S_ADD:
 					return( "+" );
 
@@ -114,42 +157,7 @@ $INCLUDE_CONVERTER_DECLARATION
 
 				case QUEX_TKN_S_DIV:
 					return( "/" );
-
-				case QUEX_TKN_S_ASSIGN:
-					return( "=" );
-
-				case QUEX_TKN_S_SEMICOLON:
-					return( ";" );
-
-				case QUEX_TKN_T_VARIABLE:
-					return( "variable" );
-
-				case QUEX_TKN_T_LABEL:
-					return( "label" );
-
-				case QUEX_TKN_S_ABRACKET_OPEN:
-					return( "(" );
-
-				case QUEX_TKN_S_ABRACKET_CLOSE:
-					return( ")" );
-
-				case QUEX_TKN_T_TYPE_INT:
-					return( "int" );
-
-				case QUEX_TKN_T_TYPE_FLOAT:
-					return( "float" );
-
-				case QUEX_TKN_T_TYPE_BOOLEAN:
-					return( "boolean" );
-
-				case QUEX_TKN_T_TYPE_AUTO:
-					return( "auto/mixed" );
-
-				case QUEX_TKN_T_TYPE_STRING:
-					return( "string" );
-				
-				case QUEX_TKN_T_TYPE_NULL:
-					return( "null" );
+*/
 			}
 		}
    }
@@ -191,31 +199,36 @@ mode EXO:
 <skip_range: "//" "\n">		/* skip singleline comments */
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
-	"null"							=> QUEX_TKN_T_TYPE_NULL;
-	"nil"							=> QUEX_TKN_T_TYPE_NULL;
-	"bool"							=> QUEX_TKN_T_TYPE_BOOLEAN;
-	"boolean"						=> QUEX_TKN_T_TYPE_BOOLEAN;
-	"int"							=> QUEX_TKN_T_TYPE_INT;
-	"integer"						=> QUEX_TKN_T_TYPE_INT;
-	"float"							=> QUEX_TKN_T_TYPE_FLOAT;
-	"string"						=> QUEX_TKN_T_TYPE_STRING;
-	"auto"							=> QUEX_TKN_T_TYPE_AUTO;
-	[0-9]+							=> QUEX_TKN_I_INT( lValue = atoi( reinterpret_cast<const char*>(Lexeme) ) );
-	([0-9]+[.,][0-9]*)				=> QUEX_TKN_F_FLOAT( dValue = atof( reinterpret_cast<const char*>(Lexeme) ) );
-	"$"([_a-zA-Z]+[_a-zA-Z0-9]*)	=> QUEX_TKN_T_VARIABLE(LexemeBegin+1,LexemeEnd);
-	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_LABEL(Lexeme);
+	<<EOF>>							=> QUEX_TKN_TERMINATION;
+	<<FAIL>>						{ ERRORMSG( "unknown token: " << Lexeme ); }
+
+	";"								=> QUEX_TKN_S_SEMICOLON;
+
+	"null"							=> QUEX_TKN_T_TNULL;
+	"nil"							=> QUEX_TKN_T_TNULL;
+	"bool"							=> QUEX_TKN_T_TBOOL;
+	"boolean"						=> QUEX_TKN_T_TBOOL;
+	"int"							=> QUEX_TKN_T_TINT;
+	"integer"						=> QUEX_TKN_T_TINT;
+	"float"							=> QUEX_TKN_T_TFLOAT;
+	"string"						=> QUEX_TKN_T_TSTRING;
+	"auto"							=> QUEX_TKN_T_TAUTO;
+
+	[0-9]+							=> QUEX_TKN_T_VINT( lValue = atoi( reinterpret_cast<const char*>(Lexeme) ) );
+	([0-9]+[.,][0-9]*)				=> QUEX_TKN_T_VFLOAT( dValue = atof( reinterpret_cast<const char*>(Lexeme) ) );
+
+	"$"([_a-zA-Z]+[_a-zA-Z0-9]*)	=> QUEX_TKN_T_VAR(LexemeBegin+1, LexemeEnd);
+	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_ID(Lexeme);
+
+	"("								=> QUEX_TKN_S_ABRACKET_OPEN;
+	")"								=> QUEX_TKN_S_ABRACKET_CLOSE;
+	"="								=> QUEX_TKN_S_ASSIGN;
+
+	/*
 	"+"								=> QUEX_TKN_S_ADD;
 	"-"								=> QUEX_TKN_S_SUB;
 	"*"								=> QUEX_TKN_S_MUL;
 	"/"								=> QUEX_TKN_S_DIV;
-	"="								=> QUEX_TKN_S_ASSIGN;
 	";"								=> QUEX_TKN_S_SEMICOLON;
-	"("								=> QUEX_TKN_S_ABRACKET_OPEN;
-	")"								=> QUEX_TKN_S_ABRACKET_CLOSE;
-
-	<<EOF>>							=> QUEX_TKN_TERMINATION;
-
-	<<FAIL>> {
-		ERRORMSG( "unknown token: " << Lexeme );
-	}
+	*/
 }
