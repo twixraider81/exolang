@@ -22,43 +22,41 @@ namespace exo
 	{
 		Tree::Tree( std::string fileName )
 		{
-			quex::Token*	token = 0x0;
-
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
+			token = new quex::Token;
 			lexer = new quex::lexer( fileName );
 			parser = ParseAlloc( malloc );
 
 #ifdef EXO_TRACE
-			char prefix[] = "Debug: ";
+			char prefix[] = "PARSER: ";
 			ParseTrace( stderr, prefix );
 #endif
 
 			if( parser != NULL ) {
 				lexer->receive( &token );
+
 				while( token->type_id() != QUEX_TKN_TERMINATION ) {
-					TRACESECTION( "LEXER", "received QUEX_TKN_" << token->type_id_name() << " in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
+					TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
 
 					Parse( parser, token->type_id(), token, this );
 					lexer->receive( &token );
 				}
 
-				Parse( parser, 0, token, this );
-				ParseFree( parser, free );
+				this->finishParse();
 			}
 		}
 
 		Tree::Tree( std::istream& stream )
 		{
-			quex::Token*	token = new quex::Token;
-
 			TRACESECTION( "AST", "opening <stdin>" );
 
+			token = new quex::Token;
 			lexer = new quex::lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 			parser = ParseAlloc( malloc );
 
 #ifdef EXO_TRACE
-			char prefix[] = "Debug: ";
+			char prefix[] = "PARSER: ";
 			ParseTrace( stderr, prefix );
 #endif
 
@@ -75,17 +73,23 @@ namespace exo
 					lexer->buffer_fill_region_finish( stream.gcount() - 1 );
 
 					lexer->receive( &token );
+
 					while( token->type_id() != QUEX_TKN_TERMINATION ) {
-						TRACESECTION( "LEXER", "received QUEX_TKN_" << token->type_id_name() << " on " << token->line_number() << ":" << token->column_number() );
+						TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> on " << token->line_number() << ":" << token->column_number() );
 
 						Parse( parser, token->type_id(), token, this );
 						lexer->receive( &token );
 					};
-				}
 
-				Parse( parser, QUEX_TKN_TERMINATION, token, this );
-				ParseFree( parser, free );
+					this->finishParse();
+				}
 			}
+		}
+
+		void Tree::finishParse()
+		{
+			Parse( this->parser, 0, this->token, this );
+			ParseFree( this->parser, free );
 		}
 	}
 }

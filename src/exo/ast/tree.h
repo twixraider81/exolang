@@ -26,6 +26,7 @@ namespace exo
 		{
 			public:
 				quex::lexer* lexer;
+				quex::Token* token;
 				void*		 parser;
 
 				exo::ast::nodes::StmtList* stmts;
@@ -34,6 +35,8 @@ namespace exo
 				Tree( std::istream& stream );
 
 				virtual ~Tree() { };
+
+				void finishParse();
 		};
 	}
 }

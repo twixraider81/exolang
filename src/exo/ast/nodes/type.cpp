@@ -26,14 +26,21 @@ namespace exo
 			Type::Type( exo::types::typeId tId )
 			{
 				TRACESECTION( "AST","creating type with typeId:" << tId );
-				typeId = tId;
+				id = tId;
 			}
 
 			Type::Type( std::string tName )
 			{
-				TRACESECTION( "AST","creating type of typeName:" << tName );
-				typeId = exo::types::USER;
-				typeName = tName;
+				TRACESECTION( "AST","creating user defined type of name:" << tName );
+				id = exo::types::USER;
+				name = tName;
+			}
+
+			Type::Type( exo::types::typeId tId, std::string tName )
+			{
+				TRACESECTION( "AST","creating type of name:" << tName << ", with typeId:" << tId  );
+				id = tId;
+				name = tName;
 			}
 		}
 	}

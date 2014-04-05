@@ -22,8 +22,12 @@ namespace exo
 	{
 		namespace nodes
 		{
+			/*
+			 * TODO: must be overriden
+			 */
 			llvm::Value* Node::Emit( exo::ast::Context& context )
 			{
+				TRACESECTION( "AST", "emitting node" );
 				llvm::Value* value = NULL;
 				return( value );
 			}

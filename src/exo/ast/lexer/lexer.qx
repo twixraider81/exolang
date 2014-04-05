@@ -19,180 +19,6 @@ header {
 
 start = EXO;
 
-
-/* TODO: verbatim copy quex/code_base/token/CppDefault.qx should export it somehow pls */
-token_type {
-   header {
-$INCLUDE_CONVERTER_DECLARATION
-   }
-
-   standard {
-        id            : uint32_t;
-        line_number   : size_t;
-        column_number : size_t;
-   }
-
-   distinct {
-       text		: std::basic_string<QUEX_TYPE_CHARACTER>;
-       lValue	: long long;
-       dValue	: double;
-       typeId	: ushort;
-   }
-
-   inheritable;
-
-   copy {
-        self._id    = Other._id;
-        self.text   = Other.text;
-        self.lValue = Other.lValue;
-        self.dValue = Other.dValue;
-        self.typeId = Other.typeId;
-		self._line_n = Other._line_n;
-        self._column_n = Other._column_n;
-   }
-
-   body {
-        typedef std::basic_string<QUEX_TYPE_CHARACTER> __string;
-
-        operator 
-        const std::string() const
-        { return get_string(); }
-
-        const std::string
-        get_string() const 
-        {
-            std::string             tmp;
-
-            tmp = map_id_to_name(self._id);
-
-            tmp += " '" + pretty_char_text() + "' ";
-
-            return tmp;
-        }
-    
-        const std::string 
-        pretty_char_text() const
-        /* Provides a somehow pretty-print of the text in the token. */
-        {
-            std::string             tmp = $CONVERTER_STRING(self.text);
-            std::string::size_type  pos = 0;
-
-            while( (pos = tmp.find("\n") ) != __string::npos ) tmp.replace(pos, (size_t)1, "\\n");
-            while( (pos = tmp.find("\t") ) != __string::npos ) tmp.replace(pos, (size_t)1, "\\t");
-            while( (pos = tmp.find("\r") ) != __string::npos ) tmp.replace(pos, (size_t)1, "\\r");
-
-            return tmp;
-        }
-
-		const char* get_name()
-		{
-			switch( self._id )
-			{
-				default:
-					return( "unknown token" );
-
-
-				case QUEX_TKN_UNINITIALIZED:
-					return( "uninitilized token" );
-
-				case QUEX_TKN_TERMINATION:
-					return( "end of file" );
-
-
-				case QUEX_TKN_S_SEMICOLON:
-					return( ";" );
-
-
-				case QUEX_TKN_T_TNULL:
-					return( "null" );
-
-				case QUEX_TKN_T_TBOOL:
-					return( "boolean" );
-
-				case QUEX_TKN_T_TINT:
-					return( "int" );
-
-				case QUEX_TKN_T_TFLOAT:
-					return( "float" );
-
-				case QUEX_TKN_T_TSTRING:
-					return( "string" );
-
-				case QUEX_TKN_T_TAUTO:
-					return( "auto/mixed" );
-
-
-				case QUEX_TKN_T_VINT:
-					return( "integer number" );
-
-				case QUEX_TKN_T_VFLOAT:
-					return( "float number" );
-
-
-				case QUEX_TKN_T_VAR:
-					return( "variable" );
-
-				case QUEX_TKN_T_ID:
-					return( "identifier" );
-
-
-				case QUEX_TKN_S_ABRACKET_OPEN:
-					return( "(" );
-
-				case QUEX_TKN_S_ABRACKET_CLOSE:
-					return( ")" );
-
-				case QUEX_TKN_S_ASSIGN:
-					return( "=" );
-
-/*
-				case QUEX_TKN_S_ADD:
-					return( "+" );
-
-				case QUEX_TKN_S_SUB:
-					return( "-" );
-
-				case QUEX_TKN_S_MUL:
-					return( "*" );
-
-				case QUEX_TKN_S_DIV:
-					return( "/" );
-*/
-			}
-		}
-   }
-
-   take_text {
-        /* It cannot be assumed that the lexeme is zero terminated. */
-        __quex_assert(End >= Begin);
-        self.text.assign(Begin, End-Begin);
-
-        /* This token copied the text from the chunk into the string, 
-         * so we do not claim owneship over it.                       */
-        return false;      
-   }
-
-   repetition_set {
-       self.number = N;
-   }
-
-   repetition_get {
-       return self.number;
-   }
-
-   footer {
-        $NAMESPACE_OPEN
-        inline std::ostream&
-        operator<<(std::ostream& ostr, const $TOKEN_CLASS& Tok)
-        { ostr << Tok.get_string(); return ostr; }
-        $NAMESPACE_CLOSE
-
-$INCLUDE_CONVERTER_IMPLEMENTATION
-   }
-}
-
-
-
 mode EXO:
 <skip:       [ \r\n\t]>		/* skip whitespace */
 <skip_range: "/*" "*/">		/* skip multiline comments */
@@ -201,8 +27,6 @@ mode EXO:
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{ ERRORMSG( "unknown token: " << Lexeme ); }
-
-	";"								=> QUEX_TKN_S_SEMICOLON;
 
 	"null"							=> QUEX_TKN_T_TNULL;
 	"nil"							=> QUEX_TKN_T_TNULL;
@@ -213,22 +37,33 @@ mode EXO:
 	"float"							=> QUEX_TKN_T_TFLOAT;
 	"string"						=> QUEX_TKN_T_TSTRING;
 	"auto"							=> QUEX_TKN_T_TAUTO;
+	"callable"						=> QUEX_TKN_T_TCALLABLE;
+	"function"						=> QUEX_TKN_S_FUNCTION;
 
-	[0-9]+							=> QUEX_TKN_T_VINT( lValue = atoi( reinterpret_cast<const char*>(Lexeme) ) );
-	([0-9]+[.,][0-9]*)				=> QUEX_TKN_T_VFLOAT( dValue = atof( reinterpret_cast<const char*>(Lexeme) ) );
+	";"								=> QUEX_TKN_S_SEMICOLON;
+	","								=> QUEX_TKN_S_COMMA;
 
-	"$"([_a-zA-Z]+[_a-zA-Z0-9]*)	=> QUEX_TKN_T_VAR(LexemeBegin+1, LexemeEnd);
+	"$"([_a-zA-Z\\]+[_a-zA-Z\\0-9]*) => QUEX_TKN_T_VAR(LexemeBegin+1,LexemeEnd);
 	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_ID(Lexeme);
 
-	"("								=> QUEX_TKN_S_ABRACKET_OPEN;
-	")"								=> QUEX_TKN_S_ABRACKET_CLOSE;
+	"("								=> QUEX_TKN_S_LANGLE;
+	")"								=> QUEX_TKN_S_RANGLE;
+	"{"								=> QUEX_TKN_S_LBRACKET;
+	"}"								=> QUEX_TKN_S_RBRACKET;
+
+	[0-9]+							=> QUEX_TKN_T_VINT(Lexeme);
+	([0-9]+[.,][0-9]*)				=> QUEX_TKN_T_VFLOAT(Lexeme);
+
 	"="								=> QUEX_TKN_S_ASSIGN;
 
-	/*
-	"+"								=> QUEX_TKN_S_ADD;
-	"-"								=> QUEX_TKN_S_SUB;
+	"=="							=> QUEX_TKN_S_EQ;
+	"!="							=> QUEX_TKN_S_NE;
+	"<"								=> QUEX_TKN_S_LT;
+	"<="							=> QUEX_TKN_S_LE;
+	">"								=> QUEX_TKN_S_GT;
+	">="							=> QUEX_TKN_S_GE;
+	"+"								=> QUEX_TKN_S_PLUS;
+	"-"								=> QUEX_TKN_S_MINUS;
 	"*"								=> QUEX_TKN_S_MUL;
 	"/"								=> QUEX_TKN_S_DIV;
-	";"								=> QUEX_TKN_S_SEMICOLON;
-	*/
 }

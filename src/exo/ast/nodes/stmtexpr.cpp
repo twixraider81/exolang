@@ -13,33 +13,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TYPES_H_
-#define TYPES_H_
+#include "exo/exo.h"
+#include "exo/ast/ast.h"
 
-// TODO: BIIIG
 namespace exo
 {
-	namespace types
+	namespace ast
 	{
-		enum typeId
+		namespace nodes
 		{
-			NIL,
-			BOOLEAN,
-			INTEGER,
-			FLOAT,
-			STRING,
-			AUTO,
-			CALLABLE,
-			USER
-		};
-
-		class Type : public gc
-		{
-			public:
-				typeId tId;
-				std::string tName;
-		};
+			StmtExpr::StmtExpr( Expr* expr )
+			{
+				TRACESECTION( "AST","creating expression statement" );
+				expression = expr;
+			}
+		}
 	}
 }
-
-#endif /* TYPES_H_ */

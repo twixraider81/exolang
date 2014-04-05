@@ -27,6 +27,12 @@ namespace exo
 				TRACESECTION( "AST", "creating float value: " << dVal );
 				value = dVal;
 			}
+
+			ValFloat::ValFloat( std::string dVal )
+			{
+				value = atof( dVal.c_str() );
+				TRACESECTION( "AST", "creating float value:" << value );
+			}
 		}
 	}
 }

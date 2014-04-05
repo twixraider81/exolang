@@ -4,28 +4,41 @@
 // single line comment
 # single line comment too
 
+
+auto function blabla1 { ; };
+function() blabla2 { ; };
+string function blabla3( string $s ) { $s; };
+function blabla4( string $s, float $t ) { $s; };
+
 // different simple expressions
 
-// {{{ internal
-// doesnt't make sense..
-null $f;
+// {{{ internal types
+null $f; // doesnt't make sense..
 nil $b;
 
 bool $e;
 boolean $e;
 
-int $a;
-integer $a;
-$a = 1;
+{
+	int $a;
+	integer $a;
+	$a = 1;
+}
 
 float $b = 2.5;
 
 string $d;
 
 auto $c;
+
+callable $f;
 // }}}
 
-// user defined
-car $car;
-descendent\ns $item;
-\fullqualified\ns $item2;
+// user defined types
+item $item0;
+descendent\item $item;1
+\fullqualified\item $item2;
+
+
+// variable declaration list
+int $b, float $c, string $d;

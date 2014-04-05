@@ -22,9 +22,11 @@ namespace exo
 	{
 		namespace nodes
 		{
-			VarAssign::VarAssign( std::string varName, Expr* e )
+			VarAssign::VarAssign( std::string vName, Expr* expr )
 			{
-				TRACESECTION( "AST", "assigning " << varName );
+				TRACESECTION( "AST", "assigning " << vName );
+				name = vName;
+				expression = expr;
 			}
 		}
 	}

@@ -13,33 +13,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TYPES_H_
-#define TYPES_H_
+#include "exo/exo.h"
+#include "exo/ast/nodes/nodes.h"
 
-// TODO: BIIIG
 namespace exo
 {
-	namespace types
+	namespace ast
 	{
-		enum typeId
+		namespace nodes
 		{
-			NIL,
-			BOOLEAN,
-			INTEGER,
-			FLOAT,
-			STRING,
-			AUTO,
-			CALLABLE,
-			USER
-		};
-
-		class Type : public gc
-		{
-			public:
-				typeId tId;
-				std::string tName;
-		};
+			ValAny::ValAny()
+			{
+				TRACESECTION( "AST", "ERROR creating empty/any value!" );
+				value = NULL;
+			}
+		}
 	}
 }
-
-#endif /* TYPES_H_ */

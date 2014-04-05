@@ -27,6 +27,12 @@ namespace exo
 				TRACESECTION( "AST", "creating integer value:" << lVal );
 				value = lVal;
 			}
+
+			ValInt::ValInt( std::string lVal )
+			{
+				value = atoi( lVal.c_str() );
+				TRACESECTION( "AST", "creating integer value:" << value );
+			}
 		}
 	}
 }

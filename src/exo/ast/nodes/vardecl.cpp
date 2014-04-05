@@ -22,9 +22,19 @@ namespace exo
 	{
 		namespace nodes
 		{
-			VarDecl::VarDecl( std::string varName, Type* varType )
+			VarDecl::VarDecl( std::string vName, Type* vType )
 			{
-				TRACESECTION( "AST", "declaring variable: $" << varName );
+				TRACESECTION( "AST", "declaring variable: $" << vName << ":" << vType->id );
+				name = vName;
+				type = vType;
+			}
+
+			VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
+			{
+				TRACESECTION( "AST", "declaring/assigning variable: $" << vName << ":" << vType->id );
+				name = vName;
+				type = vType;
+				expression = expr;
 			}
 		}
 	}
