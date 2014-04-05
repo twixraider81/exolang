@@ -70,11 +70,13 @@ statements ::= statements(a) statement(b). {
 
 /* statement can be a variable declaration, function declaration or an expression. statements are terminated by a semicolon */
 %type statement { exo::ast::nodes::Stmt* }
-statement ::= vardecl S_SEMICOLON. {
+statement(s) ::= vardecl(v) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement ::= vardecl S_SEMICOLON.");
+	s = v;
 }
-statement ::= fundecl S_SEMICOLON. {
+statement(s) ::= fundecl(f) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement ::= fundecl S_SEMICOLON.");
+	s = f;
 }
 statement(s) ::= expression(e) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement(s) ::= expression(e) S_SEMICOLON.");
