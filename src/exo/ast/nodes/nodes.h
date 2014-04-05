@@ -134,6 +134,15 @@ namespace exo
 					VarDeclList();
 			};
 
+
+			class ExprList : public Expr, gc
+			{
+				public:
+					std::vector<Expr*> list;
+
+					ExprList();
+			};
+
 			class FunDecl : public Stmt, gc
 			{
 				public:
@@ -143,6 +152,15 @@ namespace exo
 					StmtList* codeBlock;
 
 					FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
+			};
+
+			class FunCall : public Expr, gc
+			{
+				public:
+					std::string name;
+					ExprList* arguments;
+
+					FunCall( std::string n, ExprList* a );
 			};
 
 			class CompOp : public Expr, gc

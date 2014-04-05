@@ -39,8 +39,8 @@
 
 
 %left S_PLUS S_MINUS.
+%nonassoc S_EQ S_NE.
 %left S_MUL S_DIV.
-%left S_ASSIGN.
 
 
 /* a program is build out of statements. */
@@ -72,10 +72,12 @@ statements ::= statements(a) statement(b). {
 %type statement { exo::ast::nodes::Stmt* }
 statement(s) ::= vardecl(v) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement ::= vardecl S_SEMICOLON.");
+	POINTERCHECK( v );
 	s = v;
 }
 statement(s) ::= fundecl(f) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement ::= fundecl S_SEMICOLON.");
+	POINTERCHECK( f );
 	s = f;
 }
 statement(s) ::= expression(e) S_SEMICOLON. {
@@ -130,6 +132,7 @@ type(t) ::= T_TCALLABLE. {
 }
 type(t) ::= T_ID(i). {
 	TRACESECTION( "PARSER", "type(t) ::= T_ID(i).");
+	POINTERCHECK( i );
 	t = new exo::ast::nodes::Type( TOKENSTR(i) );
 }
 
@@ -151,7 +154,7 @@ vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
 }
 
 
-/* a variable decleration list, are variable declarations seperated by a colon */
+/* a variable declaration lists are variable declarations seperated by a colon or empty */
 %type vardecllist { exo::ast::nodes::VarDeclList* }
 vardecllist (l)::= . {
 	TRACESECTION( "PARSER", "vardecllist (l)::= .");
@@ -167,6 +170,7 @@ vardecllist(l) ::= vardecl(d). {
 }
 vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
 	TRACESECTION( "PARSER", "vardecllist(a) ::= vardecl(d).");
+	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->list.push_back( d );
 	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
@@ -176,25 +180,54 @@ vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
 %type fundecl { exo::ast::nodes::FunDecl* }
 fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
 	TRACESECTION( "PARSER", "fundecl(f) ::= S_FUNCTION T_ID(i) block(b).");
+	POINTERCHECK( i );
 	POINTERCHECK( b );
 	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), new exo::ast::nodes::Type( exo::types::AUTO ), new exo::ast::nodes::VarDeclList, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
 	TRACESECTION( "PARSER", "fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b).");
+	POINTERCHECK( t );
+	POINTERCHECK( i );
 	POINTERCHECK( b );
 	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), t, new exo::ast::nodes::VarDeclList, b );
 }
 fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	TRACESECTION( "PARSER", "fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b).");
+	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), new exo::ast::nodes::Type( exo::types::AUTO ), a, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	TRACESECTION( "PARSER", "type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b).");
+	POINTERCHECK( t );
+	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), t, a, b );
+}
+
+
+/* a variable declaration lists are expressions seperated by a colon or empty */
+%type exprlist { exo::ast::nodes::ExprList* }
+exprlist(l) ::= . {
+	TRACESECTION( "PARSER", "exprlist(l) ::= .");
+	l = new exo::ast::nodes::ExprList;
+	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size());
+}
+exprlist(l) ::= expression(e). {
+	TRACESECTION( "PARSER", "exprlist(l) ::= .");
+	POINTERCHECK( e );
+	l = new exo::ast::nodes::ExprList;
+	l->list.push_back( e );
+	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size());
+}
+exprlist ::= exprlist(l) S_COMMA expression(e). {
+	TRACESECTION( "PARSER", "exprlist ::= exprlist(l) S_COMMA expression(e).");
+	POINTERCHECK( l );
+	POINTERCHECK( e );
+	l->list.push_back( e );
+	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
 }
 
 
@@ -211,17 +244,30 @@ number(n) ::= T_VFLOAT(f). {
 	n = new exo::ast::nodes::ValFloat( TOKENSTR(f) );
 }
 
-/* an expression may be a number, an assignment */
+/* an expression may be a number, an assignment or a function call */
 %type expression { exo::ast::nodes::Expr* }
 expression(r) ::= T_VAR(v) S_ASSIGN expression(e). {
 	TRACESECTION( "PARSER", "expression(r) ::= T_VAR(v) S_ASSIGN expression(e).");
+	POINTERCHECK( v );
+	POINTERCHECK( e );
 	r = new exo::ast::nodes::VarAssign( TOKENSTR(v), e );
 }
-expression ::= number. {
+expression(e) ::= T_ID(i) S_LANGLE exprlist(a) S_RANGLE. {
+	TRACESECTION( "PARSER", "T_ID(i) S_LANGLE funcall S_RANGLE.");
+	POINTERCHECK( i );
+	POINTERCHECK( a );
+	e = new exo::ast::nodes::FunCall( TOKENSTR(i), a );
+}
+expression(e) ::= number(n). {
 	TRACESECTION( "PARSER", "expression ::= number.");
+	POINTERCHECK( n );
+	e = n;
 }
 expression(e) ::= expression(a) comparison(c) expression(b). {
 	TRACESECTION( "PARSER", "expression(e) ::= expression(a) comparison(c) expression(b).");
+	POINTERCHECK( a );
+	POINTERCHECK( c );
+	POINTERCHECK( b );
 	e = new exo::ast::nodes::CompOp( a, TOKENSTR(c), b );
 }
 

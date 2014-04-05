@@ -42,3 +42,5 @@ descendent\item $item;1
 
 // variable declaration list
 int $b, float $c, string $d;
+
+blabla3( $d );

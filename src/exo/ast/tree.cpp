@@ -67,7 +67,7 @@ namespace exo
 					stream.getline( (char*)lexer->buffer_fill_region_begin(), lexer->buffer_fill_region_size() );
 
 					if( stream.gcount() == 0 ) {
-						return;
+						break;
 					}
 
 					lexer->buffer_fill_region_finish( stream.gcount() - 1 );
@@ -80,9 +80,9 @@ namespace exo
 						Parse( parser, token->type_id(), token, this );
 						lexer->receive( &token );
 					};
-
-					this->finishParse();
 				}
+
+				this->finishParse();
 			}
 		}
 
