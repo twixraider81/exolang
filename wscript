@@ -109,7 +109,7 @@ def backup( ctx ):
 # (re)create parser
 def buildparser( ctx ):
 	"Recreate Parser (needs lemon binary)"
-	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.y; mv ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.cpp; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h', shell=True )
+	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.y; mv -f ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.cpp; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h', shell=True )
 
 # (re)create lexer
 def buildlexer( ctx ):
