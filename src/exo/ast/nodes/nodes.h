@@ -36,8 +36,8 @@ namespace exo
 			{
 				public:
 					Node() { };
-
 					virtual ~Node() { };
+
 					llvm::Value* Emit( exo::ast::Context& context );
 			};
 
@@ -49,6 +49,13 @@ namespace exo
 			{
 			};
 
+			class StmtList : public Expr, gc
+			{
+				public:
+					std::vector<Stmt*> list;
+
+					StmtList();
+			};
 
 			class ValInt : public Expr, gc
 			{
@@ -79,7 +86,7 @@ namespace exo
 					VarDecl( std::string varName, Type* varType );
 			};
 
-			class VarAssign : public Expr, gc
+			class VarAssign : public Stmt, gc
 			{
 				public:
 					VarAssign( std::string varName, Expr* e );

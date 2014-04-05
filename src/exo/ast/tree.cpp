@@ -32,14 +32,14 @@ namespace exo
 
 			if( lemon != NULL ) {
 				qlex.receive( &token );
-				while( token->type_id() != QUEX_TKN_TERMINATION ) {
+				do {
 					DEBUGMSG( "received QUEX_TKN_" << token->type_id_name() << " in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
 
 					Parse( lemon, token->type_id(), token, this );
 					qlex.receive( &token );
-				}
+				} while( token->type_id() != QUEX_TKN_TERMINATION );
 
-				//Parse( lemon, QUEX_TKN_TERMINATION, token, this );
+				Parse( lemon, 0, token, this );
 				ParseFree( lemon, free );
 			}
 		}
@@ -66,25 +66,17 @@ namespace exo
 					qlex.buffer_fill_region_finish( stream.gcount() - 1 );
 
 					qlex.receive( &token );
-					while( token->type_id() != QUEX_TKN_TERMINATION ) {
+					do {
 						DEBUGMSG( "received QUEX_TKN_" << token->type_id_name() << " on " << token->line_number() << ":" << token->column_number() );
 
 						Parse( lemon, token->type_id(), token, this );
 						qlex.receive( &token );
-					}
+					} while( token->type_id() != QUEX_TKN_TERMINATION ) ;
 				}
 
-				//Parse( lemon, QUEX_TKN_TERMINATION, token, this );
+				Parse( lemon, QUEX_TKN_TERMINATION, token, this );
 				ParseFree( lemon, free );
 			}
-		}
-
-		void Tree::addNode( exo::ast::nodes::Node* node )
-		{
-		}
-
-		void Tree::addStatement( exo::ast::nodes::Stmt* stmt )
-		{
 		}
 	}
 }

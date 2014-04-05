@@ -14,8 +14,7 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/nodes/nodes.h"
-#include "exo/types/types.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {
@@ -23,17 +22,9 @@ namespace exo
 	{
 		namespace nodes
 		{
-			Type::Type( exo::types::typeId tId )
+			StmtList::StmtList()
 			{
-				DEBUGMSG( "got typeId " << tId );
-				typeId = tId;
-			}
-
-			Type::Type( std::string tName )
-			{
-				DEBUGMSG( "got typeName " << tName );
-				typeId = exo::types::USER;
-				typeName = tName;
+				DEBUGMSG( "creating statement list" );
 			}
 		}
 	}

@@ -25,13 +25,12 @@ namespace exo
 		class Tree : public gc
 		{
 			public:
+				exo::ast::nodes::StmtList* stmts;
+
 				Tree( std::string fileName );
 				Tree( std::istream& stream );
 
 				virtual ~Tree() { };
-
-				void addNode( exo::ast::nodes::Node* node );
-				void addStatement( exo::ast::nodes::Stmt* stmt );
 		};
 	}
 }
