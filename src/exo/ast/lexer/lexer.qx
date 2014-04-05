@@ -28,6 +28,9 @@ mode EXO:
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{ ERRORMSG( "unknown token: " << Lexeme ); }
 
+	"__HALT__"						=> QUEX_TKN_TERMINATION;
+	"__FILE__"						=> QUEX_TKN_S_FILE(Lexeme);
+	"__LINE__"						=> QUEX_TKN_S_LINE(Lexeme);
 	"null"							=> QUEX_TKN_T_TNULL;
 	"nil"							=> QUEX_TKN_T_TNULL;
 	"bool"							=> QUEX_TKN_T_TBOOL;

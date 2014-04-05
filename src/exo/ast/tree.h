@@ -28,10 +28,11 @@ namespace exo
 				quex::lexer* lexer;
 				quex::Token* token;
 				void*		 parser;
+				std::string	fileName;
 
 				exo::ast::nodes::StmtList* stmts;
 
-				Tree( std::string fileName );
+				Tree( std::string fName );
 				Tree( std::istream& stream );
 
 				virtual ~Tree() { };

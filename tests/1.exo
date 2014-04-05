@@ -44,3 +44,7 @@ descendent\item $item;1
 int $b, float $c, string $d;
 
 blabla3( $d );
+
+__FILE__
+__LINE__
+__HALT__

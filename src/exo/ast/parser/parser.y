@@ -244,7 +244,8 @@ number(n) ::= T_VFLOAT(f). {
 	n = new exo::ast::nodes::ValFloat( TOKENSTR(f) );
 }
 
-/* an expression may be a number, an assignment or a function call */
+
+/* an expression may be a number, an assignment or a function call or a constant */
 %type expression { exo::ast::nodes::Expr* }
 expression(r) ::= T_VAR(v) S_ASSIGN expression(e). {
 	TRACESECTION( "PARSER", "expression(r) ::= T_VAR(v) S_ASSIGN expression(e).");
@@ -269,6 +270,12 @@ expression(e) ::= expression(a) comparison(c) expression(b). {
 	POINTERCHECK( c );
 	POINTERCHECK( b );
 	e = new exo::ast::nodes::CompOp( a, TOKENSTR(c), b );
+}
+expression(e) ::= constant(c). {
+	TRACESECTION( "PARSER", "expression(e) ::= constant(c).");
+	POINTERCHECK( e );
+	POINTERCHECK( c );
+	e = c;
 }
 
 /* comparison operators */
@@ -322,4 +329,17 @@ comparison(c) ::= S_DIV(o). {
 	TRACESECTION( "PARSER", "comparison(c) ::= S_DIV(o).");
 	POINTERCHECK( o );
 	c = o;
+}
+
+/* a constant can be a builtin */
+%type constant { exo::ast::nodes::ConstExpr* }
+constant(c) ::= S_FILE(f). {
+	TRACESECTION( "PARSER", "constant(c) ::= S_FILE(f).");
+	POINTERCHECK( f );
+	c = new exo::ast::nodes::ConstExpr( TOKENSTR(f), new exo::ast::nodes::ValString( ast->fileName ) );
+}
+constant(c) ::= S_LINE(l). {
+	TRACESECTION( "PARSER", "constant(c) ::= S_LINE(l).");
+	POINTERCHECK( l );
+	c = new exo::ast::nodes::ConstExpr( TOKENSTR(l), new exo::ast::nodes::ValInt( l->line_number() ) );
 }

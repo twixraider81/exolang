@@ -95,6 +95,14 @@ namespace exo
 					ValFloat( std::string lVal );
 			};
 
+			class ValString : public ValAny, gc
+			{
+				public:
+					std::string value;
+
+					ValString( std::string sVal );
+			};
+
 			class Type : public Node, gc
 			{
 				public:
@@ -171,6 +179,15 @@ namespace exo
 					Expr* rhs;
 
 					CompOp( Expr* a, std::string o, Expr* b );
+			};
+
+			class ConstExpr : public Expr, gc
+			{
+				public:
+					std::string name;
+					ValAny* value;
+
+					ConstExpr( std::string n, ValAny* v );
 			};
 		}
 	}

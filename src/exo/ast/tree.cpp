@@ -20,8 +20,9 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree( std::string fileName )
+		Tree::Tree( std::string fName )
 		{
+			fileName = fName;
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
 			token = new quex::Token;
@@ -49,6 +50,7 @@ namespace exo
 
 		Tree::Tree( std::istream& stream )
 		{
+			fileName = "<stdin>";
 			TRACESECTION( "AST", "opening <stdin>" );
 
 			token = new quex::Token;
