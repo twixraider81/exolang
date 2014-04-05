@@ -25,6 +25,9 @@ namespace exo
 		class Tree : public gc
 		{
 			public:
+				quex::lexer* lexer;
+				void*		 parser;
+
 				exo::ast::nodes::StmtList* stmts;
 
 				Tree( std::string fileName );

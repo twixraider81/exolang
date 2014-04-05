@@ -26,25 +26,25 @@ namespace exo
 
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
-			quex::lexer		qlex( fileName );
-			void* lemon		= ParseAlloc( malloc );
+			lexer = new quex::lexer( fileName );
+			parser = ParseAlloc( malloc );
 
 #ifdef EXO_TRACE
 			char prefix[] = "Debug: ";
 			ParseTrace( stderr, prefix );
 #endif
 
-			if( lemon != NULL ) {
-				qlex.receive( &token );
-				do {
+			if( parser != NULL ) {
+				lexer->receive( &token );
+				while( token->type_id() != QUEX_TKN_TERMINATION ) {
 					TRACESECTION( "LEXER", "received QUEX_TKN_" << token->type_id_name() << " in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
 
-					Parse( lemon, token->type_id(), token, this );
-					qlex.receive( &token );
-				} while( token->type_id() != QUEX_TKN_TERMINATION );
+					Parse( parser, token->type_id(), token, this );
+					lexer->receive( &token );
+				}
 
-				Parse( lemon, 0, token, this );
-				ParseFree( lemon, free );
+				Parse( parser, 0, token, this );
+				ParseFree( parser, free );
 			}
 		}
 
@@ -54,37 +54,37 @@ namespace exo
 
 			TRACESECTION( "AST", "opening <stdin>" );
 
-			quex::lexer		qlex( (QUEX_TYPE_CHARACTER*)0x0, 0 );
-			void* lemon		= ParseAlloc( malloc );
+			lexer = new quex::lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
+			parser = ParseAlloc( malloc );
 
 #ifdef EXO_TRACE
 			char prefix[] = "Debug: ";
 			ParseTrace( stderr, prefix );
 #endif
 
-			if( lemon != NULL ) {
+			if( parser != NULL ) {
 				while( stream ) {
-					qlex.buffer_fill_region_prepare();
+					lexer->buffer_fill_region_prepare();
 
-					stream.getline( (char*)qlex.buffer_fill_region_begin(), qlex.buffer_fill_region_size() );
+					stream.getline( (char*)lexer->buffer_fill_region_begin(), lexer->buffer_fill_region_size() );
 
 					if( stream.gcount() == 0 ) {
 						return;
 					}
 
-					qlex.buffer_fill_region_finish( stream.gcount() - 1 );
+					lexer->buffer_fill_region_finish( stream.gcount() - 1 );
 
-					qlex.receive( &token );
-					do {
+					lexer->receive( &token );
+					while( token->type_id() != QUEX_TKN_TERMINATION ) {
 						TRACESECTION( "LEXER", "received QUEX_TKN_" << token->type_id_name() << " on " << token->line_number() << ":" << token->column_number() );
 
-						Parse( lemon, token->type_id(), token, this );
-						qlex.receive( &token );
-					} while( token->type_id() != QUEX_TKN_TERMINATION ) ;
+						Parse( parser, token->type_id(), token, this );
+						lexer->receive( &token );
+					};
 				}
 
-				Parse( lemon, QUEX_TKN_TERMINATION, token, this );
-				ParseFree( lemon, free );
+				Parse( parser, QUEX_TKN_TERMINATION, token, this );
+				ParseFree( parser, free );
 			}
 		}
 	}
