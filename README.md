@@ -9,8 +9,8 @@ Quickstart
 
 You will also need libgc			(on Debian do apt-get install libgc-dev)
 
-./waf clean configure --mode=debug	(clan & configure for debug release, spits alot of messages currently)
-./waf buildparser buildlexer build	(parser must be built before the lexer)
+./waf clean configure --mode=debug	(clean & configure for release/debug release, trace release prints alot of messages currently)
+./waf buildparser buildlexer build	(required for now. parser must be built before the lexer)
 
 build/exolang -i <filename>			(i.e tests/1.exo)
 build/exolang						(to parse stdin)

@@ -20,11 +20,13 @@
 }
 
 %syntax_error {
-	ERRORMSG( "syntax error, unexpected \"" << TOKEN->get_name() << "\" on " << TOKEN->line_number() << ":" << TOKEN->column_number() );
+	std::stringstream msg;
+	msg << "syntax error, unexpected \"" << TOKEN->get_name() << "\" on " << TOKEN->line_number() << ":" << TOKEN->column_number();
+	throw std::runtime_error( msg.str() );
 }
 
 %stack_overflow {
-	ERRORMSG( "stack overflown" );
+	throw std::runtime_error( "stack overflown" );
 }
 
 %start_symbol program
@@ -36,30 +38,41 @@
 %default_type { exo::ast::nodes::Node* }
 
 
-
 /* Now comes the language spec... */
 
 /* a program is build out of statements. */
-program ::= statements. { ; }
+program ::= statements(s) S_SEMICOLON. {
+	ast->stmts = s;
+}
 
 
-/* statements are either a single statement or a statement followed by ; and other statements */
-statements ::= statement.
-statements ::= statement S_SEMICOLON statements.
+/* statements are either a single statement followed by ; and other statements */
+%type statements { exo::ast::nodes::StmtList* }
+statements(b) ::= statement(s) . {
+	POINTERCHECK( s );
+	b = new exo::ast::nodes::StmtList;
+	b->list.push_back( s );
+}
 
+statements ::= statements(a) statement(b). {
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	a->list.push_back( b );
+}
 
 /* a statement may be an declaration of a variable type */
+%type statement { exo::ast::nodes::Stmt* }
 statement(s) ::= type(t) T_VARIABLE(v). {
-	POINTERCHECK(t);
-	POINTERCHECK(v);
-	s = new exo::ast::nodes::VarDecl( TOKENSTR(v), t );
+	POINTERCHECK( t );
+	POINTERCHECK( v );
+	s = new exo::ast::nodes::VarDecl( TOKENSTR( v ), t );
 }
 
 /* a statement may be an assignment of a variable to an expression */
 statement(s) ::= T_VARIABLE(v) S_ASSIGN expression(e). {
-	POINTERCHECK(v);
-	POINTERCHECK(e);
-	s = new exo::ast::nodes::VarAssign( TOKENSTR(v), e );
+	POINTERCHECK( v );
+	POINTERCHECK( e );
+	s = new exo::ast::nodes::VarAssign( TOKENSTR( v ), e );
 }
 
 
@@ -76,25 +89,28 @@ type(t) ::= T_LABEL(l). { t = new exo::ast::nodes::Type( TOKENSTR(l) ); }
 
 
 /* a number may be an integer or a float */
+%type number { exo::ast::nodes::Expr* }
 number(n) ::= I_INT(i). {
-	POINTERCHECK(i);
+	POINTERCHECK( i );
 	n = new exo::ast::nodes::ValInt( i->get_lValue() );
-	ast->addNode( n );
 }
 
 number(n) ::= F_FLOAT(f). {
-	POINTERCHECK(f);
+	POINTERCHECK( f );
 	n = new exo::ast::nodes::ValFloat( f->get_dValue() );
-	ast->addNode( n );
 }
 
 
 /* an expression may be a number */
 %type expression { exo::ast::nodes::Expr* }
-expression(e) ::= number(n). {  }
+expression(e) ::= number(n). {
+	POINTERCHECK( e );
+	POINTERCHECK( n );
+	e = n;
+}
 
 /* an expression may be an addition */
-expression ::= expression S_ADD expression. 
+expression ::= expression S_ADD expression. { } 
 
 /* an expression may be a subtraction */
 expression ::= expression S_SUB expression. 

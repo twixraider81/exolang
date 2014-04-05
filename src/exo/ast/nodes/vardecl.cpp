@@ -24,7 +24,7 @@ namespace exo
 		{
 			VarDecl::VarDecl( std::string varName, Type* varType )
 			{
-				DEBUGMSG( "declaring $" << varName );
+				TRACEMSG( "declaring $" << varName );
 			}
 		}
 	}

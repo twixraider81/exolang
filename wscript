@@ -29,7 +29,7 @@ SRCDIR = 'src/'
 # load options
 def options( opt ):
 	opt.load( 'compiler_cxx compiler_c python' )
-	opt.add_option( '--mode', action = 'store', default = 'debug', help = 'the mode to compile in (debug or release)' )
+	opt.add_option( '--mode', action = 'store', default = 'release', help = 'the mode to compile in (release,debug,trace)' )
 
 # configure
 def configure( conf ):
@@ -57,11 +57,15 @@ def configure( conf ):
 	if conf.options.mode == 'release':
 		flags += [ '-O2', '-fvectorize', '-funroll-loops' ]
 	elif conf.options.mode == 'debug':
-		flags += [ '-DEXO_DEBUG=1', '-O0', '-g', '-fno-limit-debug-info', '-DGC_DEBUG=1' ]
+		flags += [ '-O0', '-g', '-fno-limit-debug-info', '-DEXO_DEBUG' ]
+	elif conf.options.mode == 'trace':
+		flags += [ '-O0', '-g', '-fno-limit-debug-info', '-DEXO_DEBUG', '-DEXO_TRACE', '-DGC_DEBUG' ]
 
 	conf.env.append_value( 'CXXFLAGS', flags )
 	conf.env.append_value( 'LINKFLAGS', ldflags.strip().split( ' ' ) )
-	
+
+	conf.msg( 'configuring for', conf.options.mode, 'BLUE' )
+
 	conf.check_cxx( header_name = "fstream" )
 	conf.check_cxx( header_name = "iostream" )
 	conf.check_cxx( header_name = "cstdio" )

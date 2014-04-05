@@ -24,7 +24,7 @@ namespace exo
 		{
 			ValInt::ValInt( long long lVal )
 			{
-				DEBUGMSG( "creating integer (" << lVal << ")" );
+				TRACEMSG( "creating integer (" << lVal << ")" );
 				value = lVal;
 			}
 		}

@@ -25,13 +25,13 @@ namespace exo
 		{
 			Type::Type( exo::types::typeId tId )
 			{
-				DEBUGMSG( "got typeId " << tId );
+				TRACEMSG( "got typeId " << tId );
 				typeId = tId;
 			}
 
 			Type::Type( std::string tName )
 			{
-				DEBUGMSG( "got typeName " << tName );
+				TRACEMSG( "got typeName " << tName );
 				typeId = exo::types::USER;
 				typeName = tName;
 			}

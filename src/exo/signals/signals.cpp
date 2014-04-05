@@ -38,7 +38,7 @@ namespace exo
 				/* skip first stack frame (points here) */
 				for( int i = 1; i < size && array != NULL; ++i )
 				{
-					ERRORMSG( "(" << i << ") " << array[i] )
+					ERRORMSG( "(" << i << ") " << array[i] );
 				}
 #endif
 
@@ -60,7 +60,7 @@ namespace exo
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
-				ERRORMSG( "failed to register segementation fault handler" )
+				ERRORMSG( "failed to register segementation fault handler" );
 			}
 		}
 	}

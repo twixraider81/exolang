@@ -33,7 +33,7 @@ int main( int argc, char **argv )
 	GC_INIT();
 	GC_enable_incremental();
 
-#ifdef EXO_DEBUG
+#ifdef EXO_TRACE
 	setenv( "GC_PRINT_STATS", "1", 1 );
 	setenv( "GC_DUMP_REGULARLY", "1", 1 );
 	setenv( "GC_FIND_LEAK", "1", 1 );
@@ -78,7 +78,7 @@ int main( int argc, char **argv )
 		ERRORRET( e.what(), -1 );
 	}
 
-#ifdef EXO_DEBUG
+#ifdef EXO_TRACE
 	GC_gcollect();
 #endif
 

@@ -38,5 +38,6 @@
 void* ParseAlloc( void *(*mallocProc)(size_t) );
 void  ParseFree( void *p, void (*freeProc)(void*) );
 void  Parse( void *yyp, int yymajor, quex::Token* yyminor, exo::ast::Tree* ast );
+void  ParseTrace( FILE *stream, char* zPrefix );
 
 #endif /* AST_H_ */

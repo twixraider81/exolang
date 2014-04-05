@@ -24,7 +24,7 @@ namespace exo
 		{
 			VarAssign::VarAssign( std::string varName, Expr* e )
 			{
-				DEBUGMSG( "assigning " << varName );
+				TRACEMSG( "assigning " << varName );
 			}
 		}
 	}

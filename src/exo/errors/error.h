@@ -16,15 +16,17 @@
 #ifndef ERROR_H_
 #define ERROR_H_
 
-#define ERRORMSG(msg) std::cerr << "Error: " << msg << " in " __FILE__ << ":" << __LINE__ << std::endl;
-#define ERRORRET(msg,retval) ERRORMSG(msg); return(retval);
+#define ERRORMSG(msg) std::cerr << "Error: " << msg << " in " __FILE__ << ":" << __LINE__ << std::endl
+#define ERRORRET(msg,retval) ERRORMSG(msg); return(retval)
 
 #ifdef EXO_DEBUG
-# define DEBUGMSG(msg) std::cout << "Debug: " << msg << std::endl;
 # define POINTERCHECK(p) if(p == NULL) ERRORMSG( "invalid pointer in " << __FILE__ << ":" << __LINE__ )
+# ifdef EXO_TRACE
+# define TRACEMSG(msg) std::cout << "Debug: " << msg << std::endl;
+# endif
 #else
-# define DEBUGMSG(msg)
 # define POINTERCHECK(p)
+# define TRACEMSG(msg)
 #endif
 
 #endif /* ERROR_H_ */
