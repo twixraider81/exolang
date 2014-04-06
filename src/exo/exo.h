@@ -16,6 +16,13 @@
 #ifndef EXO_H_
 #define EXO_H_
 
+/*
+ * FIXME: probably better handled by configure
+ */
+#ifdef EXO_DEBUG
+# undef NDEBUG
+#endif
+
 #include <gc/gc.h>
 #include <gc/gc_cpp.h>
 

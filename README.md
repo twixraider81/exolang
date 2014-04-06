@@ -16,6 +16,12 @@ build/exolang -i <filename>			(i.e tests/1.exo)
 build/exolang						(to parse stdin)
 build/exolang -h					(to show help)
 
+Prerequisites
+-------------
+On Debian simply do:
+apt-get install libgc-dev llvm llvm-dev llvm-runtime libc++-dev
+
+
 Thanks & 3rd Party licenses
 ---------------------------
 Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>

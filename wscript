@@ -33,36 +33,41 @@ def options( opt ):
 
 # configure
 def configure( conf ):
-	conf.env.CXX = 'clang++'
-	conf.env.CC = 'clang'
+	conf.load( 'compiler_cxx compiler_c' )
+	conf.find_program( 'llvm-config', var = 'LLVMCONFIG', mandatory = True )
 
-	conf.load( 'compiler_cxx compiler_c asm' )
+	# read llvm-config
+	print( "\n" )
+	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--cppflags'], stdout = subprocess.PIPE )
+	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
+	conf.msg( 'llvm-config cxxflags:', cxxflags, 'CYAN' )	
+	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--ldflags', '--libs'], stdout = subprocess.PIPE )
+	ldflags = process.communicate()[0].strip().replace( "\n", '' )
+	conf.msg( 'llvm-config ldconfig:', ldflags, 'CYAN' )
+	print( "\n" )
 
-	conf.find_program( 'llvm-config', var = 'LLVMCONFIG', mandatory = True )#
-	process = subprocess.Popen([conf.env.LLVMCONFIG, '--ldflags'], stdout=subprocess.PIPE)
-	ldflags = process.communicate()[0]
-	conf.msg( 'llvm-config ld flags:', ldflags, 'CYAN' )
 
-	flags = [
+	# construct compiler/linker flags
+	cxxflags = cxxflags.split( ' ' )
+	ldflags = ldflags.split( ' ' )
+
+	exoflags = [
 		'-DEXO_VERSION="'+VERSION+'"',
-		'-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
 		'-DQUEX_OPTION_LINE_NUMBER_COUNTING',
 		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING',
 		'-std=c++11',
-		'-D__STDC_CONSTANT_MACROS',
-		'-D__STDC_FORMAT_MACROS',
-		'-D__STDC_LIMIT_MACROS'
 	]
+	cxxflags += exoflags
 
 	if conf.options.mode == 'release':
-		flags += [ '-O2', '-fvectorize', '-funroll-loops' ]
+		cxxflags += [ '-O3', '-DQUEX_OPTION_ASSERTS_DISABLED' ]
 	elif conf.options.mode == 'debug':
-		flags += [ '-O0', '-g', '-fno-limit-debug-info', '-DEXO_DEBUG' ]
+		cxxflags += [ '-O0', '-g', '-DEXO_DEBUG', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED' ]
 	elif conf.options.mode == 'trace':
-		flags += [ '-O0', '-g', '-fno-limit-debug-info', '-DEXO_DEBUG', '-DEXO_TRACE', '-DGC_DEBUG' ]
+		cxxflags += [ '-O0', '-g', '-DEXO_DEBUG', '-DEXO_TRACE', '-DGC_DEBUG', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED' ]
 
-	conf.env.append_value( 'CXXFLAGS', flags )
-	conf.env.append_value( 'LINKFLAGS', ldflags.strip().split( ' ' ) )
+	conf.env.append_value( 'CXXFLAGS', cxxflags )
+	conf.env.append_value( 'LINKFLAGS',ldflags  )
 
 	conf.msg( 'configuring for', conf.options.mode, 'BLUE' )
 
@@ -87,6 +92,11 @@ def configure( conf ):
 	conf.check_cxx( lib = "gc" )
 	conf.check_cxx( header_name = "gc/gc.h" )
 	conf.check_cxx( header_name = "gc/gc_cpp.h" )
+
+	print( "\n" )
+	conf.msg( 'final cxxflags:', ' '.join( cxxflags ), 'GREEN' )
+	conf.msg( 'final ldflags:', ' '.join( ldflags ), 'GREEN' )
+	print( "\n" )	
 
 # build
 def build( bld ):
