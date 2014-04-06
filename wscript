@@ -93,9 +93,15 @@ def configure( conf ):
 	conf.check_cxx( header_name = "vector" )
 	conf.check_cxx( header_name = "stack" )
 
-	conf.check_cxx( header_name = "llvm/IR/Value.h" )
+	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
+	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
+	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
-	conf.check_cxx( header_name = "llvm/IR/LLVMContext.h" )
+	conf.check_cxx( header_name = "llvm/PassManager.h" )
+	conf.check_cxx( header_name = "llvm/Assembly/PrintModulePass.h" )
+	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
+	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
+	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
 
 	conf.check_cxx( lib = "gc" )
 	conf.check_cxx( header_name = "gc/gc.h" )

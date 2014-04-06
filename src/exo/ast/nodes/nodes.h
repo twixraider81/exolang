@@ -28,7 +28,7 @@ namespace exo
 					Node() { };
 					virtual ~Node() { };
 
-					llvm::Value* Emit( exo::ast::Context& context );
+					virtual llvm::Value* Generate( exo::ast::Context& context );
 			};
 
 			class Expr : public Node

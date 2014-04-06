@@ -44,7 +44,7 @@ namespace exo
 					lexer->receive( &token );
 				}
 
-				this->finishParse();
+				finishParse();
 			}
 		}
 
@@ -84,14 +84,14 @@ namespace exo
 					};
 				}
 
-				this->finishParse();
+				finishParse();
 			}
 		}
 
 		void Tree::finishParse()
 		{
-			Parse( this->parser, 0, this->token, this );
-			ParseFree( this->parser, free );
+			Parse( parser, 0, token, this );
+			ParseFree( parser, free );
 		}
 	}
 }

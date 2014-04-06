@@ -29,6 +29,7 @@ int main( int argc, char **argv )
 	exo::ast::Tree* ast;
 	exo::ast::Context* context;
 	std::string	sourceFile;
+	llvm::ExecutionEngine* engine;
 
 	// inititalize garbage collector TODO: create initialization framework
 	GC_INIT();
@@ -46,7 +47,6 @@ int main( int argc, char **argv )
 
 	// build optionlist
 	GetOpt::GetOpt_pp ops( argc, argv );
-
 
 
 	// show help & exit
@@ -75,13 +75,20 @@ int main( int argc, char **argv )
 			ast = new exo::ast::Tree( std::cin );
 		}
 
-		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
-		context->generateFromTree( ast );
+		llvm::InitializeNativeTarget();
 
-#ifdef EXO_TRACE
-		TRACE( "Generated LLVM IR:" );
-		context->module->dump();
-#endif
+		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
+		context->Generate( ast->stmts );
+
+
+		std::string errorMsg;
+		engine = llvm::EngineBuilder( context->module ).setErrorStr( &errorMsg ).create();
+
+		if( !engine ) {
+			ERRORRET( errorMsg, -1 );
+		}
+
+		delete engine;
 	} catch( std::exception& e ) {
 		ERRORRET( e.what(), -1 );
 	}

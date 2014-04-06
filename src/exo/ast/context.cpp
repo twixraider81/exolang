@@ -36,12 +36,41 @@ namespace exo
 			module = new llvm::Module( name, *context );
 		}
 
-		void Context::generateFromTree( Tree* tree )
+		void Context::pushBlock( llvm::BasicBlock *block)
+		{
+			blocks.push( new Block() );
+			blocks.top()->block = block;
+		}
+
+		void Context::popBlock()
+		{
+			Block *top = blocks.top();
+			blocks.pop();
+			delete top;
+		}
+
+		void Context::Generate( exo::ast::nodes::StmtList* stmts )
 		{
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
-			this->entry = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", this->module);
+			entry = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", module);
 
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", this->entry, 0 );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", entry, 0 );
+			pushBlock( block );
+			stmts->Generate( *this );
+			llvm::ReturnInst::Create( *context, block);
+			popBlock();
+
+#ifdef EXO_TRACE
+			TRACE( "Generated LLVM IR:" );
+			llvm::PassManager manager;
+			manager.add( llvm::createPrintModulePass( &llvm::outs() ) );
+			manager.run( *module );
+#endif
+		}
+
+		void Context::Execute()
+		{
+
 		}
 	}
 }

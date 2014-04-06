@@ -25,9 +25,9 @@ namespace exo
 			/*
 			 * TODO: must be overriden
 			 */
-			llvm::Value* Node::Emit( exo::ast::Context& context )
+			llvm::Value* Node::Generate( exo::ast::Context& context )
 			{
-				TRACESECTION( "AST", "emitting node" );
+				TRACESECTION( "AST", "generating LLVM IR" );
 				llvm::Value* value = NULL;
 				return( value );
 			}

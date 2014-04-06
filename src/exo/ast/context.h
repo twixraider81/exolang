@@ -22,6 +22,11 @@ namespace exo
 	{
 		class Tree;
 
+		namespace nodes
+		{
+			class StmtList;
+		}
+
 		class Context : public gc
 		{
 			public:
@@ -32,7 +37,12 @@ namespace exo
 			    llvm::LLVMContext* context;
 
 			    Context( std::string cname, llvm::LLVMContext* c );
-			    void generateFromTree( Tree* tree );
+
+			    void pushBlock( llvm::BasicBlock* block);
+			    void popBlock();
+
+			    void Generate( exo::ast::nodes::StmtList* stmts );
+			    void Execute();
 		};
 	}
 }

@@ -16,8 +16,18 @@
 #ifndef LLVM_H_
 #define LLVM_H_
 
-#include <llvm/IR/Value.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/JIT.h>
+
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
-#include <llvm/IR/LLVMContext.h>
+
+#include <llvm/PassManager.h>
+#include <llvm/Assembly/PrintModulePass.h>
+#include <llvm/Support/raw_ostream.h>
+
+#include <llvm/Support/TargetRegistry.h>
+#include <llvm/Support/TargetSelect.h>
 
 #endif /* LLVM_H_ */
