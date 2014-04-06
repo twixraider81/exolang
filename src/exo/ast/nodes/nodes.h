@@ -41,15 +41,15 @@ namespace exo
 					llvm::Value* Emit( exo::ast::Context& context );
 			};
 
-			class Expr : public Node, gc
+			class Expr : public Node
 			{
 			};
 
-			class Stmt : public Node, gc
+			class Stmt : public Node
 			{
 			};
 
-			class StmtList : public Expr, gc
+			class StmtList : public Expr
 			{
 				public:
 					std::vector<Stmt*> list;
@@ -57,7 +57,7 @@ namespace exo
 					StmtList();
 			};
 
-			class StmtExpr : public Stmt, gc
+			class StmtExpr : public Stmt
 			{
 				public:
 					Expr* expression;
@@ -65,7 +65,7 @@ namespace exo
 					StmtExpr( Expr* expr );
 			};
 
-			class ValAny : public Expr, gc
+			class ValAny : public Expr
 			{
 				public:
 					void* value;
@@ -77,7 +77,7 @@ namespace exo
 			/*
 			 * TODO: use GMP
 			 */
-			class ValInt : public ValAny, gc
+			class ValInt : public ValAny
 			{
 				public:
 					long long value;
@@ -86,7 +86,7 @@ namespace exo
 					ValInt( std::string lVal );
 			};
 
-			class ValFloat : public ValAny, gc
+			class ValFloat : public ValAny
 			{
 				public:
 					double value;
@@ -95,7 +95,7 @@ namespace exo
 					ValFloat( std::string lVal );
 			};
 
-			class ValString : public ValAny, gc
+			class ValString : public ValAny
 			{
 				public:
 					std::string value;
@@ -103,7 +103,7 @@ namespace exo
 					ValString( std::string sVal );
 			};
 
-			class Type : public Node, gc
+			class Type : public Node
 			{
 				public:
 					exo::types::typeId id;
@@ -114,7 +114,7 @@ namespace exo
 					Type( exo::types::typeId tId, std::string tName );
 			};
 
-			class VarDecl : public Stmt, gc
+			class VarDecl : public Stmt
 			{
 				public:
 					std::string name;
@@ -125,7 +125,7 @@ namespace exo
 					VarDecl( std::string vName, Type* vType );
 			};
 
-			class VarAssign : public Expr, gc
+			class VarAssign : public Expr
 			{
 				public:
 					std::string name;
@@ -134,7 +134,7 @@ namespace exo
 					VarAssign( std::string vName, Expr* expr );
 			};
 
-			class VarDeclList : public Stmt, gc
+			class VarDeclList : public Stmt
 			{
 				public:
 					std::vector<VarDecl*> list;
@@ -143,7 +143,7 @@ namespace exo
 			};
 
 
-			class ExprList : public Expr, gc
+			class ExprList : public Expr
 			{
 				public:
 					std::vector<Expr*> list;
@@ -151,7 +151,7 @@ namespace exo
 					ExprList();
 			};
 
-			class FunDecl : public Stmt, gc
+			class FunDecl : public Stmt
 			{
 				public:
 					Type* type;
@@ -162,7 +162,7 @@ namespace exo
 					FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
 			};
 
-			class FunCall : public Expr, gc
+			class FunCall : public Expr
 			{
 				public:
 					std::string name;
@@ -171,7 +171,7 @@ namespace exo
 					FunCall( std::string n, ExprList* a );
 			};
 
-			class CompOp : public Expr, gc
+			class CompOp : public Expr
 			{
 				public:
 					Expr* lhs;
@@ -181,7 +181,7 @@ namespace exo
 					CompOp( Expr* a, std::string o, Expr* b );
 			};
 
-			class ConstExpr : public Expr, gc
+			class ConstExpr : public Expr
 			{
 				public:
 					std::string name;
