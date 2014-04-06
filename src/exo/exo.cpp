@@ -41,7 +41,7 @@ int main( int argc, char **argv )
 
 	// register signal handler
 	// FIXME: figure out why libgc sends a SIGSEGV on terminate
-	//exo::signals::registerHandler();
+	exo::signals::registerHandler();
 
 	// build optionlist
 	GetOpt::GetOpt_pp ops( argc, argv );

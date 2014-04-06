@@ -52,6 +52,7 @@ namespace exo
 		 */
 		void registerHandler()
 		{
+			/*
 			struct sigaction sa;
 
 			memset( &sa, 0, sizeof(sigaction) );
@@ -62,6 +63,7 @@ namespace exo
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
 				ERRORMSG( "failed to register segementation fault handler" );
 			}
+			*/
 		}
 	}
 }
