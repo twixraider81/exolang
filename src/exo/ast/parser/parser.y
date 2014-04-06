@@ -59,12 +59,13 @@ statements(a) ::= statement(b). {
 	a->list.push_back( b );
 	TRACESECTION( "PARSER", "pushing statement; size:" << a->list.size());
 }
-statements ::= statements(a) statement(b). {
+statements(s) ::= statements(a) statement(b). {
 	TRACESECTION( "PARSER", "statements ::= statements(a) statement(b).");
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	a->list.push_back( b );
 	TRACESECTION( "PARSER",  "pushing statement; size:" << a->list.size() );
+	s = a;
 }
 
 
