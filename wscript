@@ -41,9 +41,14 @@ def configure( conf ):
 	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--cppflags'], stdout = subprocess.PIPE )
 	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
 	conf.msg( 'llvm-config cxxflags:', cxxflags, 'CYAN' )	
-	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--ldflags', '--libs'], stdout = subprocess.PIPE )
+
+	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--ldflags'], stdout = subprocess.PIPE )
 	ldflags = process.communicate()[0].strip().replace( "\n", '' )
-	conf.msg( 'llvm-config ldconfig:', ldflags, 'CYAN' )
+	conf.msg( 'llvm-config ldflags:', ldflags, 'CYAN' )
+
+	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--libs'], stdout = subprocess.PIPE )
+	llvmlibs = ''.join(process.communicate()[0].strip().replace( "\n", '' ).replace( "-l", '' ))
+	conf.env.append_value( 'LLVMLIBS', llvmlibs )
 	print( "\n" )
 
 
@@ -86,8 +91,11 @@ def configure( conf ):
 	conf.check_cxx( header_name = "execinfo.h" )
 	conf.check_cxx( header_name = "unistd.h" )
 	conf.check_cxx( header_name = "vector" )
+	conf.check_cxx( header_name = "stack" )
 
 	conf.check_cxx( header_name = "llvm/IR/Value.h" )
+	conf.check_cxx( header_name = "llvm/IR/Module.h" )
+	conf.check_cxx( header_name = "llvm/IR/LLVMContext.h" )
 
 	conf.check_cxx( lib = "gc" )
 	conf.check_cxx( header_name = "gc/gc.h" )
@@ -104,7 +112,9 @@ def build( bld ):
 	bld.stlib( target = 'getopt_pp', features = 'cxx', source = getoptpp )
 
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	bld.program( target = 'exolang', features = 'cxx', source = exo, use = 'getopt_pp', includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = [ 'gc' ] )
+	libs = [ 'gc' ]
+	libs += bld.env.LLVMLIBS[0].split( ' ' )
+	bld.program( target = 'exolang', features = 'cxx', source = exo, use = 'getopt_pp', includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
 # todo target
 def todo( ctx ):
