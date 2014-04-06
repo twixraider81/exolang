@@ -16,13 +16,23 @@
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
+#include "exo/exo.h"
+#include "exo/ast/ast.h"
+
 namespace exo
 {
 	namespace ast
 	{
-		class Context
+		class Context : public gc
 		{
+			public:
+				std::string name;
+				std::stack<Block*> blocks;
+				llvm::Function* entry;
+			    llvm::Module* module;
+			    llvm::LLVMContext* context;
 
+			    Context( std::string cname, llvm::LLVMContext* c );
 		};
 	}
 }

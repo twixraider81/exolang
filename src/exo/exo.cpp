@@ -27,6 +27,7 @@
 int main( int argc, char **argv )
 {
 	exo::ast::Tree* tree;
+	exo::ast::Context* context;
 	std::string	sourceFile;
 
 	// inititalize garbage collector TODO: create initialization framework
@@ -74,6 +75,11 @@ int main( int argc, char **argv )
 			tree = new exo::ast::Tree( std::cin );
 		}
 
+		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
+
+#ifdef EXO_TRACE
+		context->module->dump();
+#endif
 	} catch( std::exception& e ) {
 		ERRORRET( e.what(), -1 );
 	}
