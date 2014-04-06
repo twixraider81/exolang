@@ -40,9 +40,7 @@ namespace exo
 				Tree( std::string fName );
 				Tree( std::istream& stream );
 
-				virtual ~Tree() { };
-
-				void finishParse();
+				virtual ~Tree();
 		};
 	}
 }

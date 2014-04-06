@@ -44,7 +44,7 @@ namespace exo
 					lexer->receive( &token );
 				}
 
-				finishParse();
+				Parse( parser, 0, token, this );
 			}
 		}
 
@@ -84,14 +84,25 @@ namespace exo
 					};
 				}
 
-				finishParse();
+				Parse( parser, 0, token, this );
 			}
 		}
 
-		void Tree::finishParse()
+		Tree::~Tree()
 		{
-			Parse( parser, 0, token, this );
-			ParseFree( parser, free );
+			// free non gc'ed stuff
+			if( parser ) {
+				ParseFree( parser, free );
+			}
+
+			if( token ) {
+				// FIXME: gets freed somewhere
+				//delete token;
+			}
+
+			if( lexer ) {
+				delete lexer;
+			}
 		}
 	}
 }

@@ -36,6 +36,22 @@ namespace exo
 				type = vType;
 				expression = expr;
 			}
+
+			llvm::Value* VarDecl::Generate( exo::ast::Context* context )
+			{
+				TRACESECTION( "IR", "creating variable:" << name );
+
+				// allocate memory and push variable onto the local stack
+				llvm::AllocaInst* memory = new llvm::AllocaInst( type->getLLVMType( context->context ), name.c_str(), context->getCurrentBlock() );
+				context->localVariables()[ name ] = memory;
+
+				if( expression ) {
+					VarAssign* a = new VarAssign( name, expression );
+					a->Generate( context );
+				}
+
+				return( memory );
+			}
 		}
 	}
 }

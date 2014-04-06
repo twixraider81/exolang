@@ -28,6 +28,18 @@ namespace exo
 				name = vName;
 				expression = expr;
 			}
+
+			llvm::Value* VarAssign::Generate( exo::ast::Context* context )
+			{
+				TRACESECTION( "IR", "assigning variable:" << name );
+
+				if( context->localVariables().find( name ) != context->localVariables().end() ) {
+					throw std::runtime_error( "undeclared variable" );
+				}
+
+				llvm::StoreInst* store = new llvm::StoreInst( expression->Generate( context ), context->localVariables()[name], false, context->getCurrentBlock() );
+				return( store );
+			}
 		}
 	}
 }

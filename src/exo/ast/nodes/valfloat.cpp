@@ -33,6 +33,12 @@ namespace exo
 				value = atof( dVal.c_str() );
 				TRACESECTION( "AST", "creating float value:" << value );
 			}
+
+			llvm::Value* ValFloat::Generate( exo::ast::Context* context )
+			{
+				TRACESECTION( "IR", "generating float:" << value );
+				return( llvm::ConstantFP::get( llvm::Type::getDoubleTy( *(context->context) ), value ) );
+			}
 		}
 	}
 }

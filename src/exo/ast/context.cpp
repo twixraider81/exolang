@@ -36,7 +36,17 @@ namespace exo
 			module = new llvm::Module( name, *context );
 		}
 
-		void Context::pushBlock( llvm::BasicBlock *block)
+		Context::~Context()
+		{
+			/*
+			 * FIXME: gets freed
+			 */
+			if( module ) {
+				//delete module;
+			}
+		}
+
+		void Context::pushBlock( llvm::BasicBlock* block)
 		{
 			blocks.push( new Block() );
 			blocks.top()->block = block;
@@ -49,6 +59,16 @@ namespace exo
 			delete top;
 		}
 
+		llvm::BasicBlock* Context::getCurrentBlock()
+		{
+			 return( blocks.top()->block );
+		}
+
+		std::map<std::string, llvm::Value*>& Context::localVariables()
+		{
+			return( blocks.top()->localVariables );
+		}
+
 		void Context::Generate( exo::ast::nodes::StmtList* stmts )
 		{
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
@@ -56,7 +76,7 @@ namespace exo
 
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", entry, 0 );
 			pushBlock( block );
-			stmts->Generate( *this );
+			stmts->Generate( this );
 			llvm::ReturnInst::Create( *context, block);
 			popBlock();
 

@@ -37,9 +37,12 @@ namespace exo
 			    llvm::LLVMContext* context;
 
 			    Context( std::string cname, llvm::LLVMContext* c );
+			    virtual ~Context();
 
 			    void pushBlock( llvm::BasicBlock* block);
 			    void popBlock();
+			    llvm::BasicBlock* getCurrentBlock();
+			    std::map<std::string, llvm::Value*>& localVariables();
 
 			    void Generate( exo::ast::nodes::StmtList* stmts );
 			    void Execute();

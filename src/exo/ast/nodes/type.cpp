@@ -41,6 +41,20 @@ namespace exo
 				id = tId;
 				name = tName;
 			}
+
+			llvm::Type* Type::getLLVMType( llvm::LLVMContext* context )
+			{
+				switch( id ) {
+					case exo::types::INTEGER:
+						return( llvm::Type::getInt64Ty( *context ) );
+
+					case exo::types::FLOAT:
+						return( llvm::Type::getDoubleTy( *context ) );
+
+					default:
+						return( llvm::Type::getVoidTy( *context ) );
+				}
+			}
 		}
 	}
 }

@@ -16,6 +16,9 @@
 #ifndef NODES_H_
 #define NODES_H_
 
+/*
+ * TODO: user boost templates instead of std::vector
+ */
 namespace exo
 {
 	namespace ast
@@ -28,7 +31,7 @@ namespace exo
 					Node() { };
 					virtual ~Node() { };
 
-					virtual llvm::Value* Generate( exo::ast::Context& context );
+					virtual llvm::Value* Generate( exo::ast::Context* context );
 			};
 
 			class Expr : public Node
@@ -45,6 +48,8 @@ namespace exo
 					std::vector<Stmt*> list;
 
 					StmtList();
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
 			};
 
 			class StmtExpr : public Stmt
@@ -74,6 +79,8 @@ namespace exo
 
 					ValInt( long long lVal );
 					ValInt( std::string lVal );
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
 			};
 
 			class ValFloat : public ValAny
@@ -83,6 +90,8 @@ namespace exo
 
 					ValFloat( double dVal );
 					ValFloat( std::string lVal );
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
 			};
 
 			class ValString : public ValAny
@@ -102,6 +111,8 @@ namespace exo
 					Type( exo::types::typeId tId );
 					Type( std::string tName );
 					Type( exo::types::typeId tId, std::string tName );
+
+					llvm::Type* getLLVMType( llvm::LLVMContext* context );
 			};
 
 			class VarDecl : public Stmt
@@ -113,6 +124,8 @@ namespace exo
 
 					VarDecl( std::string vName, Type* vType, Expr* expr );
 					VarDecl( std::string vName, Type* vType );
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
 			};
 
 			class VarAssign : public Expr
@@ -122,6 +135,8 @@ namespace exo
 					Expr* expression;
 
 					VarAssign( std::string vName, Expr* expr );
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
 			};
 
 			class VarDeclList : public Stmt

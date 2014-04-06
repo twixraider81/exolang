@@ -33,6 +33,12 @@ namespace exo
 				value = atoi( lVal.c_str() );
 				TRACESECTION( "AST", "creating integer value:" << value );
 			}
+
+			llvm::Value* ValInt::Generate( exo::ast::Context* context )
+			{
+				TRACESECTION( "IR", "generating int:" << value );
+				return( llvm::ConstantInt::get( llvm::Type::getInt64Ty( *(context->context) ), value, true) );
+			}
 		}
 	}
 }

@@ -23,6 +23,11 @@
 
 /*
  * Main/CLI Invocation, see -h
+ * TODO: 1. do a bit of documentation now
+ * TODO: 2. implement boost based exceptions
+ * TODO: 3. use boost unit tests!
+ * TODO: 4. implement type system
+ * TODO: 5. check new / delete statements, mainly llvm:: generated instances
  */
 int main( int argc, char **argv )
 {
@@ -80,6 +85,7 @@ int main( int argc, char **argv )
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
 		context->Generate( ast->stmts );
 
+		delete ast;
 
 		std::string errorMsg;
 		engine = llvm::EngineBuilder( context->module ).setErrorStr( &errorMsg ).create();
@@ -89,13 +95,12 @@ int main( int argc, char **argv )
 		}
 
 		delete engine;
+		delete context;
 	} catch( std::exception& e ) {
 		ERRORRET( e.what(), -1 );
 	}
 
-#ifdef EXO_TRACE
 	GC_gcollect();
-#endif
 
 	return( 0 );
 }

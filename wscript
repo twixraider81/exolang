@@ -60,7 +60,7 @@ def configure( conf ):
 		'-DEXO_VERSION="'+VERSION+'"',
 		'-DQUEX_OPTION_LINE_NUMBER_COUNTING',
 		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING',
-		'-std=c++11',
+		'-std=c++11'
 	]
 	cxxflags += exoflags
 
