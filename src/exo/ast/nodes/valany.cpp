@@ -14,7 +14,7 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/nodes/nodes.h"
+#include "exo/ast/ast.h"
 
 namespace exo
 {

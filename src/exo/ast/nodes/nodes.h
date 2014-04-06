@@ -23,6 +23,7 @@
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Value.h>
 
+#include "exo/ast/block.h"
 #include "exo/ast/context.h"
 #include "exo/types/types.h"
 
