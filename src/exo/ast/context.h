@@ -16,13 +16,12 @@
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
-#include "exo/exo.h"
-#include "exo/ast/ast.h"
-
 namespace exo
 {
 	namespace ast
 	{
+		class Tree;
+
 		class Context : public gc
 		{
 			public:
@@ -33,6 +32,7 @@ namespace exo
 			    llvm::LLVMContext* context;
 
 			    Context( std::string cname, llvm::LLVMContext* c );
+			    void generateFromTree( Tree* tree );
 		};
 	}
 }

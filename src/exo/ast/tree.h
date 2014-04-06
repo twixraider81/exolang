@@ -16,13 +16,17 @@
 #ifndef TREE_H_
 #define TREE_H_
 
-#include "exo/exo.h"
-#include "exo/ast/nodes/nodes.h"
+#include "exo/ast/lexer/lexer"
 
 namespace exo
 {
 	namespace ast
 	{
+		namespace nodes
+		{
+			class StmtList;
+		}
+
 		class Tree : public gc
 		{
 			public:
@@ -31,7 +35,7 @@ namespace exo
 				void*		 parser;
 				std::string	fileName;
 
-				exo::ast::nodes::StmtList* stmts;
+				nodes::StmtList* stmts;
 
 				Tree( std::string fName );
 				Tree( std::istream& stream );

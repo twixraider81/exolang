@@ -14,7 +14,16 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+
+#include "exo/types/types.h"
+#include "exo/ast/llvm.h"
+
+#include "exo/ast/lexer/lexer"
+#include "exo/ast/parser/parser.h"
+
+#include "exo/ast/block.h"
+#include "exo/ast/context.h"
+#include "exo/ast/nodes/nodes.h"
 
 namespace exo
 {
@@ -25,6 +34,14 @@ namespace exo
 			name = cname;
 			context = c;
 			module = new llvm::Module( name, *context );
+		}
+
+		void Context::generateFromTree( Tree* tree )
+		{
+			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
+			this->entry = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", this->module);
+
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", this->entry, 0 );
 		}
 	}
 }

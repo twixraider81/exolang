@@ -13,19 +13,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NODE_H_
-#define NODE_H_
-
-#include <llvm/Analysis/Verifier.h>
-#include <llvm/IR/DerivedTypes.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Value.h>
-
-#include "exo/ast/block.h"
-#include "exo/ast/context.h"
-#include "exo/types/types.h"
+#ifndef NODES_H_
+#define NODES_H_
 
 namespace exo
 {
@@ -194,4 +183,4 @@ namespace exo
 	}
 }
 
-#endif /* NODE_H_ */
+#endif /* NODES_H_ */

@@ -16,9 +16,6 @@
 #ifndef BLOCK_H_
 #define BLOCK_H_
 
-#include "exo/exo.h"
-#include "exo/ast/ast.h"
-
 namespace exo
 {
 	namespace ast

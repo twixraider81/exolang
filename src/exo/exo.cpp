@@ -26,7 +26,7 @@
  */
 int main( int argc, char **argv )
 {
-	exo::ast::Tree* tree;
+	exo::ast::Tree* ast;
 	exo::ast::Context* context;
 	std::string	sourceFile;
 
@@ -70,14 +70,16 @@ int main( int argc, char **argv )
 	try {
 		// we build the ast from a file given via -i / --input or stdin
 		if( (ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
-			tree = new exo::ast::Tree( sourceFile );
+			ast = new exo::ast::Tree( sourceFile );
 		} else {
-			tree = new exo::ast::Tree( std::cin );
+			ast = new exo::ast::Tree( std::cin );
 		}
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
+		context->generateFromTree( ast );
 
 #ifdef EXO_TRACE
+		TRACE( "Generated LLVM IR:" );
 		context->module->dump();
 #endif
 	} catch( std::exception& e ) {

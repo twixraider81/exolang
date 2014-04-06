@@ -12,28 +12,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef AST_H_
 #define AST_H_
 
-#include <llvm/IR/Value.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/LLVMContext.h>
+#include "exo/exo.h"
+#include "exo/ast/llvm.h"
 
-#include <cstring>
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <map>
-#include <vector>
-#include <stack>
-
-#include "exo/ast/lexer/lexer"
-#include "exo/ast/parser/parser.h"
+#include "exo/types/types.h"
 
 #include "exo/ast/block.h"
-#include "exo/ast/nodes/nodes.h"
-#include "exo/ast/context.h"
 #include "exo/ast/tree.h"
+#include "exo/ast/context.h"
+#include "exo/ast/nodes/nodes.h"
 
 /* we need a safe string from our tokens */
 #define TOKENSTR(s) std::string( reinterpret_cast<const char*>( s->get_text().c_str() ) )

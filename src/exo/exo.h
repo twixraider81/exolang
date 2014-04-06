@@ -33,11 +33,14 @@
 #include <cstdint>
 #include <string>
 #include <cstring>
+#include <cctype>
 #include <cassert>
 #include <cstdlib>
 #include <exception>
 #include <stdexcept>
+#include <map>
 #include <vector>
+#include <stack>
 
 #include "exo/errors/error.h"
 

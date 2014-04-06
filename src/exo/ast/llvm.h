@@ -13,34 +13,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/exo.h"
-#include "exo/ast/ast.h"
+#ifndef LLVM_H_
+#define LLVM_H_
 
-namespace exo
-{
-	namespace ast
-	{
-		namespace nodes
-		{
-			Type::Type( exo::types::typeId tId )
-			{
-				TRACESECTION( "AST","creating type with typeId:" << tId );
-				id = tId;
-			}
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/LLVMContext.h>
 
-			Type::Type( std::string tName )
-			{
-				TRACESECTION( "AST","creating user defined type of name:" << tName );
-				id = exo::types::USER;
-				name = tName;
-			}
-
-			Type::Type( exo::types::typeId tId, std::string tName )
-			{
-				TRACESECTION( "AST","creating type of name:" << tName << ", with typeId:" << tId  );
-				id = tId;
-				name = tName;
-			}
-		}
-	}
-}
+#endif /* LLVM_H_ */
