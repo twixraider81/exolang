@@ -15,6 +15,7 @@
 
 header {
 	#include "exo/exo.h"
+	#include "exo/ast/ast.h"
 }
 
 start = EXO;
