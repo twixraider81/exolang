@@ -30,17 +30,18 @@ SRCDIR = 'src/'
 def options( opt ):
 	opt.load( 'compiler_cxx compiler_c python' )
 	opt.add_option( '--mode', action = 'store', default = 'release', help = 'the mode to compile in (release,debug,trace)' )
+	opt.add_option( '--llvm', action = 'store', default = 'llvm-config', help = 'path to llvm-config' )
 
 # configure
 def configure( conf ):
 	conf.load( 'compiler_cxx compiler_c' )
-	conf.find_program( 'llvm-config', var = 'LLVMCONFIG', mandatory = True )
+	conf.find_program( conf.options.llvm, var = 'LLVMCONFIG', mandatory = True )
+
 
 	# read llvm-config
-	print( "\n" )
 	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--cppflags'], stdout = subprocess.PIPE )
 	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
-	conf.msg( 'llvm-config cxxflags:', cxxflags, 'CYAN' )	
+	conf.msg( 'llvm-config cppflags:', cxxflags, 'CYAN' )	
 
 	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--ldflags'], stdout = subprocess.PIPE )
 	ldflags = process.communicate()[0].strip().replace( "\n", '' )
@@ -49,7 +50,6 @@ def configure( conf ):
 	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--libs'], stdout = subprocess.PIPE )
 	llvmlibs = ''.join(process.communicate()[0].strip().replace( "\n", '' ).replace( "-l", '' ))
 	conf.env.append_value( 'LLVMLIBS', llvmlibs )
-	print( "\n" )
 
 
 	# construct compiler/linker flags
@@ -74,8 +74,11 @@ def configure( conf ):
 	conf.env.append_value( 'CXXFLAGS', cxxflags )
 	conf.env.append_value( 'LINKFLAGS',ldflags  )
 
+
+
 	conf.msg( 'configuring for', conf.options.mode, 'BLUE' )
 
+	# header checks
 	conf.check_cxx( header_name = "fstream" )
 	conf.check_cxx( header_name = "iostream" )
 	conf.check_cxx( header_name = "cstdio" )
@@ -95,6 +98,7 @@ def configure( conf ):
 
 	conf.check_cxx( header_name = "boost/shared_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
+	conf.check_cxx( header_name = "boost/program_options.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
@@ -105,26 +109,25 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
-	conf.check_cxx( header_name = "llvm/LinkAllPasses.h" )
 
-	conf.check_cxx( lib = "gc" )
 	conf.check_cxx( header_name = "gc/gc.h" )
 	conf.check_cxx( header_name = "gc/gc_cpp.h" )
 
-	print( "\n" )
-	conf.msg( 'final cxxflags:', ' '.join( cxxflags ), 'GREEN' )
-	conf.msg( 'final ldflags:', ' '.join( ldflags ), 'GREEN' )
-	print( "\n" )	
+	# lib checks
+	conf.check_cxx( lib = "gc" )
+	conf.check_cxx( lib = "boost_program_options" )
+	conf.check_cxx( lib = "pthread" )
+	conf.check_cxx( lib = "ffi" )
+	conf.check_cxx( lib = "curses" )
+	conf.check_cxx( lib = "dl" )
+	conf.check_cxx( lib = "m" )
 
 # build
 def build( bld ):
-	getoptpp = bld.path.ant_glob( SRCDIR + 'getoptpp/**/*.cpp' )
-	bld.stlib( target = 'getopt_pp', features = 'cxx', source = getoptpp )
-
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	libs = [ 'gc' ]
+	libs = [ 'gc', 'boost_program_options', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
-	bld.program( target = 'exolang', features = 'cxx', source = exo, use = 'getopt_pp', includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
+	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
 # todo target
 def todo( ctx ):
