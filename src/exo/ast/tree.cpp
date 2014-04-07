@@ -26,9 +26,8 @@ namespace exo
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
 			parser = ParseAlloc( GC_malloc );
-			boost::shared_ptr<quex::Token> token( new quex::Token );
 			quex::lexer lexer( fileName );
-			quex::Token* ptoken = token.get();
+			quex::Token* token = new quex::Token;
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -36,16 +35,16 @@ namespace exo
 #endif
 
 			if( parser != NULL ) {
-				lexer.receive( &ptoken );
+				lexer.receive( &token );
 
 				while( token->type_id() != QUEX_TKN_TERMINATION ) {
-					TRACESECTION( "LEXER", "received <" << ptoken->type_id_name() << "> in " << fileName << " on " << ptoken->line_number() << ":" << ptoken->column_number() );
+					TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
 
-					Parse( parser, ptoken->type_id(), ptoken, this );
-					lexer.receive( &ptoken );
+					Parse( parser, token->type_id(), token, this );
+					lexer.receive( &token );
 				}
 
-				Parse( parser, 0, ptoken, this );
+				Parse( parser, 0, token, this );
 				ParseFree( parser, GC_free );
 			}
 		}
@@ -56,10 +55,8 @@ namespace exo
 			TRACESECTION( "AST", "opening <stdin>" );
 
 			parser = ParseAlloc( GC_malloc );
-
-			boost::shared_ptr<quex::Token> token( new quex::Token );
 			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
-			quex::Token* ptoken = token.get();
+			quex::Token* token = new quex::Token;
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -78,17 +75,17 @@ namespace exo
 
 					lexer.buffer_fill_region_finish( stream.gcount() - 1 );
 
-					lexer.receive( &ptoken );
+					lexer.receive( &token );
 
-					while( ptoken->type_id() != QUEX_TKN_TERMINATION ) {
-						TRACESECTION( "LEXER", "received <" << ptoken->type_id_name() << "> on " << ptoken->line_number() << ":" << ptoken->column_number() );
+					while( token->type_id() != QUEX_TKN_TERMINATION ) {
+						TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> on " << token->line_number() << ":" << token->column_number() );
 
-						Parse( parser, ptoken->type_id(), ptoken, this );
-						lexer.receive( &ptoken );
+						Parse( parser, token->type_id(), token, this );
+						lexer.receive( &token );
 					};
 				}
 
-				Parse( parser, 0, ptoken, this );
+				Parse( parser, 0, token, this );
 				ParseFree( parser, GC_free );
 			}
 		}
