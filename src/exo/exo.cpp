@@ -18,8 +18,7 @@
 #include "exo/ast/ast.h"
 #include "exo/signals/signals.h"
 
-// include external stuff
-#include <getoptpp/getoptpp/getopt_pp.h>
+#include <boost/program_options.hpp>
 
 /*
  * Main/CLI Invocation, see -h
@@ -33,7 +32,6 @@ int main( int argc, char **argv )
 	exo::ast::Tree* ast;
 	exo::ast::Context* context;
 	exo::ast::ir::IR* ir;
-	std::string	sourceFile;
 
 	// inititalize garbage collector TODO: create initialization framework
 	GC_INIT();
@@ -49,20 +47,32 @@ int main( int argc, char **argv )
 	// FIXME: figure out why libgc sends a SIGSEGV on terminate
 	exo::signals::registerHandler();
 
+
+
 	// build optionlist
-	GetOpt::GetOpt_pp ops( argc, argv );
+	boost::program_options::options_description availOptions( "Options" );
+	availOptions.add_options()
+		( "help,h",		"show usage/help" )
+		( "version,v",	"show version" )
+		( "input,i",	boost::program_options::value< std::string >(),	"parse file" )
+    ;
+
+	boost::program_options::positional_options_description positionalOptions;
+	positionalOptions.add( "input", -1 );
+
+	boost::program_options::variables_map commandLine;
+	boost::program_options::store( boost::program_options::command_line_parser( argc, argv ).options( availOptions ).positional( positionalOptions ).run(), commandLine );
+	boost::program_options::notify( commandLine );
 
 
 	// show help & exit
-	if (ops >> GetOpt::OptionPresent( 'h', "help" )) {
-		std::cout << "--help, -h\t\t\t\tshow usage/help" << std::endl;
-		std::cout << "--input=<file>, -i <file>\t\tparse file" << std::endl;
-		std::cout << "--version, -v\t\t\tshow version" << std::endl;
+	if( commandLine.count( "help" ) ) {
+		std::cout << availOptions;
 		return( 0 );
 	}
 
 	// show version & exit
-	if (ops >> GetOpt::OptionPresent( 'v', "help" )) {
+	if( commandLine.count( "version" ) ) {
 		std::cout << "version " << EXO_VERSION << std::endl;
 
 		unsigned gcVersion = GC_get_version();
@@ -73,13 +83,13 @@ int main( int argc, char **argv )
 
 	try {
 		// we build the ast from a file given via -i / --input or stdin
-		if( (ops >> GetOpt::Option( 'i', "input", sourceFile)) ) {
-			ast = new exo::ast::Tree( sourceFile );
+		if( commandLine.count( "input" ) ) {
+			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
 		} else {
 			ast = new exo::ast::Tree( std::cin );
 		}
 
-		llvm::InitializeNativeTarget();
+
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
 		context->generateIR( ast->stmts );

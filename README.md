@@ -23,7 +23,7 @@ build/exolang -h					(to show help)
 Prerequisites
 -------------
 On Debian simply do:
-apt-get install libgc-dev llvm llvm-dev llvm-runtime libc++-dev libboost1.49-dev
+apt-get install libgc-dev llvm-3.5 libc++-dev libboost1.53-all-dev
 
 
 Thanks & 3rd Party licenses
@@ -31,5 +31,4 @@ Thanks & 3rd Party licenses
 Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>
 Quex lexer generator	- <http://quex.sourceforge.net/>
 Boehm GC				- <https://github.com/ivmai/bdwgc>
-Getopt_pp				- <http://code.google.com/p/getoptpp/>
 Loren Segal				- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>
