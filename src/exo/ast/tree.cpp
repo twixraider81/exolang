@@ -27,7 +27,7 @@ namespace exo
 
 			token = new quex::Token;
 			lexer = new quex::lexer( fileName );
-			parser = ParseAlloc( malloc );
+			parser = ParseAlloc( GC_malloc );
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -45,6 +45,7 @@ namespace exo
 				}
 
 				Parse( parser, 0, token, this );
+				ParseFree( parser, GC_free );
 			}
 		}
 
@@ -55,7 +56,7 @@ namespace exo
 
 			token = new quex::Token;
 			lexer = new quex::lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
-			parser = ParseAlloc( malloc );
+			parser = ParseAlloc( GC_malloc );
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -85,16 +86,12 @@ namespace exo
 				}
 
 				Parse( parser, 0, token, this );
+				ParseFree( parser, GC_free );
 			}
 		}
 
 		Tree::~Tree()
 		{
-			// free non gc'ed stuff
-			if( parser ) {
-				ParseFree( parser, free );
-			}
-
 			if( token ) {
 				// FIXME: gets freed somewhere
 				//delete token;
