@@ -45,10 +45,8 @@ namespace exo
 				}
 
 #ifdef EXO_TRACE
-				TRACE( "LLVM IR:" );
-				llvm::PassManager pm;
-				pm.add( llvm::createPrintModulePass( &llvm::outs() ) );
-				pm.run( *context->module );
+				TRACE( "LLVM IR" );
+				context->module->dump();
 #endif
 			}
 
@@ -74,10 +72,8 @@ namespace exo
 				fpm->doInitialization();
 
 #ifdef EXO_TRACE
-				TRACE( "Optimized LLVM IR:" );
-				llvm::PassManager pm;
-				pm.add( llvm::createPrintModulePass( &llvm::outs() ) );
-				pm.run( *context->module );
+				TRACE( "Optimized LLVM IR" );
+				context->module->dump();
 #endif
 			}
 		}
