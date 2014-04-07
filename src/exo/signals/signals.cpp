@@ -47,7 +47,6 @@ namespace exo
 		/*
 		 * Register Signal handlers, currently only Segfault registered
 		 * TODO: check which other signals shoud be caught
-		 * FIXME: figure out why libgc sends a SIGSEGV on terminate
 		 */
 		void registerHandler()
 		{
