@@ -23,8 +23,15 @@
 # undef NDEBUG
 #endif
 
-#include <gc/gc.h>
-#include <gc/gc_cpp.h>
+#ifndef EXO_GC_DISABLE
+# include <gc/gc.h>
+# include <gc/gc_cpp.h>
+#else
+class gc {};
+# define GC_gcollect()
+# define GC_malloc malloc
+# define GC_free free
+#endif
 
 #include <fstream>
 #include <iostream>

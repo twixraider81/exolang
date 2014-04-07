@@ -11,7 +11,8 @@ Quickstart
 ./bootstrap.sh						(you will need to build lemon/quex to rebuild the lexer/parser for now)
 ./bootstrap.sh -l					(if you want to build llvm for /usr)
 
-./waf clean configure --mode=debug	(clean & configure for release/debug release, trace release prints alot of messages currently)
+./waf clean configure --mode=release	(clean & configure for release/debug release or trace release. that prints alot of messages)
+./waf clean configure --mode=trace --llvm=llvm-config-3.5 --gc=enable
 
 Take a look at ./waf help to specifiy other options for you system, like an llvm-config (./waf clean configure --llvm=llvm-config-3.5)
 

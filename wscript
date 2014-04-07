@@ -31,6 +31,7 @@ def options( opt ):
 	opt.load( 'compiler_cxx compiler_c python' )
 	opt.add_option( '--mode', action = 'store', default = 'release', help = 'the mode to compile in (release,debug,trace)' )
 	opt.add_option( '--llvm', action = 'store', default = 'llvm-config', help = 'path to llvm-config' )
+	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug it will make us leak!' )
 
 # configure
 def configure( conf ):
@@ -70,6 +71,12 @@ def configure( conf ):
 		cxxflags += [ '-O0', '-g', '-DEXO_DEBUG', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED' ]
 	elif conf.options.mode == 'trace':
 		cxxflags += [ '-O0', '-g', '-DEXO_DEBUG', '-DEXO_TRACE', '-DGC_DEBUG', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED' ]
+
+	if conf.options.gc == 'disable':
+		cxxflags += [ '-DEXO_GC_DISABLE' ]
+		conf.msg( 'garbage collector', 'disabled', 'RED' )
+	else:
+		conf.msg( 'garbage collector', 'enabled', 'GREEN' )
 
 	conf.env.append_value( 'CXXFLAGS', cxxflags )
 	conf.env.append_value( 'LINKFLAGS',ldflags  )
@@ -112,11 +119,12 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
 
-	conf.check_cxx( header_name = "gc/gc.h" )
-	conf.check_cxx( header_name = "gc/gc_cpp.h" )
+	if conf.options.gc != 'disable':
+		conf.check_cxx( header_name = "gc/gc.h" )
+		conf.check_cxx( header_name = "gc/gc_cpp.h" )
+		conf.check_cxx( lib = "gc" )
 
 	# lib checks
-	conf.check_cxx( lib = "gc" )
 	conf.check_cxx( lib = "boost_program_options" )
 	conf.check_cxx( lib = "pthread" )
 	conf.check_cxx( lib = "ffi" )

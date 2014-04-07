@@ -32,18 +32,20 @@ int main( int argc, char **argv )
 	exo::ast::Context* context;
 	exo::ast::ir::IR* ir;
 
+#ifndef EXO_GC_DISABLE
 	// inititalize garbage collector TODO: create initialization framework
 	GC_INIT();
 	GC_enable_incremental();
 
-	// initialize llvm
-	llvm::InitializeNativeTarget();
-
-#ifdef EXO_TRACE
+# ifdef EXO_TRACE
 	setenv( "GC_PRINT_STATS", "1", 1 );
 	setenv( "GC_DUMP_REGULARLY", "1", 1 );
 	setenv( "GC_FIND_LEAK", "1", 1 );
+# endif
 #endif
+
+	// initialize llvm
+	llvm::InitializeNativeTarget();
 
 	// register signal handler
 	exo::signals::registerHandler();
@@ -75,9 +77,12 @@ int main( int argc, char **argv )
 	if( commandLine.count( "version" ) ) {
 		std::cout << "version " << EXO_VERSION << std::endl;
 
+#ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
 		std::cout << "libgc version " << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
-
+#else
+		std::cout << "libgc disabled" << std::endl;
+#endif
 		return( 0 );
 	}
 
@@ -86,10 +91,9 @@ int main( int argc, char **argv )
 		if( commandLine.count( "input" ) ) {
 			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
 		} else {
-			ast = new exo::ast::Tree( std::cin );
+			ast = new exo::ast::Tree( "tests/3.exo" );
+			//ast = new exo::ast::Tree( std::cin );
 		}
-
-
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
 		context->generateIR( ast->stmts );
@@ -109,7 +113,8 @@ int main( int argc, char **argv )
 		ERRORRET( "unknown exception", -1 );
 	}
 
+#ifndef EXO_GC_DISABLE
 	GC_gcollect();
-
+#endif
 	return( 0 );
 }
