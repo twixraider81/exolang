@@ -27,7 +27,6 @@
  * TODO: 2. implement boost based exceptions
  * TODO: 3. use boost unit tests!
  * TODO: 4. implement type system
- * TODO: 5. check new / delete statements, mainly llvm:: generated instances
  */
 int main( int argc, char **argv )
 {

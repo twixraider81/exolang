@@ -42,6 +42,9 @@
 #include <vector>
 #include <stack>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
+
 #include "exo/errors/error.h"
 
 #endif /* EXO_H_ */

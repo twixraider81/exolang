@@ -93,6 +93,9 @@ def configure( conf ):
 	conf.check_cxx( header_name = "vector" )
 	conf.check_cxx( header_name = "stack" )
 
+	conf.check_cxx( header_name = "boost/shared_ptr.hpp" )
+	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
+
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )

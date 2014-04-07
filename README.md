@@ -23,7 +23,7 @@ build/exolang -h					(to show help)
 Prerequisites
 -------------
 On Debian simply do:
-apt-get install libgc-dev llvm llvm-dev llvm-runtime libc++-dev
+apt-get install libgc-dev llvm llvm-dev llvm-runtime libc++-dev libboost1.49-dev
 
 
 Thanks & 3rd Party licenses
