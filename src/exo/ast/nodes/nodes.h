@@ -25,7 +25,7 @@ namespace exo
 	{
 		namespace nodes
 		{
-			class Node : public gc
+			class Node : public virtual gc
 			{
 				public:
 					Node() { };

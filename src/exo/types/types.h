@@ -33,7 +33,7 @@ namespace exo
 			USER
 		};
 
-		class Type : public gc
+		class Type : public virtual gc
 		{
 			public:
 				typeId tId;

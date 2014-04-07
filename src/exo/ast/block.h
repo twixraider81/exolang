@@ -20,7 +20,7 @@ namespace exo
 {
 	namespace ast
 	{
-		class Block : public gc
+		class Block : public virtual gc
 		{
 			public:
 			    llvm::BasicBlock *block;

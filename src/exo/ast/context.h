@@ -27,7 +27,7 @@ namespace exo
 			class StmtList;
 		}
 
-		class Context : public gc
+		class Context : public virtual gc
 		{
 			public:
 				std::string name;
