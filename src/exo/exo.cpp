@@ -37,6 +37,9 @@ int main( int argc, char **argv )
 	GC_INIT();
 	GC_enable_incremental();
 
+	// initialize llvm
+	llvm::InitializeNativeTarget();
+
 #ifdef EXO_TRACE
 	setenv( "GC_PRINT_STATS", "1", 1 );
 	setenv( "GC_DUMP_REGULARLY", "1", 1 );
