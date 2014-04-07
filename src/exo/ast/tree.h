@@ -30,8 +30,6 @@ namespace exo
 		class Tree : public gc
 		{
 			public:
-				quex::lexer* lexer;
-				quex::Token* token;
 				void*		 parser;
 				std::string	fileName;
 
@@ -39,8 +37,6 @@ namespace exo
 
 				Tree( std::string fName );
 				Tree( std::istream& stream );
-
-				virtual ~Tree();
 		};
 	}
 }

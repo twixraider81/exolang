@@ -25,8 +25,8 @@ namespace exo
 			fileName = fName;
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
-			token = new quex::Token;
-			lexer = new quex::lexer( fileName );
+			quex::Token* token = new quex::Token;
+			quex::lexer* lexer = new quex::lexer( fileName );
 			parser = ParseAlloc( GC_malloc );
 
 #ifdef EXO_TRACE
@@ -47,6 +47,9 @@ namespace exo
 				Parse( parser, 0, token, this );
 				ParseFree( parser, GC_free );
 			}
+
+			delete token;
+			delete lexer;
 		}
 
 		Tree::Tree( std::istream& stream )
@@ -54,8 +57,8 @@ namespace exo
 			fileName = "<stdin>";
 			TRACESECTION( "AST", "opening <stdin>" );
 
-			token = new quex::Token;
-			lexer = new quex::lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
+			quex::Token* token = new quex::Token;
+			quex::lexer* lexer = new quex::lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 			parser = ParseAlloc( GC_malloc );
 
 #ifdef EXO_TRACE
@@ -88,18 +91,9 @@ namespace exo
 				Parse( parser, 0, token, this );
 				ParseFree( parser, GC_free );
 			}
-		}
 
-		Tree::~Tree()
-		{
-			if( token ) {
-				// FIXME: gets freed somewhere
-				//delete token;
-			}
-
-			if( lexer ) {
-				delete lexer;
-			}
+			delete token;
+			delete lexer;
 		}
 	}
 }
