@@ -25,9 +25,10 @@ namespace exo
 			fileName = fName;
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
-			quex::Token* token = new quex::Token;
-			quex::lexer* lexer = new quex::lexer( fileName );
 			parser = ParseAlloc( GC_malloc );
+			boost::shared_ptr<quex::Token> token( new quex::Token );
+			quex::lexer lexer( fileName );
+			quex::Token* ptoken = token.get();
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -35,21 +36,18 @@ namespace exo
 #endif
 
 			if( parser != NULL ) {
-				lexer->receive( &token );
+				lexer.receive( &ptoken );
 
 				while( token->type_id() != QUEX_TKN_TERMINATION ) {
-					TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
+					TRACESECTION( "LEXER", "received <" << ptoken->type_id_name() << "> in " << fileName << " on " << ptoken->line_number() << ":" << ptoken->column_number() );
 
-					Parse( parser, token->type_id(), token, this );
-					lexer->receive( &token );
+					Parse( parser, ptoken->type_id(), ptoken, this );
+					lexer.receive( &ptoken );
 				}
 
-				Parse( parser, 0, token, this );
+				Parse( parser, 0, ptoken, this );
 				ParseFree( parser, GC_free );
 			}
-
-			delete token;
-			delete lexer;
 		}
 
 		Tree::Tree( std::istream& stream )
@@ -57,9 +55,11 @@ namespace exo
 			fileName = "<stdin>";
 			TRACESECTION( "AST", "opening <stdin>" );
 
-			quex::Token* token = new quex::Token;
-			quex::lexer* lexer = new quex::lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 			parser = ParseAlloc( GC_malloc );
+
+			boost::shared_ptr<quex::Token> token( new quex::Token );
+			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
+			quex::Token* ptoken = token.get();
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -68,32 +68,29 @@ namespace exo
 
 			if( parser != NULL ) {
 				while( stream ) {
-					lexer->buffer_fill_region_prepare();
+					lexer.buffer_fill_region_prepare();
 
-					stream.getline( (char*)lexer->buffer_fill_region_begin(), lexer->buffer_fill_region_size() );
+					stream.getline( (char*)lexer.buffer_fill_region_begin(), lexer.buffer_fill_region_size() );
 
 					if( stream.gcount() == 0 ) {
 						break;
 					}
 
-					lexer->buffer_fill_region_finish( stream.gcount() - 1 );
+					lexer.buffer_fill_region_finish( stream.gcount() - 1 );
 
-					lexer->receive( &token );
+					lexer.receive( &ptoken );
 
-					while( token->type_id() != QUEX_TKN_TERMINATION ) {
-						TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> on " << token->line_number() << ":" << token->column_number() );
+					while( ptoken->type_id() != QUEX_TKN_TERMINATION ) {
+						TRACESECTION( "LEXER", "received <" << ptoken->type_id_name() << "> on " << ptoken->line_number() << ":" << ptoken->column_number() );
 
-						Parse( parser, token->type_id(), token, this );
-						lexer->receive( &token );
+						Parse( parser, ptoken->type_id(), ptoken, this );
+						lexer.receive( &ptoken );
 					};
 				}
 
-				Parse( parser, 0, token, this );
+				Parse( parser, 0, ptoken, this );
 				ParseFree( parser, GC_free );
 			}
-
-			delete token;
-			delete lexer;
 		}
 	}
 }
