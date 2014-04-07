@@ -19,7 +19,7 @@
 #include <llvm/IR/DerivedTypes.h>
 
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm/ExecutionEngine/JIT.h>
+#include <llvm/ExecutionEngine/MCJIT.h>
 
 
 #include <llvm/IR/Module.h>
@@ -31,9 +31,11 @@
 #include <llvm/Assembly/PrintModulePass.h>
 
 #include <llvm/Support/raw_ostream.h>
-
+#include <llvm/Support/Host.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
+
+#include <llvm/Target/TargetLibraryInfo.h>
 
 #include <llvm/Transforms/Scalar.h>
 

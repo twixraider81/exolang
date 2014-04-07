@@ -46,6 +46,8 @@ int main( int argc, char **argv )
 
 	// initialize llvm
 	llvm::InitializeNativeTarget();
+	llvm::InitializeNativeTargetAsmPrinter();
+	llvm::InitializeNativeTargetAsmParser();
 
 	// register signal handler
 	exo::signals::registerHandler();
@@ -75,13 +77,14 @@ int main( int argc, char **argv )
 
 	// show version & exit
 	if( commandLine.count( "version" ) ) {
-		std::cout << "version " << EXO_VERSION << std::endl;
+		std::cout << "version: " << EXO_VERSION << std::endl;
+		std::cout << "native jit target: " << llvm::sys::getProcessTriple() << std::endl;
 
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
-		std::cout << "libgc version " << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
+		std::cout << "libgc version: " << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
 #else
-		std::cout << "libgc disabled" << std::endl;
+		std::cout << "libgc: disabled" << std::endl;
 #endif
 		return( 0 );
 	}

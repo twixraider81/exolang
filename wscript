@@ -116,8 +116,10 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/PassManager.h" )
 	conf.check_cxx( header_name = "llvm/Assembly/PrintModulePass.h" )
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
+	conf.check_cxx( header_name = "llvm/Support/Host.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
+	conf.check_cxx( header_name = "llvm/Target/TargetLibraryInfo.h" )
 
 	if conf.options.gc != 'disable':
 		conf.check_cxx( header_name = "gc/gc.h" )

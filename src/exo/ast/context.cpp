@@ -33,7 +33,9 @@ namespace exo
 		{
 			name = cname;
 			context = c;
+
 			module = new llvm::Module( name, *context );
+			module->setTargetTriple( llvm::sys::getProcessTriple() );
 		}
 
 		Context::~Context()
@@ -73,7 +75,7 @@ namespace exo
 		void Context::generateIR( exo::ast::nodes::StmtList* stmts )
 		{
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
-			entry = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", module);
+			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, "main", module );
 
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", entry, 0 );
 			pushBlock( block );

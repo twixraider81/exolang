@@ -37,23 +37,51 @@ namespace exo
 				context = c;
 				std::string errorMsg;
 
-				engine = llvm::EngineBuilder( context->module ).setErrorStr( &errorMsg ).create();
-				fpm = new llvm::FunctionPassManager( context->module );
+				llvm::EngineBuilder builder( context->module );
+				builder.setEngineKind( llvm::EngineKind::JIT );
+				// TODO: make use of -0x levels - http://llvm.org/docs/doxygen/html/namespacellvm_1_1CodeGenOpt.html
+				builder.setOptLevel( llvm::CodeGenOpt::Default );
+				builder.setErrorStr( &errorMsg );
+				engine = builder.setUseMCJIT( true ).create();
 
 				if( !engine ) {
 					BOOST_THROW_EXCEPTION( exo::exceptions::LLVMException( errorMsg ) );
 				}
 
+				llvm::TargetMachine* target = builder.selectTarget();
+				//llvm::Function* entry = context->module->getFunction( "main" );
+
+				llvm::PassRegistry &registry = *llvm::PassRegistry::getPassRegistry();
+				llvm::initializeScalarOpts( registry );
+
+				fpm = new llvm::FunctionPassManager( context->module );
+				fpm->add( llvm::createVerifierPass( llvm::PrintMessageAction ) );
+				target->addAnalysisPasses( *fpm );
+				fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( context->module->getTargetTriple() ) ) );
+				fpm->add( new llvm::DataLayout( context->module ) );
+				fpm->add( llvm::createBasicAliasAnalysisPass() );
+				fpm->add( llvm::createLICMPass() );
+				fpm->add( llvm::createGVNPass() );
+				fpm->add( llvm::createPromoteMemoryToRegisterPass() );
+				fpm->add( llvm::createLoopVectorizePass() );
+				fpm->add( llvm::createEarlyCSEPass() );
+				fpm->add( llvm::createInstructionCombiningPass() );
+				fpm->add( llvm::createCFGSimplificationPass() );
+
+				fpm->run( *context->entry );
+
+				//engine->finalizeObject();
+
 #ifdef EXO_TRACE
 				TRACE( "LLVM IR" );
-				context->module->dump();
+				//context->module->dump();
 #endif
 			}
 
 			IR::~IR()
 			{
-				delete engine;
-				delete fpm;
+				//delete engine;
+				//delete fpm;
 			}
 
 			/*
@@ -62,19 +90,6 @@ namespace exo
 			 */
 			void IR::Optimize()
 			{
-				fpm->add( new llvm::DataLayout( *engine->getDataLayout() ) );
-				fpm->add( llvm::createBasicAliasAnalysisPass() );
-				fpm->add( llvm::createInstructionCombiningPass() );
-				fpm->add( llvm::createReassociatePass() );
-				fpm->add( llvm::createGVNPass() );
-				fpm->add( llvm::createCFGSimplificationPass() );
-
-				fpm->doInitialization();
-
-#ifdef EXO_TRACE
-				TRACE( "Optimized LLVM IR" );
-				context->module->dump();
-#endif
 			}
 		}
 	}
