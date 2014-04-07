@@ -24,7 +24,6 @@ namespace exo
 		{
 			ValAny::ValAny()
 			{
-				TRACESECTION( "AST", "ERROR creating empty/any value!" );
 				value = NULL;
 			}
 		}

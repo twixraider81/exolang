@@ -50,13 +50,13 @@ namespace exo
 		{
 			blocks.push( new Block() );
 			blocks.top()->block = block;
+			TRACESECTION( "CONTEXT", "pushing new block onto stack, new stacksize:" << blocks.size() );
 		}
 
 		void Context::popBlock()
 		{
-			Block *top = blocks.top();
 			blocks.pop();
-			delete top;
+			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
 
 		llvm::BasicBlock* Context::getCurrentBlock()
@@ -64,9 +64,9 @@ namespace exo
 			 return( blocks.top()->block );
 		}
 
-		std::map<std::string, llvm::Value*>& Context::localVariables()
+		std::map<std::string, llvm::Value*>& Context::Variables()
 		{
-			return( blocks.top()->localVariables );
+			return( blocks.top()->variables );
 		}
 
 		void Context::generateIR( exo::ast::nodes::StmtList* stmts )

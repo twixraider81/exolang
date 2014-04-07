@@ -39,11 +39,13 @@ namespace exo
 
 			llvm::Value* VarDecl::Generate( exo::ast::Context* context )
 			{
-				TRACESECTION( "IR", "creating variable:" << name );
+				TRACESECTION( "IR", "creating variable: $" << name );
 
 				// allocate memory and push variable onto the local stack
 				llvm::AllocaInst* memory = new llvm::AllocaInst( type->getLLVMType( context->context ), name.c_str(), context->getCurrentBlock() );
-				context->localVariables()[ name ] = memory;
+				context->Variables()[ name ] = memory;
+
+				TRACESECTION( "IR", "new variable map size:" << context->Variables().size() );
 
 				if( expression ) {
 					VarAssign* a = new VarAssign( name, expression );

@@ -43,7 +43,8 @@ namespace exo
 			    void pushBlock( llvm::BasicBlock* block);
 			    void popBlock();
 			    llvm::BasicBlock* getCurrentBlock();
-			    std::map<std::string, llvm::Value*>& localVariables();
+
+			    std::map<std::string, llvm::Value*>& Variables();
 
 			    void generateIR( exo::ast::nodes::StmtList* stmts );
 		};

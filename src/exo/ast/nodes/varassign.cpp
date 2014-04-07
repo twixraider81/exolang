@@ -33,11 +33,11 @@ namespace exo
 			{
 				TRACESECTION( "IR", "assigning variable:" << name );
 
-				if( context->localVariables().find( name ) != context->localVariables().end() ) {
+				if( context->Variables().find( name ) == context->Variables().end() ) {
 					throw std::runtime_error( "undeclared variable" );
 				}
 
-				llvm::StoreInst* store = new llvm::StoreInst( expression->Generate( context ), context->localVariables()[name], false, context->getCurrentBlock() );
+				llvm::StoreInst* store = new llvm::StoreInst( expression->Generate( context ), context->Variables()[name], false, context->getCurrentBlock() );
 				return( store );
 			}
 		}
