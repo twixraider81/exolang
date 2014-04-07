@@ -41,7 +41,7 @@ namespace exo
 				fpm = new llvm::FunctionPassManager( context->module );
 
 				if( !engine ) {
-					ERRORMSG( errorMsg );
+					BOOST_THROW_EXCEPTION( exo::exceptions::LLVMException( errorMsg ) );
 				}
 
 #ifdef EXO_TRACE

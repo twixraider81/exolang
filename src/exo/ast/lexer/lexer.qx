@@ -27,7 +27,7 @@ mode EXO:
 <skip_range: "#" "\n">		/* skip singleline comments */
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
-	<<FAIL>>						{ ERRORMSG( "unknown token: " << Lexeme ); }
+	<<FAIL>>						{ BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) ); }
 
 	"__HALT__"						=> QUEX_TKN_TERMINATION;
 	"__FILE__"						=> QUEX_TKN_S_FILE(Lexeme);

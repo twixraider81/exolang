@@ -44,7 +44,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/exception/all.hpp>
+#include <boost/throw_exception.hpp>
 
 #include "exo/errors/error.h"
+#include "exo/errors/exceptions.h"
 
 #endif /* EXO_H_ */

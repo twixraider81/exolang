@@ -20,13 +20,11 @@
 }
 
 %syntax_error {
-	std::stringstream msg;
-	msg << "unexpected \"" << TOKEN->type_id_name() << "\" on " << TOKEN->line_number() << ":" << TOKEN->column_number();
-	throw std::runtime_error( msg.str() );
+	BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedToken( TOKEN->type_id_name(), TOKEN->line_number(), TOKEN->column_number() ) );
 }
 
 %stack_overflow {
-	throw std::runtime_error( "stack overflown" );
+	BOOST_THROW_EXCEPTION( exo::exceptions::StackOverflow() );
 }
 
 %start_symbol program

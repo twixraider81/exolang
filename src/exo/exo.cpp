@@ -23,9 +23,8 @@
 /*
  * Main/CLI Invocation, see -h
  * TODO: 1. do a bit of documentation now
- * TODO: 2. implement boost based exceptions
- * TODO: 3. use boost unit tests!
- * TODO: 4. implement type system
+ * TODO: 2. use boost unit tests!
+ * TODO: 3. implement type system
  */
 int main( int argc, char **argv )
 {
@@ -47,9 +46,7 @@ int main( int argc, char **argv )
 #endif
 
 	// register signal handler
-	// FIXME: figure out why libgc sends a SIGSEGV on terminate
 	exo::signals::registerHandler();
-
 
 
 	// build optionlist
@@ -104,8 +101,12 @@ int main( int argc, char **argv )
 		ir->Optimize();
 
 		delete ir;
-	} catch( std::exception& e ) {
+	} catch( boost::exception& e ) {
+		ERRORRET( boost::diagnostic_information( e ), -1 );
+	}  catch( std::exception& e ) {
 		ERRORRET( e.what(), -1 );
+	} catch( ... ) {
+		ERRORRET( "unknown exception", -1 );
 	}
 
 	GC_gcollect();

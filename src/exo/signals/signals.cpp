@@ -33,29 +33,26 @@ namespace exo
 				size_t size;
 
 				size = backtrace( array, 10 );
-				ERRORMSG( "stack trace incoming:" );
 
 				/* skip first stack frame (points here) */
 				for( int i = 1; i < size && array != NULL; ++i )
 				{
-					ERRORMSG( "(" << i << ") " << array[i] );
+					TRACESECTION( "SIGSEGV", "(" << i << ") " << array[i] );
 				}
 #endif
-
-				throw std::runtime_error( "Segmentation fault" );
+				BOOST_THROW_EXCEPTION( exo::exceptions::Segfault() );
 			}
 		}
 
 		/*
 		 * Register Signal handlers, currently only Segfault registered
 		 * TODO: check which other signals shoud be caught
+		 * FIXME: figure out why libgc sends a SIGSEGV on terminate
 		 */
 		void registerHandler()
 		{
-			/*
 			struct sigaction sa;
-
-			memset( &sa, 0, sizeof(sigaction) );
+			memset( &sa, 0, sizeof( struct sigaction) );
 			sigemptyset( &sa.sa_mask );
 			sa.sa_sigaction = sigHandler;
 			sa.sa_flags = SA_SIGINFO;
@@ -63,7 +60,6 @@ namespace exo
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
 				ERRORMSG( "failed to register segementation fault handler" );
 			}
-			*/
 		}
 	}
 }

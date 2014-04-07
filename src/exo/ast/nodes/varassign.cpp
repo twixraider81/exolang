@@ -34,7 +34,7 @@ namespace exo
 				TRACESECTION( "IR", "assigning variable:" << name );
 
 				if( context->Variables().find( name ) == context->Variables().end() ) {
-					throw std::runtime_error( "undeclared variable" );
+					BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( name ) );
 				}
 
 				llvm::StoreInst* store = new llvm::StoreInst( expression->Generate( context ), context->Variables()[name], false, context->getCurrentBlock() );

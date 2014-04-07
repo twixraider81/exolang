@@ -99,6 +99,8 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/shared_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
+	conf.check_cxx( header_name = "boost/exception/all.hpp" )
+	conf.check_cxx( header_name = "boost/throw_exception.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )

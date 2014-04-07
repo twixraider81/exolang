@@ -55,6 +55,7 @@ namespace exo
 
 		void Context::popBlock()
 		{
+			delete blocks.top()->block;
 			blocks.pop();
 			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
