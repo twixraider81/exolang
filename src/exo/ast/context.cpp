@@ -69,7 +69,7 @@ namespace exo
 			return( blocks.top()->localVariables );
 		}
 
-		void Context::Generate( exo::ast::nodes::StmtList* stmts )
+		void Context::generateIR( exo::ast::nodes::StmtList* stmts )
 		{
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
 			entry = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", module);
@@ -79,18 +79,6 @@ namespace exo
 			stmts->Generate( this );
 			llvm::ReturnInst::Create( *context, block);
 			popBlock();
-
-#ifdef EXO_TRACE
-			TRACE( "Generated LLVM IR:" );
-			llvm::PassManager manager;
-			manager.add( llvm::createPrintModulePass( &llvm::outs() ) );
-			manager.run( *module );
-#endif
-		}
-
-		void Context::Execute()
-		{
-
 		}
 	}
 }

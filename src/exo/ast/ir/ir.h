@@ -13,22 +13,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LLVM_H_
-#define LLVM_H_
+#ifndef GENERATOR_H_
+#define GENERATOR_H_
 
-#include <llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm/ExecutionEngine/JIT.h>
+namespace exo
+{
+	namespace ast
+	{
+		namespace ir
+		{
+			class IR : public virtual gc
+			{
+				exo::ast::Context* context;
+				llvm::ExecutionEngine* engine;
+				llvm::FunctionPassManager *fpm;
 
-#include <llvm/IR/DerivedTypes.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/Module.h>
+				public:
+					IR( exo::ast::Context* c );
+					~IR();
 
-#include <llvm/PassManager.h>
-#include <llvm/Assembly/PrintModulePass.h>
-#include <llvm/LinkAllPasses.h>
-#include <llvm/Support/raw_ostream.h>
+					void Optimize();
+			};
+		}
+	}
+}
 
-#include <llvm/Support/TargetRegistry.h>
-#include <llvm/Support/TargetSelect.h>
-
-#endif /* LLVM_H_ */
+#endif /* GENERATOR_H_ */

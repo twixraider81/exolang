@@ -32,6 +32,7 @@ namespace exo
 			public:
 				std::string name;
 				std::stack<Block*> blocks;
+
 				llvm::Function* entry;
 			    llvm::Module* module;
 			    llvm::LLVMContext* context;
@@ -44,8 +45,7 @@ namespace exo
 			    llvm::BasicBlock* getCurrentBlock();
 			    std::map<std::string, llvm::Value*>& localVariables();
 
-			    void Generate( exo::ast::nodes::StmtList* stmts );
-			    void Execute();
+			    void generateIR( exo::ast::nodes::StmtList* stmts );
 		};
 	}
 }

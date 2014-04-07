@@ -105,6 +105,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
+	conf.check_cxx( header_name = "llvm/LinkAllPasses.h" )
 
 	conf.check_cxx( lib = "gc" )
 	conf.check_cxx( header_name = "gc/gc.h" )

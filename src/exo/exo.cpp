@@ -32,8 +32,8 @@ int main( int argc, char **argv )
 {
 	exo::ast::Tree* ast;
 	exo::ast::Context* context;
+	exo::ast::ir::IR* ir;
 	std::string	sourceFile;
-	llvm::ExecutionEngine* engine;
 
 	// inititalize garbage collector TODO: create initialization framework
 	GC_INIT();
@@ -82,19 +82,15 @@ int main( int argc, char **argv )
 		llvm::InitializeNativeTarget();
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
-		context->Generate( ast->stmts );
+		context->generateIR( ast->stmts );
 
+		// we have the IR now, don't need the AST anymore
 		delete ast;
 
-		std::string errorMsg;
-		engine = llvm::EngineBuilder( context->module ).setErrorStr( &errorMsg ).create();
+		ir = new exo::ast::ir::IR( context );
+		ir->Optimize();
 
-		if( !engine ) {
-			ERRORRET( errorMsg, -1 );
-		}
-
-		delete engine;
-		delete context;
+		delete ir;
 	} catch( std::exception& e ) {
 		ERRORRET( e.what(), -1 );
 	}
