@@ -9,7 +9,7 @@ It will borrow or base on PHP syntax while trying to alleviate the pains or wron
 Quickstart
 ----------
 ./bootstrap.sh						(you will need to build lemon/quex to rebuild the lexer/parser for now)
-./bootstrap.sh -l					(if you want to build llvm for /usr)
+./bootstrap.sh -l					(if you want to build debug llvm under ./bin/)
 
 ./waf clean configure --mode=release	(clean & configure for release/debug release or trace release. that prints alot of messages)
 ./waf clean configure --mode=trace --llvm=llvm-config-3.5 --gc=enable

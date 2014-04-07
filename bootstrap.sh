@@ -106,7 +106,7 @@ if [ "$LLVM" == "1" ]; then
 	mkdir -p "$TMPDIR/llvm-build"
 	cd "$TMPDIR/llvm-build"
 
-	CC=cc CXX=c++ ../llvm-3.4/configure --prefix=/usr --enable-optimized --enable-jit
+	CC=cc CXX=c++ ../llvm-3.4/configure --prefix=$BINDIR --enable-jit --enable-terminfo --enable-libffi --enable-backtraces --enable-jit --disable-optimized --enable-keep-symbols --enable-debug-symbols --enable-debug-runtime --enable-assertions --enable-cxx11
 	make
 	make install
 fi
