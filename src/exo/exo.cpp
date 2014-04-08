@@ -78,7 +78,8 @@ int main( int argc, char **argv )
 	// show version & exit
 	if( commandLine.count( "version" ) ) {
 		std::cout << "version: " << EXO_VERSION << std::endl;
-		std::cout << "native jit target: " << llvm::sys::getProcessTriple() << std::endl;
+		std::cout << "host cpu: " << llvm::sys::getHostCPUName() << std::endl;
+		std::cout << "default jit target: " << llvm::sys::getProcessTriple() << std::endl;
 
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
@@ -94,8 +95,7 @@ int main( int argc, char **argv )
 		if( commandLine.count( "input" ) ) {
 			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
 		} else {
-			ast = new exo::ast::Tree( "tests/3.exo" );
-			//ast = new exo::ast::Tree( std::cin );
+			ast = new exo::ast::Tree( std::cin );
 		}
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
@@ -105,8 +105,6 @@ int main( int argc, char **argv )
 		delete ast;
 
 		ir = new exo::ast::ir::IR( context );
-		ir->Optimize();
-
 		delete ir;
 	} catch( boost::exception& e ) {
 		ERRORRET( boost::diagnostic_information( e ), -1 );
