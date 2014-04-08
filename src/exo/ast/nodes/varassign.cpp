@@ -24,14 +24,14 @@ namespace exo
 		{
 			VarAssign::VarAssign( std::string vName, Expr* expr )
 			{
-				TRACESECTION( "AST", "assigning " << vName );
+				TRACESECTION( "AST", "assigning $" << vName );
 				name = vName;
 				expression = expr;
 			}
 
 			llvm::Value* VarAssign::Generate( exo::ast::Context* context )
 			{
-				TRACESECTION( "IR", "assigning variable:" << name );
+				TRACESECTION( "IR", "assigning variable $" << name );
 
 				if( context->Variables().find( name ) == context->Variables().end() ) {
 					BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( name ) );
