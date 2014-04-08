@@ -23,7 +23,8 @@
 /*
  * Main/CLI Invocation, see -h
  * TODO: 1. implement type system
- * TODO: 2. use boost unit tests!
+ * TODO: 2. implement init/shutdown framework
+ * TODO: 3. use boost unit tests!
  */
 int main( int argc, char **argv )
 {
@@ -49,7 +50,7 @@ int main( int argc, char **argv )
 	llvm::InitializeNativeTargetAsmParser();
 
 	// register signal handler
-	exo::signals::registerHandler();
+	exo::signals::registerHandlers();
 
 
 	// build optionlist

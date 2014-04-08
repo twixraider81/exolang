@@ -24,8 +24,8 @@ namespace exo
 {
 	namespace signals
 	{
-		void sigHandler( int signal, siginfo_t *si, void *arg );
-		void registerHandler();
+		void sigsegHandler( int signal, siginfo_t *si, void *arg );
+		void registerHandlers();
 	}
 }
 

@@ -20,12 +20,11 @@ namespace exo
 {
 	namespace signals
 	{
-		/*
-		 * Register a Segementationfault handler
-		 * TODO: gracefully shutdown in main()
-		 * TODO: http://stackoverflow.com/questions/77005/how-to-generate-a-stacktrace-when-my-gcc-c-app-crashes
+		/**
+		 * Registers a Segementationfault handler which incase results in aSegfault exception.
+		 * If compiled with debug enabled it will additionally print a 10 frame backtrace on stdout
 		 */
-		void sigHandler( int signal, siginfo_t *si, void *arg )
+		void sigsegHandler( int signal, siginfo_t *si, void *arg )
 		{
 			if( signal == SIGSEGV ) {
 #ifdef EXO_DEBUG
@@ -45,15 +44,15 @@ namespace exo
 		}
 
 		/*
-		 * Register Signal handlers, currently only Segfault registered
-		 * TODO: check which other signals shoud be caught
+		 * Register signalhandlers, currently only a segfault exception throw is registered
+		 * TODO: check which other signals could be caught - http://en.wikipedia.org/wiki/Unix_signal
 		 */
-		void registerHandler()
+		void registerHandlers()
 		{
 			struct sigaction sa;
 			memset( &sa, 0, sizeof( struct sigaction) );
 			sigemptyset( &sa.sa_mask );
-			sa.sa_sigaction = sigHandler;
+			sa.sa_sigaction = sigsegHandler;
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
