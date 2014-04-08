@@ -16,7 +16,7 @@
 #include "exo/exo.h"
 
 #include "exo/types/types.h"
-#include "exo/ast/llvm.h"
+#include "exo/jit/llvm.h"
 
 #include "exo/ast/lexer/lexer"
 #include "exo/ast/parser/parser.h"

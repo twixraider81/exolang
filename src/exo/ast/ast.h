@@ -17,7 +17,7 @@
 #define AST_H_
 
 #include "exo/exo.h"
-#include "exo/ast/llvm.h"
+#include "exo/jit/llvm.h"
 
 #include "exo/types/types.h"
 
