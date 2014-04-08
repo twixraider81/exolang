@@ -31,8 +31,6 @@ namespace exo
 				public:
 					IR( exo::ast::Context* c );
 					~IR();
-
-					void Optimize();
 			};
 		}
 	}

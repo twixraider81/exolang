@@ -57,7 +57,7 @@ namespace exo
 
 		void Context::popBlock()
 		{
-			delete blocks.top()->block;
+			//delete blocks.top()->block;
 			blocks.pop();
 			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
@@ -74,13 +74,16 @@ namespace exo
 
 		void Context::generateIR( exo::ast::nodes::StmtList* stmts )
 		{
+			llvm::IRBuilder<> builder( *context );
+
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
 			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, "main", module );
-
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", entry, 0 );
+			builder.SetInsertPoint( block );
 			pushBlock( block );
 			stmts->Generate( this );
-			llvm::ReturnInst::Create( *context, block);
+
+			llvm::ReturnInst::Create( *context, block );
 			popBlock();
 		}
 	}

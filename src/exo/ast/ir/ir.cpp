@@ -48,9 +48,12 @@ namespace exo
 					BOOST_THROW_EXCEPTION( exo::exceptions::LLVMException( errorMsg ) );
 				}
 
-				llvm::TargetMachine* target = builder.selectTarget();
-				//llvm::Function* entry = context->module->getFunction( "main" );
+#ifdef EXO_TRACE
+				TRACE( "Immediate LLVM IR" );
+				context->module->dump();
+#endif
 
+				llvm::TargetMachine* target = builder.selectTarget();
 				llvm::PassRegistry &registry = *llvm::PassRegistry::getPassRegistry();
 				llvm::initializeScalarOpts( registry );
 
@@ -70,26 +73,18 @@ namespace exo
 
 				fpm->run( *context->entry );
 
-				//engine->finalizeObject();
+				engine->finalizeObject();
 
 #ifdef EXO_TRACE
-				TRACE( "LLVM IR" );
-				//context->module->dump();
+				TRACE( "Final LLVM IR" );
+				context->module->dump();
 #endif
 			}
 
 			IR::~IR()
 			{
-				//delete engine;
-				//delete fpm;
-			}
-
-			/*
-			 * TODO: check https://llvm.org/svn/llvm-project/llvm/trunk/include/llvm/LinkAllPasses.h
-			 * TODO: check http://llvm.org/docs/Passes.html
-			 */
-			void IR::Optimize()
-			{
+				delete engine;
+				delete fpm;
 			}
 		}
 	}
