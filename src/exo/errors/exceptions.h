@@ -20,91 +20,73 @@ namespace exo
 {
 	namespace exceptions
 	{
-		class Segfault : public virtual std::exception, public virtual boost::exception {};
+		/**
+		 * Base exception that will be thrown, holds what
+		 */
+		class Exception : public virtual std::exception, public virtual boost::exception
+		{
+			public:
+				virtual ~Exception() {};
+		};
 
-		class UnknownToken : public virtual std::exception, public virtual boost::exception
+		/**
+		 * Exception that will be thrown via our sigseg handler
+		 */
+		class Segfault : public virtual Exception {};
+
+		/**
+		 * Exception that will be thrown from quex/lexer
+		 */
+		class UnknownToken : public virtual Exception
 		{
 			public:
 				std::string token;
-
-				UnknownToken( std::string t )
-				{
-					token = t;
-				}
-
-				virtual const char* what() const throw()
-				{
-					std::stringstream msg;
-					msg << "Unknown token \"" << token << "\"";
-					return( msg.str().c_str() );
-				}
+				UnknownToken( std::string t );
+				virtual const char* what() const throw();
 		};
 
-		class UnexpectedToken : public virtual std::exception, public virtual boost::exception
+		/**
+		 * Exception that will be thrown from lemon/parse incase it received something unexpected. a.k.a. syntax error
+		 */
+		class UnexpectedToken : public virtual Exception
 		{
 			public:
 				std::string tokenName;
 				int lineNr;
 				int columnNr;
-
-				UnexpectedToken( std::string tName, int l, int c )
-				{
-					tokenName = tName;
-					lineNr = l;
-					columnNr = c;
-				}
-
-				virtual const char* what() const throw()
-				{
-					std::stringstream msg;
-					msg << "Unexpected \"" << tokenName << "\" on " << lineNr << ":" << columnNr;
-					return( msg.str().c_str() );
-				}
+				UnexpectedToken( std::string tName, int l, int c );
+				virtual const char* what() const throw();
 		};
 
-		class StackOverflow : public virtual std::exception, public virtual boost::exception
+		/**
+		 * Exception that will be thrown from lemon/parse incase the stack was overflown
+		 */
+		class StackOverflow : public virtual Exception
 		{
 			public:
-				virtual const char* what() const throw()
-				{
-					return( "Stack overflown" );
-				}
+				virtual const char* what() const throw();
 		};
 
-		class UnknownVar : public virtual std::exception, public virtual boost::exception
+		/**
+		 * Exception that will be incase the IR generator stumbles across an undefined variable.
+		 */
+		class UnknownVar : public virtual Exception
 		{
 			public:
 				std::string varName;
-
-				UnknownVar( std::string vName )
-				{
-					varName = vName;
-				}
-
-				virtual const char* what() const throw()
-				{
-					std::stringstream msg;
-					msg << "Unknown variable $" << varName;
-					return( msg.str().c_str() );
-				}
+				UnknownVar( std::string vName );
+				virtual const char* what() const throw();
 		};
 
-		class LLVMException : public virtual std::exception, public virtual boost::exception
+		/**
+		 * Exception reporting a generic LLVM error message
+		 */
+		class LLVM: public virtual Exception
 		{
 			public:
 				std::string message;
-
-				LLVMException( std::string m )
-				{
-					message = m;
-				}
-
-				virtual const char* what() const throw()
-				{
-					std::stringstream msg;
-					msg << "LLVM Exception \"" << message << "\"";
-					return( msg.str().c_str() );
-				}
+				LLVM( std::string m );
+				virtual const char* what() const throw();
 		};
 	}
 }

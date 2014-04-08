@@ -3,7 +3,7 @@ exolang
 
 Goal
 ----
-The aim is to develop a jiting/compiling rapid prototyping "script" language. (Cause developing in C/C++/C#/Java is horribly slow and espcially incase of C error prone).
+The aim is to develop a jiting/compiling rapid prototyping "script" language. (Cause developing in C/C++/C#/Java is horribly slow and espcially incase of C error prone or complicated. I look at you C++.).
 It will borrow or base on PHP syntax while trying to alleviate the pains or wrong doings of that it.
 
 Quickstart
