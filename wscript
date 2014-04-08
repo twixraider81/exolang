@@ -163,7 +163,7 @@ def buildparser( ctx ):
 # (re)create lexer
 def buildlexer( ctx ):
 	"Recreate Lexer (needs quex binary)"
-	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer -o lexer', shell=True )
+	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/lexer -o lexer', shell=True )
 
 # show lexer/parser tokens
 def showtokens( ctx ):

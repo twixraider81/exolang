@@ -16,7 +16,7 @@
 #ifndef TREE_H_
 #define TREE_H_
 
-#include "exo/ast/lexer/lexer"
+#include "exo/lexer/lexer"
 
 namespace exo
 {
