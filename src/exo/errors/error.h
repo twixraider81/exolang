@@ -16,9 +16,23 @@
 #ifndef ERROR_H_
 #define ERROR_H_
 
+/**
+ * ERRORMSG will display a message on stderr, erminated with a linebreak
+ * @param	msg				What to display
+ */
 #define ERRORMSG(msg) std::cerr << "Error: " << msg << " in " __FILE__ << ":" << __LINE__ << std::endl
+
+/**
+ * ERRORRET will display a message on stderr via ERRORMSG and additionally return with the retval
+ * @param	msg				What to display
+ * @param	retval			What to return
+ */
 #define ERRORRET(msg,retval) ERRORMSG(msg); return(retval)
 
+/**
+ * TRACESECTION and TRACE will only display a message on stdout if compiled with EXO_DEBUG
+ * POINTERCHECK is a little assert MACRO to check for null pointers. Should use nullptr instead?
+ */
 #ifdef EXO_DEBUG
 # define POINTERCHECK(p) if(p == NULL) ERRORMSG( "invalid pointer in " << __FILE__ << ":" << __LINE__ )
 # ifdef EXO_TRACE
