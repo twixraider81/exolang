@@ -25,7 +25,6 @@
 #include "exo/ast/tree.h"
 #include "exo/ast/context.h"
 #include "exo/ast/nodes/nodes.h"
-#include "exo/ast/ir/ir.h"
 
 /* we need a safe string from our tokens */
 #define TOKENSTR(s) std::string( reinterpret_cast<const char*>( s->get_text().c_str() ) )

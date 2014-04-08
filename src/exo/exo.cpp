@@ -16,6 +16,7 @@
 // include internal stuff
 #include "exo/exo.h"
 #include "exo/ast/ast.h"
+#include "exo/jit/jit.h"
 #include "exo/signals/signals.h"
 
 #include <boost/program_options.hpp>
@@ -30,7 +31,7 @@ int main( int argc, char **argv )
 {
 	exo::ast::Tree* ast;
 	exo::ast::Context* context;
-	exo::ast::ir::IR* ir;
+	exo::jit::JIT* jit;
 
 #ifndef EXO_GC_DISABLE
 	// inititalize garbage collector TODO: create initialization framework
@@ -105,11 +106,11 @@ int main( int argc, char **argv )
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
 		context->generateIR( ast->stmts );
 
+		jit = new exo::jit::JIT( context );
 		// we have the IR now, don't need the AST anymore
 		delete ast;
 
-		ir = new exo::ast::ir::IR( context );
-		delete ir;
+		delete jit;
 	} catch( exo::exceptions::Exception& e ) {
 		ERRORMSG( e.what() );
 		ERRORRET( boost::diagnostic_information( e ), -1 );

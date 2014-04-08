@@ -18,21 +18,18 @@
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		namespace ir
+		class JIT : public virtual gc
 		{
-			class IR : public virtual gc
-			{
-				exo::ast::Context* context;
-				llvm::ExecutionEngine* engine;
-				llvm::FunctionPassManager *fpm;
+			exo::ast::Context* context;
+			llvm::ExecutionEngine* engine;
+			llvm::FunctionPassManager *fpm;
 
-				public:
-					IR( exo::ast::Context* c );
-					~IR();
-			};
-		}
+			public:
+				JIT( exo::ast::Context* c );
+				~JIT();
+		};
 	}
 }
 
