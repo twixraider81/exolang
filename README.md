@@ -12,7 +12,7 @@ Quickstart
 ./bootstrap.sh -l					(if you want to build debug llvm under ./bin/)
 
 ./waf clean configure --mode=release	(clean & configure for release/debug release or trace release. that prints alot of messages)
-./waf clean configure --mode=trace --llvm=llvm-config-3.5 --gc=enable
+./waf clean configure --mode=trace --llvm=bin/bin/llvm-config --gc=disable (if you want to disable gc and build llvm via bootstrap -l)
 
 Take a look at ./waf help to specifiy other options for you system, like an llvm-config (./waf clean configure --llvm=llvm-config-3.5)
 

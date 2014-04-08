@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, sys, re, platform, pipes
+import os, subprocess, sys, re, platform, pipes, pprint
 
 from waflib import Build, Context, Scripting, Utils, Task, TaskGen
 from waflib.ConfigSet import ConfigSet
@@ -25,6 +25,7 @@ VERSION = '0.0.1'
 TOP = os.path.abspath( os.curdir )
 BINDIR = TOP + '/bin/'
 SRCDIR = 'src/'
+BUILDDIR = TOP + '/build'
 
 # load options
 def options( opt ):
@@ -36,7 +37,10 @@ def options( opt ):
 # configure
 def configure( conf ):
 	conf.load( 'compiler_cxx compiler_c' )
-	conf.find_program( conf.options.llvm, var = 'LLVMCONFIG', mandatory = True )
+
+	conf.find_program( os.path.basename( conf.options.llvm ), var = 'LLVMCONFIG', mandatory = True, path_list = os.path.dirname( conf.options.llvm ) )
+	conf.find_program( 'gdb', var = 'GDB', mandatory = False )
+	conf.find_program( 'valgrind', var = 'VALGRIND', mandatory = False )
 
 
 	# read llvm-config
@@ -142,9 +146,9 @@ def build( bld ):
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
 # todo target
-def todo( ctx ):
+def showtodo( ctx ):
 	"Show todos"
-	subprocess.call( 'grep -Hnr "//FIXME" '  + SRCDIR, shell=True )
+	subprocess.call( 'grep -nHr -nHr "FIXME\|TODO" '  + SRCDIR, shell=True )
 
 # backup target
 def backup( ctx ):
@@ -165,3 +169,23 @@ def buildlexer( ctx ):
 def showtokens( ctx ):
 	"Show lexer/parser tokens"
 	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --foreign-token-id-file-show', shell=True )
+
+# gdb target
+def gdb( ctx ):
+	"Start GDB and load executable"
+	subprocess.call( 'gdb ' + BUILDDIR + '/exolang -ex "break main" -ex run', shell=True )
+
+# memcheck target
+def memcheck( ctx ):
+	"Start Valgrind and do memcheck"
+	subprocess.call( 'valgrind --leak-check=full --demangle=yes --db-attach=yes ' + BUILDDIR + '/exolang', shell=True )
+
+# callgrind target
+def callgrind( ctx ):
+	"Start Valgrind and do callgrind"
+	subprocess.call( 'valgrind --tool=callgrind --demangle=yes --db-attach=yes --callgrind-out-file=' + BUILDDIR + '/exolang.out ' + BUILDDIR + '/exolang', shell=True )
+
+# massif target
+def massif( ctx ):
+	"Start Valgrind and do massif"
+	subprocess.call( 'valgrind --tool=massif --demangle=yes --db-attach=yes ' + BUILDDIR + '/exolang', shell=True )
