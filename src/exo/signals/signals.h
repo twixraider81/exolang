@@ -25,10 +25,16 @@ namespace exo
 	namespace signals
 	{
 		/**
-		 * Registers a Segementationfault handler which incase results in aSegfault exception.
+		 * Registers a Segmentation fault handler which in case results in Segfault exception.
 		 * If compiled with debug enabled it will additionally print a 10 frame backtrace on stdout
 		 */
 		void sigsegHandler( int signal, siginfo_t *si, void *arg );
+
+		/**
+		 * Registers a termination/interrupt handler to initialize shutdown.
+		 */
+		void sigtermHandler( int signal, siginfo_t *si, void *arg );
+
 
 		/*
 		 * Register signalhandlers, currently only a segfault exception throw is registered

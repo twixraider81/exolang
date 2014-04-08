@@ -15,6 +15,7 @@
 
 #include "exo/exo.h"
 #include "exo/signals/signals.h"
+#include "exo/init/init.h"
 
 namespace exo
 {
@@ -39,6 +40,12 @@ namespace exo
 			}
 		}
 
+		void sigtermHandler( int signal, siginfo_t *si, void *arg )
+		{
+			TRACE( "shuting down." );
+			exo::init::Init::Shutdown();
+		}
+
 		void registerHandlers()
 		{
 			struct sigaction sa;
@@ -49,6 +56,16 @@ namespace exo
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
 				ERRORMSG( "failed to register segementation fault handler" );
+			}
+
+
+			memset( &sa, 0, sizeof( struct sigaction) );
+			sigemptyset( &sa.sa_mask );
+			sa.sa_sigaction = sigtermHandler;
+			sa.sa_flags = SA_SIGINFO;
+
+			if( sigaction( SIGTERM, &sa, NULL ) == -1 || sigaction( SIGINT, &sa, NULL ) == -1 ) {
+				ERRORMSG( "failed to register sigterm handler" );
 			}
 		}
 	}

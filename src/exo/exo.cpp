@@ -78,11 +78,7 @@ int main( int argc, char **argv )
 		if( commandLine.count( "input" ) ) {
 			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
 		} else {
-#ifdef EXO_TRACE
-			ast = new exo::ast::Tree( "tests/1.exo" );
-#else
 			ast = new exo::ast::Tree( std::cin );
-#endif
 		}
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
