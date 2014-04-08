@@ -1,0 +1,47 @@
+/*
+ * Multi line comments
+ */
+// single line comment
+# single line comment too
+
+
+auto function blabla1 { ; };
+function() blabla2 { ; };
+string function blabla3( string $s ) { $s; };
+function blabla4( string $s, float $t ) { $s; };
+
+// different simple expressions
+
+// {{{ internal types
+bool $e;
+boolean $e;
+
+{
+	int $a;
+	integer $a;
+	$a = 1;
+}
+
+float $b = 2.5;
+
+string $d;
+
+auto $c;
+
+callable $f;
+// }}}
+
+// user defined types
+item $item0;
+descendent\item $item;1
+\fullqualified\item $item2;
+
+
+// variable declaration list
+int $b, float $c, string $d;
+
+blabla3( $d );
+
+__FILE__
+__LINE__
+__HALT__
