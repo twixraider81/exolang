@@ -110,6 +110,9 @@ int main( int argc, char **argv )
 
 		ir = new exo::ast::ir::IR( context );
 		delete ir;
+	} catch( exo::exceptions::Exception& e ) {
+		ERRORMSG( e.what() );
+		ERRORRET( boost::diagnostic_information( e ), -1 );
 	} catch( boost::exception& e ) {
 		ERRORRET( boost::diagnostic_information( e ), -1 );
 	}  catch( std::exception& e ) {
