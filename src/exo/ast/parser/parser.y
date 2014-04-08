@@ -35,11 +35,9 @@
 %extra_argument { exo::ast::Tree *ast }
 %default_type { exo::ast::nodes::Node* }
 
-
+%nonassoc S_EQ S_NE S_LT S_LE S_GT S_GE.
 %left S_PLUS S_MINUS.
-%nonassoc S_EQ S_NE.
 %left S_MUL S_DIV.
-
 
 /* a program is build out of statements. */
 program ::= statements(s). {
@@ -101,10 +99,6 @@ block(b) ::= S_LBRACKET statements(s) S_RBRACKET. {
 
 /* a type may be a null, bool, integer, float, string or auto */
 %type type { exo::ast::nodes::Type* }
-type(t) ::= T_TNULL. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TNULL.");
-	t = new exo::ast::nodes::Type( exo::types::NIL );
-}
 type(t) ::= T_TBOOL. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TBOOL.");
 	t = new exo::ast::nodes::Type( exo::types::BOOLEAN );
@@ -341,4 +335,16 @@ constant(c) ::= S_LINE(l). {
 	TRACESECTION( "PARSER", "constant(c) ::= S_LINE(l).");
 	POINTERCHECK( l );
 	c = new exo::ast::nodes::ConstExpr( TOKENSTR(l), new exo::ast::nodes::ValInt( l->line_number() ) );
+}
+constant(c) ::= T_VNULL. {
+	TRACESECTION( "PARSER", "constant(c) ::= T_VNULL.");
+	c = new exo::ast::nodes::ConstExpr( "false", new exo::ast::nodes::ValNull() );
+}
+constant(c) ::= T_VTRUE. {
+	TRACESECTION( "PARSER", "constant(c) ::= T_VTRUE.");
+	c = new exo::ast::nodes::ConstExpr( "true", new exo::ast::nodes::ValBool( true ) );
+}
+constant(c) ::= T_VFALSE. {
+	TRACESECTION( "PARSER", "constant(c) ::= T_VFALSE.");
+	c = new exo::ast::nodes::ConstExpr( "false", new exo::ast::nodes::ValBool( false ) );
 }
