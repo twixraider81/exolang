@@ -24,7 +24,7 @@ namespace exo
 		{
 			ConstExpr::ConstExpr( std::string n, ValAny* v )
 			{
-				TRACESECTION( "AST", "declaring constant expression: " << n << "; " << v->value );
+				TRACESECTION( "AST", "constant expression: " << n << "; " << v->value );
 				name = n;
 				value = v;
 			}
