@@ -45,6 +45,9 @@ namespace exo
 			llvm::Type* Type::getLLVMType( llvm::LLVMContext* context )
 			{
 				switch( id ) {
+					case exo::types::BOOLEAN:
+						return( llvm::Type::getInt64Ty( *context ) );
+
 					case exo::types::INTEGER:
 						return( llvm::Type::getInt64Ty( *context ) );
 
