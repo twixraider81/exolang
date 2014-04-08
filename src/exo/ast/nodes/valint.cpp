@@ -37,7 +37,7 @@ namespace exo
 			llvm::Value* ValInt::Generate( exo::ast::Context* context )
 			{
 				TRACESECTION( "IR", "generating int:" << value );
-				return( llvm::ConstantInt::get( llvm::Type::getInt64Ty( *(context->context) ), value, true) );
+				return( llvm::ConstantInt::get( *(context->context), llvm::APInt( 64, value ) ) );
 			}
 		}
 	}

@@ -37,7 +37,7 @@ namespace exo
 			llvm::Value* ValFloat::Generate( exo::ast::Context* context )
 			{
 				TRACESECTION( "IR", "generating float:" << value );
-				return( llvm::ConstantFP::get( llvm::Type::getDoubleTy( *(context->context) ), value ) );
+				return( llvm::ConstantFP::get( *(context->context), llvm::APFloat( value ) ) );
 			}
 		}
 	}
