@@ -69,6 +69,26 @@ namespace exo
 					ValAny();
 			};
 
+			class ValBool : public ValAny
+			{
+				public:
+					bool value;
+
+					ValBool( bool bVal );
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
+			};
+
+			class ValNull : public ValAny
+			{
+				public:
+					bool value;
+
+					ValNull() { value = NULL; };
+
+					virtual llvm::Value* Generate( exo::ast::Context* context );
+			};
+
 			/*
 			 * TODO: use GMP
 			 */
