@@ -19,7 +19,7 @@
 #include "exo/jit/llvm.h"
 
 #include "exo/lexer/lexer"
-#include "exo/ast/parser/parser.h"
+#include "exo/parser/parser.h"
 
 #include "exo/ast/block.h"
 #include "exo/ast/context.h"

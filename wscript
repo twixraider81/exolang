@@ -150,25 +150,20 @@ def showtodo( ctx ):
 	"Show todos"
 	subprocess.call( 'grep -nHr -nHr "FIXME\|TODO" '  + SRCDIR, shell=True )
 
-# backup target
-def backup( ctx ):
-	"Create backup at ~/backup/"
-	subprocess.call( 'tar --exclude bin -vcj '  + TOP + ' -f ~/backup/exolang-$(date +%Y-%m-%d-%H-%M).tar.bz2', shell=True )
-
 # (re)create parser
 def buildparser( ctx ):
 	"Recreate Parser (needs lemon binary)"
-	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.y; mv -f ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.cpp; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h', shell=True )
+	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.y; mv -f ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.cpp; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h', shell=True )
 
 # (re)create lexer
 def buildlexer( ctx ):
 	"Recreate Lexer (needs quex binary)"
-	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/lexer -o lexer', shell=True )
+	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/lexer -o lexer', shell=True )
 
 # show lexer/parser tokens
 def showtokens( ctx ):
 	"Show lexer/parser tokens"
-	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/ast/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/ast/parser/parser.h --foreign-token-id-file-show', shell=True )
+	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h --foreign-token-id-file-show', shell=True )
 
 # gdb target
 def gdb( ctx ):
@@ -184,8 +179,3 @@ def memcheck( ctx ):
 def callgrind( ctx ):
 	"Start Valgrind and do callgrind"
 	subprocess.call( 'valgrind --tool=callgrind --demangle=yes --db-attach=yes --callgrind-out-file=' + BUILDDIR + '/exolang.out ' + BUILDDIR + '/exolang', shell=True )
-
-# massif target
-def massif( ctx ):
-	"Start Valgrind and do massif"
-	subprocess.call( 'valgrind --tool=massif --demangle=yes --db-attach=yes ' + BUILDDIR + '/exolang', shell=True )
