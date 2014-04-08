@@ -22,9 +22,8 @@
 
 /*
  * Main/CLI Invocation, see -h
- * TODO: 1. do a bit of documentation now
+ * TODO: 1. implement type system
  * TODO: 2. use boost unit tests!
- * TODO: 3. implement type system
  */
 int main( int argc, char **argv )
 {
