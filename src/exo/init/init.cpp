@@ -14,42 +14,43 @@
  */
 
 #include "exo/exo.h"
+#include "exo/init/init.h"
+#include "exo/jit/llvm.h"
 #include "exo/signals/signals.h"
 
 namespace exo
 {
-	namespace signals
+	namespace init
 	{
-		void sigsegHandler( int signal, siginfo_t *si, void *arg )
+		bool Init::Startup()
 		{
-			if( signal == SIGSEGV ) {
-#ifdef EXO_DEBUG
-				void *array[10];
-				size_t size;
+#ifndef EXO_GC_DISABLE
+			GC_INIT();
+			GC_enable_incremental();
 
-				size = backtrace( array, 10 );
-
-				/* skip first stack frame (points here) */
-				for( int i = 1; i < size && array != NULL; ++i )
-				{
-					TRACESECTION( "SIGSEGV", "(" << i << ") " << array[i] );
-				}
+# ifdef EXO_TRACE
+			setenv( "GC_PRINT_STATS", "1", 1 );
+			setenv( "GC_DUMP_REGULARLY", "1", 1 );
+			setenv( "GC_FIND_LEAK", "1", 1 );
+# endif
 #endif
-				BOOST_THROW_EXCEPTION( exo::exceptions::Segfault() );
-			}
+			// initialize llvm
+			llvm::InitializeNativeTarget();
+			llvm::InitializeNativeTargetAsmPrinter();
+			llvm::InitializeNativeTargetAsmParser();
+
+			// register signal handler
+			exo::signals::registerHandlers();
+
+			return( true );
 		}
 
-		void registerHandlers()
+		int Init::Shutdown()
 		{
-			struct sigaction sa;
-			memset( &sa, 0, sizeof( struct sigaction) );
-			sigemptyset( &sa.sa_mask );
-			sa.sa_sigaction = sigsegHandler;
-			sa.sa_flags = SA_SIGINFO;
-
-			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
-				ERRORMSG( "failed to register segementation fault handler" );
-			}
+#ifndef EXO_GC_DISABLE
+			GC_gcollect();
+#endif
+			return( 0 );
 		}
 	}
 }

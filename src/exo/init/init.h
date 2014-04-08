@@ -13,30 +13,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGNALS_H_
-#define SIGNALS_H_
-
-#include <csignal>
-#include <execinfo.h>
-#include <unistd.h>
+#ifndef INIT_H_
+#define INIT_H_
 
 namespace exo
 {
-	namespace signals
+	namespace init
 	{
-		/**
-		 * Registers a Segementationfault handler which incase results in aSegfault exception.
-		 * If compiled with debug enabled it will additionally print a 10 frame backtrace on stdout
-		 */
-		void sigsegHandler( int signal, siginfo_t *si, void *arg );
+		class Init
+		{
+			public:
+				/**
+				 * Initializes the GarbageCollector, LLVM and registers Signals Handlers.
+				 * MUST be called immediately after Startup.
+				 */
+				static bool Startup();
 
-		/*
-		 * Register signalhandlers, currently only a segfault exception throw is registered
-		 * TODO: check which other signals could be caught - http://en.wikipedia.org/wiki/Unix_signal
-		 */
-		void registerHandlers();
+				/**
+				 * Shuts down our Interpreter. Only the garbage Collection for now.
+				 * FIXME: should also handle parser state.
+				 */
+				static int Shutdown();
+		};
 	}
 }
 
 
-#endif /* SIGNALS_H_ */
+#endif /* INIT_H_ */

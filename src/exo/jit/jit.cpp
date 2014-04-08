@@ -30,10 +30,6 @@ namespace exo
 {
 	namespace jit
 	{
-		/**
-		 * Builds a LLVM MCJIT IR and loads the LLVM IR of the AST
-		 * TODO: make use of -0x levels - http://llvm.org/docs/doxygen/html/namespacellvm_1_1CodeGenOpt.html
-		 */
 		JIT::JIT( exo::ast::Context* c )
 		{
 			context = c;

@@ -17,42 +17,24 @@
 #include "exo/exo.h"
 #include "exo/ast/ast.h"
 #include "exo/jit/jit.h"
-#include "exo/signals/signals.h"
+#include "exo/init/init.h"
 
 #include <boost/program_options.hpp>
 
 /*
  * Main/CLI Invocation, see -h
  * TODO: 1. implement type system
- * TODO: 2. implement init/shutdown framework
  * TODO: 3. use boost unit tests!
  */
 int main( int argc, char **argv )
 {
+	if( !exo::init::Init::Startup() ) {
+		ERRORRET( "unable to complete initialization. exiting...", -1 );
+	}
+
 	exo::ast::Tree* ast;
 	exo::ast::Context* context;
 	exo::jit::JIT* jit;
-
-#ifndef EXO_GC_DISABLE
-	// inititalize garbage collector TODO: create initialization framework
-	GC_INIT();
-	GC_enable_incremental();
-
-# ifdef EXO_TRACE
-	setenv( "GC_PRINT_STATS", "1", 1 );
-	setenv( "GC_DUMP_REGULARLY", "1", 1 );
-	setenv( "GC_FIND_LEAK", "1", 1 );
-# endif
-#endif
-
-	// initialize llvm
-	llvm::InitializeNativeTarget();
-	llvm::InitializeNativeTargetAsmPrinter();
-	llvm::InitializeNativeTargetAsmParser();
-
-	// register signal handler
-	exo::signals::registerHandlers();
-
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -113,17 +95,14 @@ int main( int argc, char **argv )
 		delete jit;
 	} catch( exo::exceptions::Exception& e ) {
 		ERRORMSG( e.what() );
-		ERRORRET( boost::diagnostic_information( e ), -1 );
+		ERRORMSG( boost::diagnostic_information( e ) );
 	} catch( boost::exception& e ) {
-		ERRORRET( boost::diagnostic_information( e ), -1 );
+		ERRORMSG( boost::diagnostic_information( e ) );
 	}  catch( std::exception& e ) {
-		ERRORRET( e.what(), -1 );
+		ERRORMSG( e.what() );
 	} catch( ... ) {
-		ERRORRET( "unknown exception", -1 );
+		ERRORMSG( "unknown exception" );
 	}
 
-#ifndef EXO_GC_DISABLE
-	GC_gcollect();
-#endif
-	return( 0 );
+	return( exo::init::Init::Shutdown() );
 }

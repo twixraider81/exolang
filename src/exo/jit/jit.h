@@ -27,6 +27,10 @@ namespace exo
 			llvm::FunctionPassManager *fpm;
 
 			public:
+				/**
+				 * Builds a LLVM MCJIT IR and loads the LLVM IR of the AST
+				 * TODO: make use of -0x levels - http://llvm.org/docs/doxygen/html/namespacellvm_1_1CodeGenOpt.html
+				 */
 				JIT( exo::ast::Context* c );
 				~JIT();
 		};
