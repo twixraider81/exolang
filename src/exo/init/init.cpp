@@ -45,12 +45,12 @@ namespace exo
 			return( true );
 		}
 
-		int Init::Shutdown()
+		void Init::Shutdown()
 		{
 #ifndef EXO_GC_DISABLE
 			GC_gcollect();
 #endif
-			return( 0 );
+			exit( 0 );
 		}
 	}
 }

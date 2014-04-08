@@ -100,5 +100,5 @@ int main( int argc, char **argv )
 		ERRORMSG( "unknown exception" );
 	}
 
-	return( exo::init::Init::Shutdown() );
+	exo::init::Init::Shutdown();
 }
