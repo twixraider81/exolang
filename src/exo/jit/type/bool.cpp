@@ -14,18 +14,23 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		namespace nodes
+		namespace types
 		{
-			ValString::ValString( std::string sVal )
+			BooleanType::BooleanType( llvm::LLVMContext* c, bool bVal )
 			{
-				TRACESECTION( "AST", "creating string value:" << sVal );
-				value = sVal;
+				type = llvm::Type::getInt64Ty( *c );
+				if( bVal ) {
+					value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 1 ) );
+				} else {
+					value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 0 ) );
+				}
 			}
 		}
 	}

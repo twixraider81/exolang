@@ -14,17 +14,19 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		namespace nodes
+		namespace types
 		{
-			ValAny::ValAny()
+			NullType::NullType( llvm::LLVMContext* c, bool bVal )
 			{
-				value = NULL;
+				type = llvm::Type::getInt64Ty( *c );
+				value = llvm::ConstantInt::getFalse( *c );
 			}
 		}
 	}

@@ -18,12 +18,12 @@
 
 #include "exo/exo.h"
 #include "exo/jit/llvm.h"
-
-#include "exo/types/types.h"
+#include "exo/jit/type/types.h"
 
 #include "exo/ast/block.h"
 #include "exo/ast/tree.h"
 #include "exo/ast/context.h"
+#include "exo/jit/jit.h"
 #include "exo/ast/nodes/nodes.h"
 
 /* we need a safe string from our tokens */

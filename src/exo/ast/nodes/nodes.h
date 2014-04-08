@@ -60,79 +60,12 @@ namespace exo
 					StmtExpr( Expr* expr );
 			};
 
-			class ValAny : public Expr
-			{
-				public:
-					void* value;
-
-				protected:
-					ValAny();
-			};
-
-			class ValBool : public ValAny
-			{
-				public:
-					bool value;
-
-					ValBool( bool bVal );
-
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
-
-			class ValNull : public ValAny
-			{
-				public:
-					bool value;
-
-					ValNull() { value = NULL; };
-
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
-
-			/*
-			 * TODO: use GMP
-			 */
-			class ValInt : public ValAny
-			{
-				public:
-					long long value;
-
-					ValInt( long long lVal );
-					ValInt( std::string lVal );
-
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
-
-			class ValFloat : public ValAny
-			{
-				public:
-					double value;
-
-					ValFloat( double dVal );
-					ValFloat( std::string lVal );
-
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
-
-			class ValString : public ValAny
-			{
-				public:
-					std::string value;
-
-					ValString( std::string sVal );
-			};
-
 			class Type : public Node
 			{
 				public:
-					exo::types::typeId id;
-					std::string name;
+					exo::jit::types::Type* jitType;
 
-					Type( exo::types::typeId tId );
-					Type( std::string tName );
-					Type( exo::types::typeId tId, std::string tName );
-
-					llvm::Type* getLLVMType( llvm::LLVMContext* context );
+					Type( exo::jit::types::Type* t );
 			};
 
 			class VarDecl : public Stmt
@@ -210,9 +143,9 @@ namespace exo
 			{
 				public:
 					std::string name;
-					ValAny* value;
+					Type* value;
 
-					ConstExpr( std::string n, ValAny* v );
+					ConstExpr( std::string n, Type* v );
 			};
 		}
 	}

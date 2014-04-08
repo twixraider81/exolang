@@ -22,9 +22,9 @@ namespace exo
 	{
 		namespace nodes
 		{
-			ConstExpr::ConstExpr( std::string n, ValAny* v )
+			ConstExpr::ConstExpr( std::string n, Type* v )
 			{
-				TRACESECTION( "AST", "constant expression: " << n << "; " << v->value );
+				TRACESECTION( "AST", "constant expression: " << n << "; " );
 				name = n;
 				value = v;
 			}

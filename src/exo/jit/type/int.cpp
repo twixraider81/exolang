@@ -14,12 +14,20 @@
  */
 
 #include "exo/exo.h"
-#include "exo/types/types.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
-	namespace types
+	namespace jit
 	{
-
+		namespace types
+		{
+			IntegerType::IntegerType( llvm::LLVMContext* c, long long lVal )
+			{
+				type = llvm::Type::getInt64Ty( *c );
+				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, lVal ) );
+			}
+		}
 	}
 }

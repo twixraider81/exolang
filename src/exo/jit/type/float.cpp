@@ -14,32 +14,19 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		namespace nodes
+		namespace types
 		{
-			ValBool::ValBool( bool bVal )
+			FloatType::FloatType( llvm::LLVMContext* c, double dVal )
 			{
-				TRACESECTION( "AST", "creating bool value:" << bVal );
-				value = bVal;
-			}
-
-			llvm::Value* ValBool::Generate( exo::ast::Context* context )
-			{
-				TRACESECTION( "IR", "generating boolean:" << value );
-
-				llvm::Value* bVal;
-				if( value ) {
-					bVal = llvm::ConstantInt::get( *(context->context), llvm::APInt( 64, 1 ) );
-				} else {
-					bVal = llvm::ConstantInt::get( *(context->context), llvm::APInt( 64, 0 ) );
-				}
-
-				return( bVal );
+				type = llvm::Type::getDoubleTy( *c );
+				value = llvm::ConstantFP::get( *c, llvm::APFloat( dVal ) );
 			}
 		}
 	}

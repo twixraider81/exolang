@@ -22,41 +22,10 @@ namespace exo
 	{
 		namespace nodes
 		{
-			Type::Type( exo::types::typeId tId )
+			Type::Type( exo::jit::types::Type* t )
 			{
-				TRACESECTION( "AST","referenced type of typeId:" << tId );
-				id = tId;
-			}
-
-			Type::Type( std::string tName )
-			{
-				TRACESECTION( "AST","referenced user defined type of name:" << tName );
-				id = exo::types::USER;
-				name = tName;
-			}
-
-			Type::Type( exo::types::typeId tId, std::string tName )
-			{
-				TRACESECTION( "AST","referenced type of name:" << tName << ", with typeId:" << tId  );
-				id = tId;
-				name = tName;
-			}
-
-			llvm::Type* Type::getLLVMType( llvm::LLVMContext* context )
-			{
-				switch( id ) {
-					case exo::types::BOOLEAN:
-						return( llvm::Type::getInt64Ty( *context ) );
-
-					case exo::types::INTEGER:
-						return( llvm::Type::getInt64Ty( *context ) );
-
-					case exo::types::FLOAT:
-						return( llvm::Type::getDoubleTy( *context ) );
-
-					default:
-						return( llvm::Type::getVoidTy( *context ) );
-				}
+				TRACESECTION( "AST","referenced type:" );
+				jitType = t;
 			}
 		}
 	}

@@ -24,7 +24,7 @@ namespace exo
 		{
 			FunDecl::FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock )
 			{
-				TRACESECTION( "AST", "declaring function " << fType->name );
+				TRACESECTION( "AST", "declaring function " );
 				type = fType;
 				returnType = rType;
 				arguments = vArgs;

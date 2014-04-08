@@ -24,14 +24,14 @@ namespace exo
 		{
 			VarDecl::VarDecl( std::string vName, Type* vType )
 			{
-				TRACESECTION( "AST", "declaring variable: $" << vName << ":" << vType->id );
+				TRACESECTION( "AST", "declaring variable: $" << vName << ":" );
 				name = vName;
 				type = vType;
 			}
 
 			VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
 			{
-				TRACESECTION( "AST", "declaring/assigning variable: $" << vName << ":" << vType->id );
+				TRACESECTION( "AST", "declaring/assigning variable: $" << vName << ":" );
 				name = vName;
 				type = vType;
 				expression = expr;
@@ -42,7 +42,7 @@ namespace exo
 				TRACESECTION( "IR", "creating variable: $" << name );
 
 				// allocate memory and push variable onto the local stack
-				llvm::AllocaInst* memory = new llvm::AllocaInst( type->getLLVMType( context->context ), name.c_str(), context->getCurrentBlock() );
+				llvm::AllocaInst* memory = new llvm::AllocaInst( type->jitType->type, name.c_str(), context->getCurrentBlock() );
 				context->Variables()[ name ] = memory;
 
 				TRACESECTION( "IR", "new variable map size:" << context->Variables().size() );

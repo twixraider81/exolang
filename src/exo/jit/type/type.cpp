@@ -14,19 +14,46 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		namespace nodes
+		namespace types
 		{
-			llvm::Value* ValNull::Generate( exo::ast::Context* context )
+			Type::Type( llvm::LLVMContext* c )
 			{
-				TRACESECTION( "IR", "generating null" );
-				return( llvm::ConstantInt::getFalse( *(context->context) ) );
-			}
+				value = NULL;
+				context = c;
+				type = llvm::Type::getVoidTy( *context );
+			};
+
+			Type* Type::opAdd( Type* rhs )
+			{
+				return( new Type() );
+			};
+
+			Type* Type::opSub( Type* rhs )
+			{
+				return( new Type() );
+			};
+
+			Type* Type::opMul( Type* rhs )
+			{
+				return( new Type() );
+			};
+
+			Type* Type::opDiv( Type* rhs )
+			{
+				return( new Type() );
+			};
+
+			Type* Type::opConCat( Type* rhs )
+			{
+				return( new Type() );
+			};
 		}
 	}
 }
