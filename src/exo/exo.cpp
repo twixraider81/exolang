@@ -81,7 +81,7 @@ int main( int argc, char **argv )
 			ast = new exo::ast::Tree( std::cin, &llvm::getGlobalContext() );
 		}
 
-		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );
+		context = new exo::ast::Context( "main", ast->context );
 		context->generateIR( ast->stmts );
 
 		jit = new exo::jit::JIT( context );
