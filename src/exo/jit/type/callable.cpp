@@ -14,19 +14,19 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		namespace nodes
+		namespace types
 		{
-			ConstExpr::ConstExpr( std::string n, exo::jit::types::Type* v )
+			CallableType::CallableType( llvm::LLVMContext* c, std::string cVal ) : Type( c )
 			{
-				TRACESECTION( "AST", "constant expression: " << n << "; " );
-				name = n;
-				value = v;
+				type = llvm::Type::getInt64Ty( *c );
+				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 1 ) );
 			}
 		}
 	}

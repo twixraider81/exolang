@@ -65,8 +65,8 @@ namespace exo
 				public:
 					exo::jit::types::Type* jitType;
 
-					Type( std::type_info t );
-					Type( std::type_info t, std::string tName );
+					Type( const std::type_info* type );
+					Type( const std::type_info* type, std::string tName );
 			};
 
 			class VarDecl : public Stmt
@@ -143,10 +143,10 @@ namespace exo
 			class ConstExpr : public Expr
 			{
 				public:
-					std::string name;
-					Type* value;
+					std::string				name;
+					exo::jit::types::Type*	value;
 
-					ConstExpr( std::string n, Type* v );
+					ConstExpr( std::string n, exo::jit::types::Type* v );
 			};
 		}
 	}

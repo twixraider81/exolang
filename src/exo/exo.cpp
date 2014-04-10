@@ -76,9 +76,9 @@ int main( int argc, char **argv )
 	try {
 		// we build the ast from a file given via -i / --input or stdin
 		if( commandLine.count( "input" ) ) {
-			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
+			ast = new exo::ast::Tree( commandLine["input"].as<std::string>(), &llvm::getGlobalContext() );
 		} else {
-			ast = new exo::ast::Tree( std::cin );
+			ast = new exo::ast::Tree( std::cin, &llvm::getGlobalContext() );
 		}
 
 		context = new exo::ast::Context( "main", &llvm::getGlobalContext() );

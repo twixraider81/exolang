@@ -30,13 +30,13 @@ namespace exo
 		class Tree : public gc
 		{
 			public:
-				void*		 parser;
-				std::string	fileName;
+				void*				parser;
+				std::string			fileName;
+				llvm::LLVMContext*	context;
+				nodes::StmtList*	stmts;
 
-				nodes::StmtList* stmts;
-
-				Tree( std::string fName );
-				Tree( std::istream& stream );
+				Tree( std::string fName, llvm::LLVMContext* c );
+				Tree( std::istream& stream, llvm::LLVMContext* c );
 		};
 	}
 }

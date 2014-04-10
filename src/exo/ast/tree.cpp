@@ -20,9 +20,10 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree( std::string fName )
+		Tree::Tree( std::string fName, llvm::LLVMContext* c )
 		{
 			fileName = fName;
+			context = c;
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
 			parser = ParseAlloc( GC_malloc );
@@ -49,9 +50,10 @@ namespace exo
 			}
 		}
 
-		Tree::Tree( std::istream& stream )
+		Tree::Tree( std::istream& stream, llvm::LLVMContext* c )
 		{
 			fileName = "<stdin>";
+			context = c;
 			TRACESECTION( "AST", "opening <stdin>" );
 
 			parser = ParseAlloc( GC_malloc );

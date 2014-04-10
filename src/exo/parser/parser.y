@@ -101,32 +101,32 @@ block(b) ::= S_LBRACKET statements(s) S_RBRACKET. {
 %type type { exo::ast::nodes::Type* }
 type(t) ::= T_TBOOL. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TBOOL.");
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::BooleanType ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::BooleanType ) );
 }
 type(t) ::= T_TINT. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TINT.");
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::IntegerType ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::IntegerType ) );
 }
 type(t) ::= T_TFLOAT. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TFLOAT.");
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::FloatType ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::FloatType ) );
 }
 type(t) ::= T_TSTRING. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TSTRING.");
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::StringType ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::StringType ) );
 }
 type(t) ::= T_TAUTO. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TAUTO.");
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::AutoType ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::AutoType ) );
 }
 type(t) ::= T_TCALLABLE. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TCALLABLE.");
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::CallableType ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::CallableType ) );
 }
 type(t) ::= T_ID(i). {
 	TRACESECTION( "PARSER", "type(t) ::= T_ID(i).");
 	POINTERCHECK( i );
-	t = new exo::ast::nodes::Type( typeid( exo::jit::types::ClassType ), TOKENSTR( i ) );
+	t = new exo::ast::nodes::Type( &typeid( exo::jit::types::ClassType ), TOKENSTR( i ) );
 }
 
 
@@ -175,21 +175,21 @@ fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
 	TRACESECTION( "PARSER", "fundecl(f) ::= S_FUNCTION T_ID(i) block(b).");
 	POINTERCHECK( i );
 	POINTERCHECK( b );
-	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), new exo::ast::nodes::Type( exo::types::AUTO ), new exo::ast::nodes::VarDeclList, b );
+	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( &typeid( exo::jit::types::CallableType ), TOKENSTR(i) ), new exo::ast::nodes::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::nodes::VarDeclList, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
 	TRACESECTION( "PARSER", "fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b).");
 	POINTERCHECK( t );
 	POINTERCHECK( i );
 	POINTERCHECK( b );
-	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), t, new exo::ast::nodes::VarDeclList, b );
+	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( &typeid( exo::jit::types::CallableType ), TOKENSTR(i) ), t, new exo::ast::nodes::VarDeclList, b );
 }
 fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	TRACESECTION( "PARSER", "fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b).");
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), new exo::ast::nodes::Type( exo::types::AUTO ), a, b );
+	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( &typeid( exo::jit::types::CallableType ), TOKENSTR(i) ), new exo::ast::nodes::Type( &typeid( exo::jit::types::AutoType ) ), a, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	TRACESECTION( "PARSER", "type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b).");
@@ -197,7 +197,7 @@ fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( exo::types::CALLABLE, TOKENSTR(i) ), t, a, b );
+	f = new exo::ast::nodes::FunDecl( new exo::ast::nodes::Type( &typeid( exo::jit::types::CallableType ), TOKENSTR(i) ), t, a, b );
 }
 
 
@@ -224,20 +224,6 @@ exprlist ::= exprlist(l) S_COMMA expression(e). {
 }
 
 
-/* a number may be an integer or a float */
-%type number { exo::jit::types::ScalarType* }
-number(n) ::= T_VINT(i). {
-	TRACESECTION( "PARSER", "number(n) ::= T_VINT(i).");
-	POINTERCHECK( i );
-	n = new exo::jit::types::IntegerType( TOKENSTR(i) );
-}
-number(n) ::= T_VFLOAT(f). {
-	TRACESECTION( "PARSER", "number(n) ::= T_VFLOAT(f).");
-	POINTERCHECK( f );
-	n = new exo::ast::nodes::ValFloat( TOKENSTR(f) );
-}
-
-
 /* an expression may be a number, an assignment or a function call or a constant */
 %type expression { exo::ast::nodes::Expr* }
 expression(r) ::= T_VAR(v) S_ASSIGN expression(e). {
@@ -251,11 +237,6 @@ expression(e) ::= T_ID(i) S_LANGLE exprlist(a) S_RANGLE. {
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	e = new exo::ast::nodes::FunCall( TOKENSTR(i), a );
-}
-expression(e) ::= number(n). {
-	TRACESECTION( "PARSER", "expression ::= number.");
-	POINTERCHECK( n );
-	e = n;
 }
 expression(e) ::= expression(a) comparison(c) expression(b). {
 	TRACESECTION( "PARSER", "expression(e) ::= expression(a) comparison(c) expression(b).");
@@ -324,27 +305,37 @@ comparison(c) ::= S_DIV(o). {
 	c = o;
 }
 
-/* a constant can be a builtin */
+/* a constant can be a builtin, or a number (float/int) */
 %type constant { exo::ast::nodes::ConstExpr* }
 constant(c) ::= S_FILE(f). {
 	TRACESECTION( "PARSER", "constant(c) ::= S_FILE(f).");
 	POINTERCHECK( f );
-	c = new exo::ast::nodes::ConstExpr( TOKENSTR(f), new exo::ast::nodes::ValString( ast->fileName ) );
+	c = new exo::ast::nodes::ConstExpr( TOKENSTR(f), new exo::jit::types::StringType( ast->context, "-" ) );
 }
 constant(c) ::= S_LINE(l). {
 	TRACESECTION( "PARSER", "constant(c) ::= S_LINE(l).");
 	POINTERCHECK( l );
-	c = new exo::ast::nodes::ConstExpr( TOKENSTR(l), new exo::ast::nodes::ValInt( l->line_number() ) );
+	c = new exo::ast::nodes::ConstExpr( TOKENSTR(l), new exo::jit::types::IntegerType( ast->context, l->line_number() ) );
 }
 constant(c) ::= T_VNULL. {
 	TRACESECTION( "PARSER", "constant(c) ::= T_VNULL.");
-	c = new exo::ast::nodes::ConstExpr( "false", new exo::ast::nodes::ValNull() );
+	c = new exo::ast::nodes::ConstExpr( "null", new exo::jit::types::NullType( ast->context ) );
 }
 constant(c) ::= T_VTRUE. {
 	TRACESECTION( "PARSER", "constant(c) ::= T_VTRUE.");
-	c = new exo::ast::nodes::ConstExpr( "true", new exo::ast::nodes::ValBool( true ) );
+	c = new exo::ast::nodes::ConstExpr( "true", new exo::jit::types::BooleanType( ast->context, true ) );
 }
 constant(c) ::= T_VFALSE. {
 	TRACESECTION( "PARSER", "constant(c) ::= T_VFALSE.");
-	c = new exo::ast::nodes::ConstExpr( "false", new exo::ast::nodes::ValBool( false ) );
+	c = new exo::ast::nodes::ConstExpr( "false", new exo::jit::types::BooleanType( ast->context, false ) );
+}
+constant(c) ::= T_VINT(i). {
+	TRACESECTION( "PARSER", "constant(c) ::= T_VINT(i).");
+	POINTERCHECK( i );
+	c = new exo::ast::nodes::ConstExpr( TOKENSTR(i), new exo::jit::types::IntegerType( ast->context, TOKENSTR(i) ) );
+}
+constant(c) ::= T_VFLOAT(f). {
+	TRACESECTION( "PARSER", "constant(c) ::= T_VFLOAT(f).");
+	POINTERCHECK( f );
+	c = new exo::ast::nodes::ConstExpr( TOKENSTR(f), new exo::jit::types::FloatType( ast->context, TOKENSTR(f) ) );
 }

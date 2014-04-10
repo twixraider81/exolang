@@ -67,7 +67,7 @@ namespace exo
 			class AutoType : public virtual Type
 			{
 				public:
-					AutoType( llvm::LLVMContext* c );
+					AutoType( llvm::LLVMContext* c ) : Type( c ) { context = c; };
 			};
 
 			class ScalarType : public virtual Type
@@ -98,22 +98,32 @@ namespace exo
 
 			class StringType : public virtual ScalarType
 			{
+				public:
+					StringType( llvm::LLVMContext* c, std::string sVal );
 			};
 
 			class CallableType : public virtual Type
 			{
+				public:
+					CallableType( llvm::LLVMContext* c, std::string cVal );
 			};
 
 			class FunctionType : public virtual CallableType
 			{
+				public:
+					FunctionType( llvm::LLVMContext* c, std::string fVal );
 			};
 
 			class MethodType : public virtual CallableType
 			{
+				public:
+					MethodType( llvm::LLVMContext* c, std::string mVal );
 			};
 
 			class ClassType : public virtual Type
 			{
+				public:
+					ClassType( llvm::LLVMContext* c, std::string cVal );
 			};
 		}
 	}

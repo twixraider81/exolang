@@ -22,15 +22,15 @@ namespace exo
 	{
 		namespace nodes
 		{
-			Type::Type( std::type_info t )
+			Type::Type( const std::type_info* t )
 			{
-				TRACESECTION( "AST", "referenced type:" << t.name() );
+				TRACESECTION( "AST", "referenced type:" << t->name() );
 				jitType = NULL;
 			}
 
-			Type::Type( std::type_info t, std::string tName )
+			Type::Type( const std::type_info* t , std::string tName )
 			{
-				TRACESECTION( "AST","referenced type:" << t.name() << ", name: " << tName );
+				TRACESECTION( "AST","referenced type:" << t->name() << ", name: " << tName );
 				jitType = NULL;
 			}
 		}
