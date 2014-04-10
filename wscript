@@ -168,7 +168,8 @@ def showtokens( ctx ):
 # gdb target
 def gdb( ctx ):
 	"Start GDB and load executable"
-	subprocess.call( 'gdb ' + BUILDDIR + '/exolang -ex "break main" -ex run', shell=True )
+	print( ctx.cmd )
+	subprocess.call( 'gdb ' + BUILDDIR + '/exolang', shell=True )
 
 # memcheck target
 def memcheck( ctx ):
