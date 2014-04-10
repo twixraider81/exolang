@@ -23,7 +23,7 @@ namespace exo
 	{
 		namespace types
 		{
-			BooleanType::BooleanType( llvm::LLVMContext* c, bool bVal )
+			BooleanType::BooleanType( llvm::LLVMContext* c, bool bVal ) : Type( c ), ScalarType( c )
 			{
 				type = llvm::Type::getInt64Ty( *c );
 				if( bVal ) {

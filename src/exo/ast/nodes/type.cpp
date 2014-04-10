@@ -22,10 +22,16 @@ namespace exo
 	{
 		namespace nodes
 		{
-			Type::Type( exo::jit::types::Type* t )
+			Type::Type( std::type_info t )
 			{
-				TRACESECTION( "AST","referenced type:" );
-				jitType = t;
+				TRACESECTION( "AST", "referenced type:" << t.name() );
+				jitType = NULL;
+			}
+
+			Type::Type( std::type_info t, std::string tName )
+			{
+				TRACESECTION( "AST","referenced type:" << t.name() << ", name: " << tName );
+				jitType = NULL;
 			}
 		}
 	}

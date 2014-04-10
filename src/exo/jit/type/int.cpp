@@ -23,10 +23,19 @@ namespace exo
 	{
 		namespace types
 		{
-			IntegerType::IntegerType( llvm::LLVMContext* c, long long lVal )
+			IntegerType::IntegerType( llvm::LLVMContext* c, long long lVal ) : Type( c ), ScalarType( c )
 			{
 				type = llvm::Type::getInt64Ty( *c );
 				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, lVal ) );
+			}
+
+			/*
+			 * TODO: use boost::numeric_
+			 */
+			IntegerType::IntegerType( llvm::LLVMContext* c, std::string lVal ) : Type( c ), ScalarType( c )
+			{
+				type = llvm::Type::getInt64Ty( *c );
+				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, atoi( lVal.c_str() ) ) );
 			}
 		}
 	}

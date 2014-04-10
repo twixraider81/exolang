@@ -16,7 +16,7 @@
 %include {
 	#include "exo/exo.h"
 	#include "exo/ast/ast.h"
-	#include "exo/types/types.h"
+	#include "exo/jit/type/types.h"
 }
 
 %syntax_error {
@@ -101,32 +101,32 @@ block(b) ::= S_LBRACKET statements(s) S_RBRACKET. {
 %type type { exo::ast::nodes::Type* }
 type(t) ::= T_TBOOL. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TBOOL.");
-	t = new exo::ast::nodes::Type( exo::types::BOOLEAN );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::BooleanType ) );
 }
 type(t) ::= T_TINT. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TINT.");
-	t = new exo::ast::nodes::Type( exo::types::INTEGER );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::IntegerType ) );
 }
 type(t) ::= T_TFLOAT. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TFLOAT.");
-	t = new exo::ast::nodes::Type( exo::types::FLOAT );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::FloatType ) );
 }
 type(t) ::= T_TSTRING. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TSTRING.");
-	t = new exo::ast::nodes::Type( exo::types::STRING );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::StringType ) );
 }
 type(t) ::= T_TAUTO. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TAUTO.");
-	t = new exo::ast::nodes::Type( exo::types::AUTO );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::AutoType ) );
 }
 type(t) ::= T_TCALLABLE. {
 	TRACESECTION( "PARSER", "type(t) ::= T_TCALLABLE.");
-	t = new exo::ast::nodes::Type( exo::types::CALLABLE );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::CallableType ) );
 }
 type(t) ::= T_ID(i). {
 	TRACESECTION( "PARSER", "type(t) ::= T_ID(i).");
 	POINTERCHECK( i );
-	t = new exo::ast::nodes::Type( TOKENSTR(i) );
+	t = new exo::ast::nodes::Type( typeid( exo::jit::types::ClassType ), TOKENSTR( i ) );
 }
 
 
@@ -225,11 +225,11 @@ exprlist ::= exprlist(l) S_COMMA expression(e). {
 
 
 /* a number may be an integer or a float */
-%type number { exo::ast::nodes::ValAny* }
+%type number { exo::jit::types::ScalarType* }
 number(n) ::= T_VINT(i). {
 	TRACESECTION( "PARSER", "number(n) ::= T_VINT(i).");
 	POINTERCHECK( i );
-	n = new exo::ast::nodes::ValInt( TOKENSTR(i) );
+	n = new exo::jit::types::IntegerType( TOKENSTR(i) );
 }
 number(n) ::= T_VFLOAT(f). {
 	TRACESECTION( "PARSER", "number(n) ::= T_VFLOAT(f).");

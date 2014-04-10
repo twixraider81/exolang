@@ -23,10 +23,21 @@ namespace exo
 	{
 		namespace types
 		{
-			FloatType::FloatType( llvm::LLVMContext* c, double dVal )
+			FloatType::FloatType( llvm::LLVMContext* c, double dVal ) : Type( c ), ScalarType( c )
 			{
+				context = c;
 				type = llvm::Type::getDoubleTy( *c );
 				value = llvm::ConstantFP::get( *c, llvm::APFloat( dVal ) );
+			}
+
+			/*
+			 * TODO: use boost::numeric_
+			 */
+			FloatType::FloatType( llvm::LLVMContext* c, std::string dVal ) : Type( c ), ScalarType( c )
+			{
+				context = c;
+				type = llvm::Type::getDoubleTy( *c );
+				value = llvm::ConstantFP::get( *c, llvm::APFloat( atof( dVal.c_str() ) ) );
 			}
 		}
 	}

@@ -23,7 +23,7 @@ namespace exo
 	{
 		namespace types
 		{
-			NullType::NullType( llvm::LLVMContext* c, bool bVal )
+			NullType::NullType( llvm::LLVMContext* c ) : Type( c )
 			{
 				type = llvm::Type::getInt64Ty( *c );
 				value = llvm::ConstantInt::getFalse( *c );

@@ -65,7 +65,8 @@ namespace exo
 				public:
 					exo::jit::types::Type* jitType;
 
-					Type( exo::jit::types::Type* t );
+					Type( std::type_info t );
+					Type( std::type_info t, std::string tName );
 			};
 
 			class VarDecl : public Stmt

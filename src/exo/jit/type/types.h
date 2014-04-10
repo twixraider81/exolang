@@ -60,10 +60,20 @@ namespace exo
 
 			class NullType : public virtual Type
 			{
+				public:
+					NullType( llvm::LLVMContext* c );
+			};
+
+			class AutoType : public virtual Type
+			{
+				public:
+					AutoType( llvm::LLVMContext* c );
 			};
 
 			class ScalarType : public virtual Type
 			{
+				public:
+					ScalarType( llvm::LLVMContext* c ) : Type( c ) { context = c; };
 			};
 
 			class BooleanType : public virtual ScalarType
@@ -76,12 +86,14 @@ namespace exo
 			{
 				public:
 					IntegerType( llvm::LLVMContext* c, long long lVal );
+					IntegerType( llvm::LLVMContext* c, std::string lVal );
 			};
 
 			class FloatType : public virtual ScalarType
 			{
 				public:
 					FloatType( llvm::LLVMContext* c, double dVal );
+					FloatType( llvm::LLVMContext* c, std::string dVal );
 			};
 
 			class StringType : public virtual ScalarType

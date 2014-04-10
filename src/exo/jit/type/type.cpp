@@ -32,27 +32,27 @@ namespace exo
 
 			Type* Type::opAdd( Type* rhs )
 			{
-				return( new Type() );
+				return( new Type( context ) );
 			};
 
 			Type* Type::opSub( Type* rhs )
 			{
-				return( new Type() );
+				return( new Type( context ) );
 			};
 
 			Type* Type::opMul( Type* rhs )
 			{
-				return( new Type() );
+				return( new Type( context ) );
 			};
 
 			Type* Type::opDiv( Type* rhs )
 			{
-				return( new Type() );
+				return( new Type( context ) );
 			};
 
 			Type* Type::opConCat( Type* rhs )
 			{
-				return( new Type() );
+				return( new Type( context ) );
 			};
 		}
 	}
