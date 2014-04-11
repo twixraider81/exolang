@@ -14,18 +14,15 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		VarDeclList::VarDeclList()
 		{
-			VarDeclList::VarDeclList()
-			{
-				TRACESECTION( "AST","creating variable declaration list" );
-			}
+			TRACESECTION( "AST","creating variable declaration list" );
 		}
 	}
 }

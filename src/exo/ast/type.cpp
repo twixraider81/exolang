@@ -14,25 +14,20 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		Type::Type( const std::type_info* t )
 		{
-			Type::Type( const std::type_info* t )
-			{
-				TRACESECTION( "AST", "referenced type:" << t->name() );
-				jitType = NULL;
-			}
+			TRACESECTION( "AST", "referenced type:" << t->name() );
+		}
 
-			Type::Type( const std::type_info* t , std::string tName )
-			{
-				TRACESECTION( "AST","referenced type:" << t->name() << ", name: " << tName );
-				jitType = NULL;
-			}
+		Type::Type( const std::type_info* t , std::string tName )
+		{
+			TRACESECTION( "AST","referenced type:" << t->name() << ", name: " << tName );
 		}
 	}
 }

@@ -14,32 +14,17 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		VarAssign::VarAssign( std::string vName, Expr* expr )
 		{
-			VarAssign::VarAssign( std::string vName, Expr* expr )
-			{
-				TRACESECTION( "AST", "assigning $" << vName );
-				name = vName;
-				expression = expr;
-			}
-
-			llvm::Value* VarAssign::Generate( exo::ast::Context* context )
-			{
-				TRACESECTION( "IR", "assigning variable $" << name );
-
-				if( context->Variables().find( name ) == context->Variables().end() ) {
-					BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( name ) );
-				}
-
-				llvm::StoreInst* store = new llvm::StoreInst( expression->Generate( context ), context->Variables()[name], false, context->getCurrentBlock() );
-				return( store );
-			}
+			TRACESECTION( "AST", "assigning $" << vName );
+			name = vName;
+			expression = expr;
 		}
 	}
 }

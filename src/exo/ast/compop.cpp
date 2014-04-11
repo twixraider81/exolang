@@ -14,21 +14,18 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		CompOp::CompOp( Expr* a, std::string o, Expr* b )
 		{
-			CompOp::CompOp( Expr* a, std::string o, Expr* b )
-			{
-				TRACESECTION( "AST", "comparision operation:" << op );
-				lhs = a;
-				op = o;
-				rhs = b;
-			}
+			TRACESECTION( "AST", "comparision operation:" << op );
+			lhs = a;
+			op = o;
+			rhs = b;
 		}
 	}
 }

@@ -14,20 +14,17 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		FunCall::FunCall( std::string n, ExprList* a )
 		{
-			FunCall::FunCall( std::string n, ExprList* a )
-			{
-				TRACESECTION( "AST", "calling function " << n );
-				name = n;
-				arguments = a;
-			}
+			TRACESECTION( "AST", "calling function " << n );
+			name = n;
+			arguments = a;
 		}
 	}
 }

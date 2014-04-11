@@ -14,16 +14,16 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
+#include "exo/ast/tree.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree( std::string fName, llvm::LLVMContext* c )
+		Tree::Tree( std::string fName )
 		{
 			fileName = fName;
-			context = c;
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
 			parser = ParseAlloc( GC_malloc );
@@ -50,10 +50,9 @@ namespace exo
 			}
 		}
 
-		Tree::Tree( std::istream& stream, llvm::LLVMContext* c )
+		Tree::Tree( std::istream& stream )
 		{
 			fileName = "<stdin>";
-			context = c;
 			TRACESECTION( "AST", "opening <stdin>" );
 
 			parser = ParseAlloc( GC_malloc );

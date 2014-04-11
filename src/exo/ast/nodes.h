@@ -23,132 +23,118 @@ namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		class Node : public virtual gc
 		{
-			class Node : public virtual gc
-			{
-				public:
-					Node() { };
-					virtual ~Node() { };
+			public:
+				Node() { };
+				virtual ~Node() { };
+		};
 
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
+		class Expr : public Node
+		{
+		};
 
-			class Expr : public Node
-			{
-			};
+		class Stmt : public Node
+		{
+		};
 
-			class Stmt : public Node
-			{
-			};
+		class StmtList : public Expr
+		{
+			public:
+				std::vector<Stmt*> list;
 
-			class StmtList : public Expr
-			{
-				public:
-					std::vector<Stmt*> list;
+				StmtList();
+		};
 
-					StmtList();
+		class StmtExpr : public Stmt
+		{
+			public:
+				Expr* expression;
 
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
+				StmtExpr( Expr* expr );
+		};
 
-			class StmtExpr : public Stmt
-			{
-				public:
-					Expr* expression;
+		class Type : public Node
+		{
+			public:
+				Type( const std::type_info* type );
+				Type( const std::type_info* type, std::string tName );
+		};
 
-					StmtExpr( Expr* expr );
-			};
+		class VarDecl : public Stmt
+		{
+			public:
+				std::string name;
+				Type* type;
+				Expr* expression;
 
-			class Type : public Node
-			{
-				public:
-					exo::jit::types::Type* jitType;
+				VarDecl( std::string vName, Type* vType, Expr* expr );
+				VarDecl( std::string vName, Type* vType );
+		};
 
-					Type( const std::type_info* type );
-					Type( const std::type_info* type, std::string tName );
-			};
+		class VarAssign : public Expr
+		{
+			public:
+				std::string name;
+				Expr* expression;
 
-			class VarDecl : public Stmt
-			{
-				public:
-					std::string name;
-					Type* type;
-					Expr* expression;
+				VarAssign( std::string vName, Expr* expr );
+		};
 
-					VarDecl( std::string vName, Type* vType, Expr* expr );
-					VarDecl( std::string vName, Type* vType );
+		class VarDeclList : public Stmt
+		{
+			public:
+				std::vector<VarDecl*> list;
 
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
+				VarDeclList();
+		};
 
-			class VarAssign : public Expr
-			{
-				public:
-					std::string name;
-					Expr* expression;
+		class ExprList : public Expr
+		{
+			public:
+				std::vector<Expr*> list;
 
-					VarAssign( std::string vName, Expr* expr );
+				ExprList();
+		};
 
-					virtual llvm::Value* Generate( exo::ast::Context* context );
-			};
+		class FunDecl : public Stmt
+		{
+			public:
+				Type* type;
+				Type* returnType;
+				VarDeclList* arguments;
+				StmtList* codeBlock;
 
-			class VarDeclList : public Stmt
-			{
-				public:
-					std::vector<VarDecl*> list;
+				FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
+		};
 
-					VarDeclList();
-			};
+		class FunCall : public Expr
+		{
+			public:
+				std::string name;
+				ExprList* arguments;
 
+				FunCall( std::string n, ExprList* a );
+		};
 
-			class ExprList : public Expr
-			{
-				public:
-					std::vector<Expr*> list;
+		class CompOp : public Expr
+		{
+			public:
+				Expr* lhs;
+				std::string op;
+				Expr* rhs;
 
-					ExprList();
-			};
+				CompOp( Expr* a, std::string o, Expr* b );
+		};
 
-			class FunDecl : public Stmt
-			{
-				public:
-					Type* type;
-					Type* returnType;
-					VarDeclList* arguments;
-					StmtList* codeBlock;
+		class ConstExpr : public Expr
+		{
+			public:
+				std::string	name;
+				Expr*		expression;
 
-					FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
-			};
-
-			class FunCall : public Expr
-			{
-				public:
-					std::string name;
-					ExprList* arguments;
-
-					FunCall( std::string n, ExprList* a );
-			};
-
-			class CompOp : public Expr
-			{
-				public:
-					Expr* lhs;
-					std::string op;
-					Expr* rhs;
-
-					CompOp( Expr* a, std::string o, Expr* b );
-			};
-
-			class ConstExpr : public Expr
-			{
-				public:
-					std::string				name;
-					exo::jit::types::Type*	value;
-
-					ConstExpr( std::string n, exo::jit::types::Type* v );
-			};
-		}
+				ConstExpr( std::string n, Expr* e );
+		};
 	}
 }
 

@@ -14,18 +14,15 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		ExprList::ExprList()
 		{
-			ExprList::ExprList()
-			{
-				TRACESECTION( "AST", "creating arguments/expression list" );
-			}
+			TRACESECTION( "AST", "creating arguments/expression list" );
 		}
 	}
 }

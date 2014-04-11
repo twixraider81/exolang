@@ -14,22 +14,19 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		FunDecl::FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock )
 		{
-			FunDecl::FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock )
-			{
-				TRACESECTION( "AST", "declaring function " );
-				type = fType;
-				returnType = rType;
-				arguments = vArgs;
-				codeBlock = cBlock;
-			}
+			TRACESECTION( "AST", "declaring function " );
+			type = fType;
+			returnType = rType;
+			arguments = vArgs;
+			codeBlock = cBlock;
 		}
 	}
 }

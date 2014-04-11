@@ -14,19 +14,16 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		StmtExpr::StmtExpr( Expr* expr )
 		{
-			StmtExpr::StmtExpr( Expr* expr )
-			{
-				TRACESECTION( "AST","creating expression statement" );
-				expression = expr;
-			}
+			TRACESECTION( "AST","creating expression statement" );
+			expression = expr;
 		}
 	}
 }

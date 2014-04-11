@@ -14,33 +14,15 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		StmtList::StmtList()
 		{
-			StmtList::StmtList()
-			{
-				TRACESECTION( "AST","creating statement list" );
-			}
-
-			llvm::Value* StmtList::Generate( exo::ast::Context* context )
-			{
-				TRACESECTION( "IR", "generating statements:" );
-
-				std::vector<Stmt*>::iterator it;
-				llvm::Value *last = NULL;
-
-				for( it = list.begin(); it != list.end(); it++ ) {
-					TRACESECTION( "IR", "generating " << typeid(**it).name() );
-					last = (**it).Generate( context );
-				}
-
-				return( last );
-			}
+			TRACESECTION( "AST","creating statement list" );
 		}
 	}
 }

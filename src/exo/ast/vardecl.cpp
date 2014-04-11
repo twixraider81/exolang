@@ -14,46 +14,25 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		VarDecl::VarDecl( std::string vName, Type* vType )
 		{
-			VarDecl::VarDecl( std::string vName, Type* vType )
-			{
-				TRACESECTION( "AST", "declaring variable: $" << vName << ":" );
-				name = vName;
-				type = vType;
-			}
+			TRACESECTION( "AST", "declaring variable: $" << vName << ":" );
+			name = vName;
+			type = vType;
+		}
 
-			VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
-			{
-				TRACESECTION( "AST", "declaring/assigning variable: $" << vName << ":" );
-				name = vName;
-				type = vType;
-				expression = expr;
-			}
-
-			llvm::Value* VarDecl::Generate( exo::ast::Context* context )
-			{
-				TRACESECTION( "IR", "creating variable: $" << name );
-
-				// allocate memory and push variable onto the local stack
-				llvm::AllocaInst* memory = new llvm::AllocaInst( type->jitType->type, name.c_str(), context->getCurrentBlock() );
-				context->Variables()[ name ] = memory;
-
-				TRACESECTION( "IR", "new variable map size:" << context->Variables().size() );
-
-				if( expression ) {
-					VarAssign* a = new VarAssign( name, expression );
-					a->Generate( context );
-				}
-
-				return( memory );
-			}
+		VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
+		{
+			TRACESECTION( "AST", "declaring/assigning variable: $" << vName << ":" );
+			name = vName;
+			type = vType;
+			expression = expr;
 		}
 	}
 }

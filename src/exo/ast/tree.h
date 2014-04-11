@@ -18,27 +18,29 @@
 
 #include "exo/lexer/lexer"
 
+#define TOKENSTR(s) std::string( reinterpret_cast<const char*>( s->get_text().c_str() ) )
+
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
-		{
-			class StmtList;
-		}
-
 		class Tree : public gc
 		{
 			public:
-				void*				parser;
-				std::string			fileName;
-				llvm::LLVMContext*	context;
-				nodes::StmtList*	stmts;
+				void*		parser;
+				std::string	fileName;
+				StmtList*	stmts;
 
-				Tree( std::string fName, llvm::LLVMContext* c );
-				Tree( std::istream& stream, llvm::LLVMContext* c );
+				Tree( std::string fName );
+				Tree( std::istream& stream );
 		};
 	}
 }
+
+/* lemon doesn't define its protos */
+void* ParseAlloc( void *(*mallocProc)(size_t) );
+void  ParseFree( void *p, void (*freeProc)(void*) );
+void  Parse( void *yyp, int yymajor, quex::Token* yyminor, exo::ast::Tree* ast );
+void  ParseTrace( FILE *stream, char* zPrefix );
 
 #endif /* TREE_H_ */

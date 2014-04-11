@@ -14,20 +14,17 @@
  */
 
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		namespace nodes
+		ConstExpr::ConstExpr( std::string n, Expr* e )
 		{
-			ConstExpr::ConstExpr( std::string n, exo::jit::types::Type* v )
-			{
-				TRACESECTION( "AST", "constant expression: " << n << "; " );
-				name = n;
-				value = v;
-			}
+			TRACESECTION( "AST", "constant expression: " << n << "; " );
+			name = n;
+			expression = e;
 		}
 	}
 }
