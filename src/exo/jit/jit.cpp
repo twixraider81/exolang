@@ -21,16 +21,13 @@
 #include "exo/lexer/lexer"
 #include "exo/parser/parser.h"
 
-#include "exo/ast/block.h"
-#include "exo/ast/context.h"
-#include "exo/ast/nodes/nodes.h"
 #include "exo/jit/jit.h"
 
 namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( exo::ast::Context* c )
+		JIT::JIT( exo::jit::Context* c )
 		{
 			context = c;
 			std::string errorMsg;

@@ -21,13 +21,13 @@
 #include "exo/lexer/lexer"
 #include "exo/parser/parser.h"
 
-#include "exo/ast/block.h"
-#include "exo/ast/context.h"
-#include "exo/ast/nodes/nodes.h"
+#include "exo/jit/block.h"
+#include "exo/jit/context.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
 		Context::Context( std::string cname, llvm::LLVMContext* c )
 		{
@@ -72,7 +72,7 @@ namespace exo
 			return( blocks.top()->variables );
 		}
 
-		void Context::generateIR( exo::ast::nodes::StmtList* stmts )
+		llvm::Value* Context::Generate( exo::ast::Tree* tree )
 		{
 			llvm::IRBuilder<> builder( *context );
 
@@ -81,10 +81,68 @@ namespace exo
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", entry, 0 );
 			builder.SetInsertPoint( block );
 			pushBlock( block );
-			stmts->Generate( this );
 
-			llvm::ReturnInst::Create( *context, block );
+			Generate( tree->stmts );
+
+			llvm::Value* retval = llvm::ReturnInst::Create( *context, block );
 			popBlock();
+
+			return( retval );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::StmtList* stmts )
+		{
+			TRACESECTION( "IR", "generating statements:" );
+
+			std::vector<exo::ast::Stmt*>::iterator it;
+			llvm::Value *last = NULL;
+
+			for( it = stmts->list.begin(); it != stmts->list.end(); it++ ) {
+				TRACESECTION( "IR", "generating " << typeid(**it).name() );
+				last = Generate( *it );
+			}
+
+			return( last );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::VarDecl* decl )
+		{
+			TRACESECTION( "IR", "creating variable: $" << decl->name );
+
+			// allocate memory and push variable onto the local stack
+			llvm::AllocaInst* memory = new llvm::AllocaInst( llvm::Type::getInt64Ty( *context ), name.c_str(), getCurrentBlock() );
+			Variables()[ name ] = memory;
+
+			TRACESECTION( "IR", "new variable map size:" << Variables().size() );
+
+			if( decl->expression ) {
+				exo::ast::VarAssign* a = new exo::ast::VarAssign( decl->name, decl->expression );
+				Generate( a );
+			}
+
+			return( memory );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::VarAssign* assign )
+		{
+			TRACESECTION( "IR", "assigning variable $" << assign->name );
+
+			if( Variables().find( assign->name ) == Variables().end() ) {
+				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( assign->name ) );
+			}
+
+			llvm::StoreInst* store = new llvm::StoreInst( Generate( assign->expression ), Variables()[name], false, getCurrentBlock() );
+			return( store );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::Stmt* stmt )
+		{
+			return( NULL );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::Expr* expr )
+		{
+			return( NULL );
 		}
 	}
 }

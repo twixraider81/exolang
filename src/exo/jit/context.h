@@ -16,17 +16,12 @@
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
+#include "exo/ast/tree.h"
+
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
-		class Tree;
-
-		namespace nodes
-		{
-			class StmtList;
-		}
-
 		class Context : public virtual gc
 		{
 			public:
@@ -46,7 +41,12 @@ namespace exo
 
 			    std::map<std::string, llvm::Value*>& Variables();
 
-			    void generateIR( exo::ast::nodes::StmtList* stmts );
+			    llvm::Value* Generate( exo::ast::Tree* tree );
+			    llvm::Value* Generate( exo::ast::Stmt* stmt );
+			    llvm::Value* Generate( exo::ast::Expr* expr );
+			    llvm::Value* Generate( exo::ast::StmtList* stmts );
+			    llvm::Value* Generate( exo::ast::VarDecl* decl );
+			    llvm::Value* Generate( exo::ast::VarAssign* assign );
 		};
 	}
 }

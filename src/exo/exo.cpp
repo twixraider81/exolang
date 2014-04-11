@@ -15,7 +15,7 @@
 
 // include internal stuff
 #include "exo/exo.h"
-#include "exo/ast/ast.h"
+#include "exo/ast/tree.h"
 #include "exo/jit/jit.h"
 #include "exo/init/init.h"
 
@@ -33,8 +33,8 @@ int main( int argc, char **argv )
 	}
 
 	exo::ast::Tree* ast;
-	exo::ast::Context* context;
 	exo::jit::JIT* jit;
+	exo::jit::Context* context;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -76,13 +76,13 @@ int main( int argc, char **argv )
 	try {
 		// we build the ast from a file given via -i / --input or stdin
 		if( commandLine.count( "input" ) ) {
-			ast = new exo::ast::Tree( commandLine["input"].as<std::string>(), &llvm::getGlobalContext() );
+			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
 		} else {
-			ast = new exo::ast::Tree( std::cin, &llvm::getGlobalContext() );
+			ast = new exo::ast::Tree( std::cin );
 		}
 
-		context = new exo::ast::Context( "main", ast->context );
-		context->generateIR( ast->stmts );
+		context = new exo::jit::Context( "main", &llvm::getGlobalContext() );
+		context->Generate( ast->stmts );
 
 		jit = new exo::jit::JIT( context );
 		// we have the IR now, don't need the AST anymore

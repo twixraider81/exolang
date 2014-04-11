@@ -18,7 +18,7 @@
 
 namespace exo
 {
-	namespace ast
+	namespace jit
 	{
 		class Block : public virtual gc
 		{

@@ -16,22 +16,26 @@
 #ifndef GENERATOR_H_
 #define GENERATOR_H_
 
+#include "exo/jit/llvm.h"
+#include "exo/jit/block.h"
+#include "exo/jit/context.h"
+
 namespace exo
 {
 	namespace jit
 	{
 		class JIT : public virtual gc
 		{
-			exo::ast::Context* context;
-			llvm::ExecutionEngine* engine;
-			llvm::FunctionPassManager *fpm;
+			exo::jit::Context*			context;
+			llvm::ExecutionEngine*		engine;
+			llvm::FunctionPassManager 	*fpm;
 
 			public:
 				/**
 				 * Builds a LLVM MCJIT IR and loads the LLVM IR of the AST
 				 * TODO: make use of -0x levels - http://llvm.org/docs/doxygen/html/namespacellvm_1_1CodeGenOpt.html
 				 */
-				JIT( exo::ast::Context* c );
+				JIT( exo::jit::Context* c );
 				~JIT();
 		};
 	}
