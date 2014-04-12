@@ -20,13 +20,9 @@ namespace exo
 {
 	namespace ast
 	{
-		FunDecl::FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock )
+		ValueNull::ValueNull()
 		{
-			TRACESECTION( "AST", "declaring function:" << n );
-			name = n;
-			returnType = rType;
-			arguments = vArgs;
-			codeBlock = cBlock;
+			TRACESECTION( "AST", "null" );
 		}
 	}
 }

@@ -23,11 +23,13 @@ namespace exo
 		Type::Type( const std::type_info* t )
 		{
 			TRACESECTION( "AST", "referenced type:" << t->name() );
+			info = t;
 		}
 
-		Type::Type( const std::type_info* t , std::string tName )
+		Type::Type( const std::type_info* t , std::string tName ) : Type( t )
 		{
 			TRACESECTION( "AST","referenced type:" << t->name() << ", name: " << tName );
+			name = tName;
 		}
 	}
 }

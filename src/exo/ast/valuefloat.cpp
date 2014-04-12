@@ -20,13 +20,16 @@ namespace exo
 {
 	namespace ast
 	{
-		FunDecl::FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock )
+		ValueFloat::ValueFloat( std::string fVal )
 		{
-			TRACESECTION( "AST", "declaring function:" << n );
-			name = n;
-			returnType = rType;
-			arguments = vArgs;
-			codeBlock = cBlock;
+			TRACESECTION( "AST", "float:" << fVal );
+			value = atof( fVal.c_str() );
+		}
+
+		ValueFloat::ValueFloat( double fVal )
+		{
+			TRACESECTION( "AST", "float:" << fVal );
+			value = fVal;
 		}
 	}
 }

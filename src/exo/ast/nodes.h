@@ -57,8 +57,11 @@ namespace exo
 		class Type : public Node
 		{
 			public:
-				Type( const std::type_info* type );
-				Type( const std::type_info* type, std::string tName );
+				const std::type_info*	info;
+				std::string name;
+
+				Type( const std::type_info* t );
+				Type( const std::type_info* t , std::string tName );
 		};
 
 		class VarDecl : public Stmt
@@ -100,12 +103,12 @@ namespace exo
 		class FunDecl : public Stmt
 		{
 			public:
-				Type* type;
+				std::string name;
 				Type* returnType;
 				VarDeclList* arguments;
 				StmtList* codeBlock;
 
-				FunDecl( Type* fType, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
+				FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
 		};
 
 		class FunCall : public Expr
@@ -134,6 +137,42 @@ namespace exo
 				Expr*		expression;
 
 				ConstExpr( std::string n, Expr* e );
+		};
+
+		class ValueNull : public Expr
+		{
+			public:
+				ValueNull();
+		};
+
+		class ValueBool : public Expr
+		{
+			public:
+				bool value;
+				ValueBool( bool bVal );
+		};
+
+		class ValueInt : public Expr
+		{
+			public:
+				std::string value;
+				ValueInt( std::string iVal );
+				ValueInt( long long iVal );
+		};
+
+		class ValueFloat : public Expr
+		{
+			public:
+				std::string value;
+				ValueFloat( std::string fVal );
+				ValueFloat( double fVal );
+		};
+
+		class ValueString : public Expr
+		{
+			public:
+				std::string value;
+				ValueString( std::string sVal );
 		};
 	}
 }

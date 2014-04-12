@@ -20,13 +20,16 @@ namespace exo
 {
 	namespace ast
 	{
-		FunDecl::FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock )
+		ValueInt::ValueInt( std::string iVal )
 		{
-			TRACESECTION( "AST", "declaring function:" << n );
-			name = n;
-			returnType = rType;
-			arguments = vArgs;
-			codeBlock = cBlock;
+			TRACESECTION( "AST", "integer:" << iVal );
+			value = atoi( iVal.c_str() );
+		}
+
+		ValueInt::ValueInt( long long iVal )
+		{
+			TRACESECTION( "AST", "integer:" << iVal );
+			value = iVal;
 		}
 	}
 }
