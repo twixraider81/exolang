@@ -16,6 +16,8 @@
 #ifndef NODES_H_
 #define NODES_H_
 
+#include "exo/exo.h"
+
 /*
  * TODO: user boost templates instead of std::vector
  */

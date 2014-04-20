@@ -16,6 +16,9 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include "exo/exo.h"
+#include "exo/jit/llvm.h"
+
 namespace exo
 {
 	namespace jit

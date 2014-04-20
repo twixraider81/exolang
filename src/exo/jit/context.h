@@ -16,12 +16,25 @@
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
-#include "exo/ast/tree.h"
+#include "exo/exo.h"
+#include "exo/jit/llvm.h"
 
 namespace exo
 {
+	namespace ast
+	{
+	    class Tree;
+	    class Stmt;
+	    class Expr;
+	    class StmtList;
+	    class VarDecl;
+	    class VarAssign;
+	}
+
 	namespace jit
 	{
+		class Block;
+
 		class Context : public virtual gc
 		{
 			public:

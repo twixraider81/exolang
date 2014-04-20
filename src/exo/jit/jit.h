@@ -13,17 +13,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GENERATOR_H_
-#define GENERATOR_H_
+#ifndef JIT_H_
+#define JIT_H_
 
 #include "exo/jit/llvm.h"
-#include "exo/jit/block.h"
-#include "exo/jit/context.h"
 
 namespace exo
 {
 	namespace jit
 	{
+		class Context;
+
 		class JIT : public virtual gc
 		{
 			exo::jit::Context*			context;
@@ -41,4 +41,4 @@ namespace exo
 	}
 }
 
-#endif /* GENERATOR_H_ */
+#endif /* JIT_H_ */

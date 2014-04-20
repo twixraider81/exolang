@@ -17,7 +17,6 @@
 #define TREE_H_
 
 #include "exo/lexer/lexer"
-#include "exo/ast/nodes.h"
 
 #define TOKENSTR(s) std::string( reinterpret_cast<const char*>( s->get_text().c_str() ) )
 
@@ -25,6 +24,8 @@ namespace exo
 {
 	namespace ast
 	{
+		class StmtList;
+
 		class Tree : public gc
 		{
 			public:

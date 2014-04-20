@@ -13,8 +13,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/exo.h"
-#include "exo/ast/nodes.h"
 #include "exo/ast/tree.h"
 
 namespace exo

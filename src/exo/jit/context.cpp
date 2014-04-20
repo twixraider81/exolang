@@ -15,15 +15,10 @@
 
 #include "exo/exo.h"
 
-#include "exo/jit/llvm.h"
-#include "exo/jit/type/types.h"
-
-#include "exo/lexer/lexer"
-#include "exo/parser/parser.h"
-
 #include "exo/jit/block.h"
-#include "exo/jit/context.h"
 #include "exo/ast/nodes.h"
+#include "exo/ast/tree.h"
+#include "exo/jit/context.h"
 
 namespace exo
 {

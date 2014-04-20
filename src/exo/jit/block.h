@@ -16,6 +16,9 @@
 #ifndef BLOCK_H_
 #define BLOCK_H_
 
+#include "exo/exo.h"
+#include "exo/jit/llvm.h"
+
 namespace exo
 {
 	namespace jit

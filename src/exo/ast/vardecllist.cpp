@@ -13,7 +13,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/exo.h"
 #include "exo/ast/nodes.h"
 
 namespace exo
@@ -22,7 +21,7 @@ namespace exo
 	{
 		VarDeclList::VarDeclList()
 		{
-			TRACESECTION( "AST","creating variable declaration list" );
+			TRACESECTION( "AST", "creating variable declaration list" );
 		}
 	}
 }

@@ -13,7 +13,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/exo.h"
 #include "exo/ast/nodes.h"
 
 namespace exo
@@ -22,7 +21,7 @@ namespace exo
 	{
 		StmtExpr::StmtExpr( Expr* expr )
 		{
-			TRACESECTION( "AST","creating expression statement" );
+			TRACESECTION( "AST", "creating expression statement" );
 			expression = expr;
 		}
 	}

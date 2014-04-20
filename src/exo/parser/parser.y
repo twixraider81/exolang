@@ -14,9 +14,8 @@
  */
 
 %include {
-	#include "exo/exo.h"
+	#include "exo/ast/nodes.h"
 	#include "exo/ast/tree.h"
-	#include "exo/jit/jit.h"
 	#include "exo/jit/type/types.h"
 }
 

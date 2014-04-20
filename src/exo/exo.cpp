@@ -17,6 +17,7 @@
 #include "exo/exo.h"
 #include "exo/ast/tree.h"
 #include "exo/jit/jit.h"
+#include "exo/jit/context.h"
 #include "exo/init/init.h"
 
 #include <boost/program_options.hpp>
