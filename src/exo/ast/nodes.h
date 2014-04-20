@@ -17,6 +17,8 @@
 #define NODES_H_
 
 #include "exo/exo.h"
+#include "exo/jit/llvm.h"
+#include "exo/jit/context.h"
 
 /*
  * TODO: user boost templates instead of std::vector
@@ -30,6 +32,11 @@ namespace exo
 			public:
 				Node() { };
 				virtual ~Node() { };
+				/*
+				 * FIXME: its really ugly
+				 */
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+
 		};
 
 		class Expr : public Node
@@ -46,6 +53,8 @@ namespace exo
 				std::vector<Stmt*> list;
 
 				StmtList();
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class StmtExpr : public Stmt
@@ -75,6 +84,8 @@ namespace exo
 
 				VarDecl( std::string vName, Type* vType, Expr* expr );
 				VarDecl( std::string vName, Type* vType );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class VarAssign : public Expr
@@ -84,6 +95,8 @@ namespace exo
 				Expr* expression;
 
 				VarAssign( std::string vName, Expr* expr );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
 		class VarDeclList : public Stmt

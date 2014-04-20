@@ -67,6 +67,13 @@ namespace exo
 			return( blocks.top()->variables );
 		}
 
+
+		llvm::Value* Context::Generate( exo::ast::Node* node )
+		{
+			BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedNode( typeid(*node).name() ) );
+			return( NULL );
+		}
+
 		llvm::Value* Context::Generate( exo::ast::Tree* tree )
 		{
 			llvm::IRBuilder<> builder( *context );
@@ -94,7 +101,7 @@ namespace exo
 
 			for( it = stmts->list.begin(); it != stmts->list.end(); it++ ) {
 				TRACESECTION( "IR", "generating " << typeid(**it).name() );
-				last = Generate( *it );
+				last = (*it)->Generate( this );
 			}
 
 			return( last );
@@ -128,16 +135,6 @@ namespace exo
 
 			llvm::StoreInst* store = new llvm::StoreInst( Generate( assign->expression ), Variables()[name], false, getCurrentBlock() );
 			return( store );
-		}
-
-		llvm::Value* Context::Generate( exo::ast::Stmt* stmt )
-		{
-			return( NULL );
-		}
-
-		llvm::Value* Context::Generate( exo::ast::Expr* expr )
-		{
-			return( NULL );
 		}
 	}
 }

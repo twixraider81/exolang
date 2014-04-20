@@ -59,6 +59,17 @@ namespace exo
 		};
 
 		/**
+		 * Exception that will be thrown if we try to build an unknown/unsupported AST node
+		 */
+		class UnexpectedNode : public virtual Exception
+		{
+			public:
+				std::string name;
+				UnexpectedNode( std::string n);
+				virtual const char* what() const throw();
+		};
+
+		/**
 		 * Exception that will be thrown from lemon/parse incase the stack was overflown
 		 */
 		class StackOverflow : public virtual Exception

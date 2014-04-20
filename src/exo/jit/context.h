@@ -23,12 +23,27 @@ namespace exo
 {
 	namespace ast
 	{
-	    class Tree;
-	    class Stmt;
+		class Node;
 	    class Expr;
+	    class Stmt;
 	    class StmtList;
+	    class StmtExpr;
+	    class Type;
 	    class VarDecl;
 	    class VarAssign;
+	    class VarDeclList;
+	    class ExprList;
+	    class FunDecl;
+	    class FunCall;
+	    class CompOp;
+	    class ConstExpr;
+	    class ValueNull;
+	    class ValueBool;
+	    class ValueInt;
+	    class ValueFloat;
+	    class ValueString;
+
+		class Tree;
 	}
 
 	namespace jit
@@ -54,10 +69,10 @@ namespace exo
 
 			    std::map<std::string, llvm::Value*>& Variables();
 
+
+			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );
-			    llvm::Value* Generate( exo::ast::Stmt* stmt );
-			    llvm::Value* Generate( exo::ast::Expr* expr );
-			    llvm::Value* Generate( exo::ast::StmtList* stmts );
+			    llvm::Value* Generate( exo::ast::StmtList* list );
 			    llvm::Value* Generate( exo::ast::VarDecl* decl );
 			    llvm::Value* Generate( exo::ast::VarAssign* assign );
 		};
