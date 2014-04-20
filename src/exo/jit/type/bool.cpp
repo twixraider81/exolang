@@ -23,11 +23,11 @@ namespace exo
 		{
 			BooleanType::BooleanType( llvm::LLVMContext* c, bool bVal ) : Type( c ), ScalarType( c )
 			{
-				type = llvm::Type::getInt64Ty( *c );
+				type = llvm::Type::getInt1Ty( *c );
 				if( bVal ) {
-					value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 1 ) );
+					value = llvm::ConstantInt::getTrue( type );
 				} else {
-					value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 0 ) );
+					value = llvm::ConstantInt::getFalse( type );
 				}
 			}
 		}

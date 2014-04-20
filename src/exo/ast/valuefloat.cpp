@@ -22,12 +22,6 @@ namespace exo
 		ValueFloat::ValueFloat( std::string fVal )
 		{
 			TRACESECTION( "AST", "float:" << fVal );
-			value = atof( fVal.c_str() );
-		}
-
-		ValueFloat::ValueFloat( double fVal )
-		{
-			TRACESECTION( "AST", "float:" << fVal );
 			value = fVal;
 		}
 	}

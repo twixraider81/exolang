@@ -83,7 +83,7 @@ int main( int argc, char **argv )
 		}
 
 		context = new exo::jit::Context( "main", &llvm::getGlobalContext() );
-		context->Generate( ast->stmts );
+		context->Generate( ast );
 
 		jit = new exo::jit::JIT( context );
 		// we have the IR now, don't need the AST anymore

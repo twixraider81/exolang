@@ -1,2 +1,4 @@
-bool $a = 1;
-bool $b = 2;
+int $a = 1;
+float $b = 1.5;
+bool $c = true;
+bool $d = false;

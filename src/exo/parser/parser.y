@@ -14,6 +14,7 @@
  */
 
 %include {
+	#include "exo/exo.h"
 	#include "exo/ast/nodes.h"
 	#include "exo/ast/tree.h"
 	#include "exo/jit/type/types.h"
@@ -333,7 +334,7 @@ constant(c) ::= S_FILE(f). {
 constant(c) ::= S_LINE(l). {
 	TRACESECTION( "PARSER", "constant(c) ::= S_LINE(l).");
 	POINTERCHECK( l );
-	c = new exo::ast::ConstExpr( TOKENSTR(l), new exo::ast::ValueInt( l->line_number() ) );
+	c = new exo::ast::ConstExpr( TOKENSTR(l), new exo::ast::ValueInt( std::to_string( l->line_number() ) ) );
 }
 constant(c) ::= T_VNULL. {
 	TRACESECTION( "PARSER", "constant(c) ::= T_VNULL.");

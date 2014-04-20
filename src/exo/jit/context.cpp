@@ -19,6 +19,7 @@
 #include "exo/ast/nodes.h"
 #include "exo/ast/tree.h"
 #include "exo/jit/context.h"
+#include "exo/jit/type/types.h"
 
 namespace exo
 {
@@ -94,7 +95,7 @@ namespace exo
 
 		llvm::Value* Context::Generate( exo::ast::StmtList* stmts )
 		{
-			TRACESECTION( "IR", "generating statements:" );
+			TRACESECTION( "IR", "generating statements (" << name << ")" );
 
 			std::vector<exo::ast::Stmt*>::iterator it;
 			llvm::Value *last = NULL;
@@ -109,17 +110,29 @@ namespace exo
 
 		llvm::Value* Context::Generate( exo::ast::VarDecl* decl )
 		{
-			TRACESECTION( "IR", "creating variable: $" << decl->name );
+			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << name << ")" );
 
-			// allocate memory and push variable onto the local stack
-			llvm::AllocaInst* memory = new llvm::AllocaInst( llvm::Type::getInt64Ty( *context ), name.c_str(), getCurrentBlock() );
-			Variables()[ name ] = memory;
+			llvm::AllocaInst* memory;
+			if( decl->type->info->name() == typeid( exo::jit::types::IntegerType ).name() ) {
+				exo::jit::types::IntegerType* type = new exo::jit::types::IntegerType( context, 0 );
+				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
+			} else if( decl->type->info->name() == typeid( exo::jit::types::FloatType ).name() ) {
+				exo::jit::types::FloatType* type = new exo::jit::types::FloatType( context, 0 );
+				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
+			} else if( decl->type->info->name() == typeid( exo::jit::types::BooleanType ).name() ) {
+				exo::jit::types::BooleanType* type = new exo::jit::types::BooleanType( context, false );
+				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
+			} else {
+				exo::jit::types::IntegerType* type = new exo::jit::types::IntegerType( context, 0 );
+				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
+			}
+			Variables()[ decl->name ] = memory;
 
-			TRACESECTION( "IR", "new variable map size:" << Variables().size() );
+			TRACESECTION( "IR", "new variable map size: " << Variables().size() );
 
 			if( decl->expression ) {
 				exo::ast::VarAssign* a = new exo::ast::VarAssign( decl->name, decl->expression );
-				Generate( a );
+				a->Generate( this );
 			}
 
 			return( memory );
@@ -127,14 +140,40 @@ namespace exo
 
 		llvm::Value* Context::Generate( exo::ast::VarAssign* assign )
 		{
-			TRACESECTION( "IR", "assigning variable $" << assign->name );
+			TRACESECTION( "IR", "assigning variable $" << assign->name << " in (" << name << ")" );
 
 			if( Variables().find( assign->name ) == Variables().end() ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( assign->name ) );
 			}
 
-			llvm::StoreInst* store = new llvm::StoreInst( Generate( assign->expression ), Variables()[name], false, getCurrentBlock() );
-			return( store );
+			return( new llvm::StoreInst( assign->expression->Generate( this ), Variables()[ assign->name ], false, getCurrentBlock() ) );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::ValueInt* val )
+		{
+			TRACESECTION( "IR", "generating integer " << val->value << " in (" << name << ")" );
+			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( context, val->value );
+			return( iType->value );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::ValueFloat* val )
+		{
+			TRACESECTION( "IR", "generating float: " << val->value << " in (" << name << ")" );
+			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( context, val->value );
+			return( fType->value );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::ValueBool* val )
+		{
+			TRACESECTION( "IR", "generating boolean: " << val->value << " in (" << name << ")" );
+			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( context, val->value );
+			return( bType->value );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::ConstExpr* expr )
+		{
+			TRACESECTION( "IR", "generating constant expression: " << expr->name << " in (" << name << ")" );
+			return( expr->expression->Generate( this ) );
 		}
 	}
 }

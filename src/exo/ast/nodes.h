@@ -152,6 +152,8 @@ namespace exo
 				Expr*		expression;
 
 				ConstExpr( std::string n, Expr* e );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueNull : public Expr
@@ -165,6 +167,8 @@ namespace exo
 			public:
 				bool value;
 				ValueBool( bool bVal );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueInt : public Expr
@@ -172,7 +176,8 @@ namespace exo
 			public:
 				std::string value;
 				ValueInt( std::string iVal );
-				ValueInt( long long iVal );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueFloat : public Expr
@@ -180,7 +185,8 @@ namespace exo
 			public:
 				std::string value;
 				ValueFloat( std::string fVal );
-				ValueFloat( double fVal );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueString : public Expr

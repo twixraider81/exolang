@@ -75,6 +75,10 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtList* list );
 			    llvm::Value* Generate( exo::ast::VarDecl* decl );
 			    llvm::Value* Generate( exo::ast::VarAssign* assign );
+			    llvm::Value* Generate( exo::ast::ValueInt* val );
+			    llvm::Value* Generate( exo::ast::ValueFloat* val );
+			    llvm::Value* Generate( exo::ast::ValueBool* val );
+			    llvm::Value* Generate( exo::ast::ConstExpr* expr );
 		};
 	}
 }

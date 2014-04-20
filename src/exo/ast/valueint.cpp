@@ -22,12 +22,6 @@ namespace exo
 		ValueInt::ValueInt( std::string iVal )
 		{
 			TRACESECTION( "AST", "integer:" << iVal );
-			value = atoi( iVal.c_str() );
-		}
-
-		ValueInt::ValueInt( long long iVal )
-		{
-			TRACESECTION( "AST", "integer:" << iVal );
 			value = iVal;
 		}
 	}
