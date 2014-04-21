@@ -39,7 +39,7 @@ namespace exo
 			}
 
 #ifdef EXO_TRACE
-			TRACE( "Immediate LLVM IR" );
+			TRACE( "Intermediate LLVM IR" );
 			context->module->dump();
 #endif
 
