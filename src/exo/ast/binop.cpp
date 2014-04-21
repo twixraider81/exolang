@@ -19,12 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		MathOp::MathOp( Expr* a, BinOp* o, Expr* b )
+		BinOp::BinOp( std::string o )
 		{
-			TRACESECTION( "AST", "math operation " << o->op );
-			lhs = a;
-			op = o->op;
-			rhs = b;
+			TRACESECTION( "AST", "binary operation " << o );
+			op = o;
 		}
 	}
 }

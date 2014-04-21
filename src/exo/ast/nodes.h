@@ -135,14 +135,16 @@ namespace exo
 				FunCall( std::string n, ExprList* a );
 		};
 
-		class CompOp : public Expr
+		class MathOp : public Expr
 		{
 			public:
 				Expr* lhs;
 				std::string op;
 				Expr* rhs;
 
-				CompOp( Expr* a, std::string o, Expr* b );
+				MathOp( Expr* a, BinOp* o, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ConstExpr : public Expr
@@ -160,6 +162,8 @@ namespace exo
 		{
 			public:
 				ValueNull();
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
 		class ValueBool : public Expr
@@ -194,6 +198,24 @@ namespace exo
 			public:
 				std::string value;
 				ValueString( std::string sVal );
+		};
+
+		class VarExpr : public Expr
+		{
+			public:
+				std::string variable;
+
+				VarExpr( std::string vName );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class BinOp : public Expr
+		{
+			public:
+				std::string op;
+
+				BinOp( std::string o );
 		};
 	}
 }

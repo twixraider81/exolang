@@ -19,12 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		CompOp::CompOp( Expr* a, std::string o, Expr* b )
+		VarExpr::VarExpr( std::string vName )
 		{
-			TRACESECTION( "AST", "comparision operation:" << op );
-			lhs = a;
-			op = o;
-			rhs = b;
+			TRACESECTION( "AST", "accessing $" << vName );
+			variable = vName;
 		}
 	}
 }
