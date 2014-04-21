@@ -142,7 +142,7 @@ namespace exo
 				std::string op;
 				Expr* rhs;
 
-				MathOp( Expr* a, BinOp* o, Expr* b );
+				MathOp( Expr* a, std::string* o, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -208,14 +208,6 @@ namespace exo
 				VarExpr( std::string vName );
 
 				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class BinOp : public Expr
-		{
-			public:
-				std::string op;
-
-				BinOp( std::string o );
 		};
 	}
 }

@@ -36,9 +36,10 @@
 %extra_argument { exo::ast::Tree *ast }
 %default_type { exo::ast::Node* }
 
-%nonassoc S_EQ S_NE S_LT S_LE S_GT S_GE.
-%left S_PLUS S_MINUS.
-%left S_MUL S_DIV.
+
+%right	S_ASSIGN.
+%left	S_PLUS S_MINUS.
+%left	S_MUL S_DIV.
 
 /* a program is build out of statements. */
 program ::= statements(s). {
@@ -238,7 +239,7 @@ number(n) ::= T_VFLOAT(f). {
 	n = new exo::ast::ValueFloat( TOKENSTR(f) );
 }
 
-/* an expression may be a number, an assignment or a function call or a constant */
+/* an expression may be an assignment, function call, variable, number, binary expression or a constant */
 %type expression { exo::ast::Expr* }
 expression(r) ::= T_VAR(v) S_ASSIGN expression(e). {
 	TRACESECTION( "PARSER", "expression(r) ::= T_VAR(v) S_ASSIGN expression(e).");
@@ -252,17 +253,21 @@ expression(e) ::= T_ID(i) S_LANGLE exprlist(a) S_RANGLE. {
 	POINTERCHECK( a );
 	e = new exo::ast::FunCall( TOKENSTR(i), a );
 }
+expression(e) ::= T_VAR(v). {
+	TRACESECTION( "PARSER", "expression(e) ::= T_VAR(v).");
+	POINTERCHECK( v );
+	e = new exo::ast::VarExpr( TOKENSTR(v) );
+}
 expression(e) ::= number(n). {
 	TRACESECTION( "PARSER", "expression ::= number.");
 	POINTERCHECK( n );
 	e = n;
 }
-expression(e) ::= expression(a) comparison(c) expression(b). {
-	TRACESECTION( "PARSER", "expression(e) ::= expression(a) comparison(c) expression(b).");
+expression(e) ::= expression(a) binop(o) expression(b). {
+	TRACESECTION( "PARSER", "expression(e) ::= expression(a) S_PLUS expression(b).");
 	POINTERCHECK( a );
-	POINTERCHECK( c );
 	POINTERCHECK( b );
-	e = new exo::ast::CompOp( a, TOKENSTR(c), b );
+	e = new exo::ast::MathOp( a, o, b );
 }
 expression(e) ::= constant(c). {
 	TRACESECTION( "PARSER", "expression(e) ::= constant(c).");
@@ -272,56 +277,56 @@ expression(e) ::= constant(c). {
 }
 
 /* comparison operators */
-%type comparison { quex::Token* }
-comparison(c) ::= S_EQ(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_EQ(o).");
+%type binop { std::string* }
+binop(b) ::= S_EQ(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_EQ(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_NE(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_NE(o).");
+binop(b) ::= S_NE(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_NE(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_LT(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_LT(o).");
+binop(b) ::= S_LT(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_LT(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_LE(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_LE(o).");
+binop(b) ::= S_LE(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_LE(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_GT(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_GT(o).");
+binop(b) ::= S_GT(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_GT(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_GE(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_GE(o).");
+binop(b) ::= S_GE(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_GE(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_PLUS(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_PLUS(o).");
+binop(b) ::= S_PLUS(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_PLUS(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_MINUS(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_MINUS(o).");
+binop(b) ::= S_MINUS(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_MINUS(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_MUL(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_MUL(o).");
+binop(b) ::= S_MUL(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_MUL(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
-comparison(c) ::= S_DIV(o). {
-	TRACESECTION( "PARSER", "comparison(c) ::= S_DIV(o).");
+binop(b) ::= S_DIV(o). {
+	TRACESECTION( "PARSER", "binop(b) ::= S_DIV(o).");
 	POINTERCHECK( o );
-	c = o;
+	b = new std::string( TOKENSTR( o ) );
 }
 
 /* a constant can be a builtin */

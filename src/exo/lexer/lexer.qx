@@ -66,14 +66,14 @@ mode EXO:
 	"{"								=> QUEX_TKN_S_LBRACKET;
 	"}"								=> QUEX_TKN_S_RBRACKET;
 	"="								=> QUEX_TKN_S_ASSIGN;
-	"=="							=> QUEX_TKN_S_EQ;
-	"!="							=> QUEX_TKN_S_NE;
-	"<"								=> QUEX_TKN_S_LT;
-	"<="							=> QUEX_TKN_S_LE;
-	">"								=> QUEX_TKN_S_GT;
-	">="							=> QUEX_TKN_S_GE;
-	"+"								=> QUEX_TKN_S_PLUS;
-	"-"								=> QUEX_TKN_S_MINUS;
-	"*"								=> QUEX_TKN_S_MUL;
-	"/"								=> QUEX_TKN_S_DIV;
+	"=="							=> QUEX_TKN_S_EQ(Lexeme);
+	"!="							=> QUEX_TKN_S_NE(Lexeme);
+	"<"								=> QUEX_TKN_S_LT(Lexeme);
+	"<="							=> QUEX_TKN_S_LE(Lexeme);
+	">"								=> QUEX_TKN_S_GT(Lexeme);
+	">="							=> QUEX_TKN_S_GE(Lexeme);
+	"+"								=> QUEX_TKN_S_PLUS(Lexeme);
+	"-"								=> QUEX_TKN_S_MINUS(Lexeme);
+	"*"								=> QUEX_TKN_S_MUL(Lexeme);
+	"/"								=> QUEX_TKN_S_DIV(Lexeme);
 }
