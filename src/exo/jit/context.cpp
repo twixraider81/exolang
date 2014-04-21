@@ -25,23 +25,15 @@ namespace exo
 {
 	namespace jit
 	{
-		Context::Context( std::string cname, llvm::LLVMContext* c )
+		Context::Context( std::string cname ) : builder( llvm::getGlobalContext() )
 		{
 			name = cname;
-			context = c;
-
-			module = new llvm::Module( name, *context );
+			module = new llvm::Module( cname, llvm::getGlobalContext() );
 			module->setTargetTriple( llvm::sys::getProcessTriple() );
 		}
 
 		Context::~Context()
 		{
-			/*
-			 * FIXME: gets freed
-			 */
-			if( module ) {
-				//delete module;
-			}
 		}
 
 		void Context::pushBlock( llvm::BasicBlock* block)
@@ -53,7 +45,6 @@ namespace exo
 
 		void Context::popBlock()
 		{
-			//delete blocks.top()->block;
 			blocks.pop();
 			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
@@ -77,17 +68,15 @@ namespace exo
 
 		llvm::Value* Context::Generate( exo::ast::Tree* tree )
 		{
-			llvm::IRBuilder<> builder( *context );
-
-			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( *context ), false);
+			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false);
 			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, "main", module );
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( *context, "entry", entry, 0 );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), "entry", entry, 0 );
 			builder.SetInsertPoint( block );
 			pushBlock( block );
 
 			Generate( tree->stmts );
 
-			llvm::Value* retval = llvm::ReturnInst::Create( *context, block );
+			llvm::Value* retval = llvm::ReturnInst::Create( module->getContext(), block );
 			popBlock();
 
 			return( retval );
@@ -112,21 +101,17 @@ namespace exo
 		{
 			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << name << ")" );
 
-			llvm::AllocaInst* memory;
-			if( decl->type->info->name() == typeid( exo::jit::types::IntegerType ).name() ) {
-				exo::jit::types::IntegerType* type = new exo::jit::types::IntegerType( context, 0 );
-				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
-			} else if( decl->type->info->name() == typeid( exo::jit::types::FloatType ).name() ) {
-				exo::jit::types::FloatType* type = new exo::jit::types::FloatType( context, 0 );
-				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
-			} else if( decl->type->info->name() == typeid( exo::jit::types::BooleanType ).name() ) {
-				exo::jit::types::BooleanType* type = new exo::jit::types::BooleanType( context, false );
-				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
+			llvm::Type* t;
+			if( decl->type->info == &typeid( exo::jit::types::IntegerType ) ) {
+				t = llvm::Type::getInt64Ty( module->getContext() );
+			} else if( decl->type->info == &typeid( exo::jit::types::FloatType ) ) {
+				t = llvm::Type::getDoubleTy( module->getContext() );
+			} else if( decl->type->info == &typeid( exo::jit::types::BooleanType ) ) {
+				t = llvm::Type::getInt1Ty( module->getContext() );
 			} else {
-				exo::jit::types::IntegerType* type = new exo::jit::types::IntegerType( context, 0 );
-				memory = new llvm::AllocaInst( type->type, decl->name.c_str(), getCurrentBlock() );
+				t = llvm::Type::getVoidTy( module->getContext() );
 			}
-			Variables()[ decl->name ] = memory;
+			Variables()[ decl->name ] = new llvm::AllocaInst( t, decl->name.c_str(), getCurrentBlock() );
 
 			TRACESECTION( "IR", "new variable map size: " << Variables().size() );
 
@@ -135,7 +120,7 @@ namespace exo
 				a->Generate( this );
 			}
 
-			return( memory );
+			return( Variables()[ decl->name ] );
 		}
 
 		llvm::Value* Context::Generate( exo::ast::VarAssign* assign )
@@ -152,21 +137,21 @@ namespace exo
 		llvm::Value* Context::Generate( exo::ast::ValueInt* val )
 		{
 			TRACESECTION( "IR", "generating integer " << val->value << " in (" << name << ")" );
-			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( context, val->value );
+			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( &module->getContext(), val->value );
 			return( iType->value );
 		}
 
 		llvm::Value* Context::Generate( exo::ast::ValueFloat* val )
 		{
 			TRACESECTION( "IR", "generating float: " << val->value << " in (" << name << ")" );
-			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( context, val->value );
+			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( &module->getContext(), val->value );
 			return( fType->value );
 		}
 
 		llvm::Value* Context::Generate( exo::ast::ValueBool* val )
 		{
 			TRACESECTION( "IR", "generating boolean: " << val->value << " in (" << name << ")" );
-			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( context, val->value );
+			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( &module->getContext(), val->value );
 			return( bType->value );
 		}
 
@@ -174,6 +159,48 @@ namespace exo
 		{
 			TRACESECTION( "IR", "generating constant expression: " << expr->name << " in (" << name << ")" );
 			return( expr->expression->Generate( this ) );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::BinaryOp* op )
+		{
+			TRACESECTION( "IR", "generating binary operation: " << op->op << " in (" << name << ")" );
+
+			llvm::Value* lhs = op->lhs->Generate( this );
+			llvm::Value* rhs = op->rhs->Generate( this );
+
+			if( op->op == "+" ) {
+				return( llvm::BinaryOperator::Create( llvm::Instruction::Add, lhs, rhs, "", getCurrentBlock() ) );
+			} else if( op->op == "-" ) {
+				return( llvm::BinaryOperator::Create( llvm::Instruction::Sub, lhs, rhs, "", getCurrentBlock() ) );
+			} else if( op->op == "*" ) {
+				return( llvm::BinaryOperator::Create( llvm::Instruction::Mul, lhs, rhs, "", getCurrentBlock() ) );
+			} else if( op->op == "/" ) {
+				return( llvm::BinaryOperator::Create( llvm::Instruction::SDiv, lhs, rhs, "", getCurrentBlock() ) );
+			} else {
+				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownBinaryOp( op->op ) );
+				return( NULL );
+			}
+		}
+
+		llvm::Value* Context::Generate( exo::ast::VarExpr* expr )
+		{
+			TRACESECTION( "IR", "generating variable expression $" << expr->variable << " in (" << name << ")" );
+
+			if( Variables().find( expr->variable ) == Variables().end() ) {
+				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( expr->variable ) );
+			}
+
+			return( new llvm::LoadInst( Variables()[ expr->variable ], expr->variable, getCurrentBlock() ) );
+		}
+
+		llvm::Value* Context::Generate( exo::ast::CmpOp* op )
+		{
+			TRACESECTION( "IR", "generating comparison " << op->op << " in (" << name << ")" );
+
+			llvm::Value* lhs = op->lhs->Generate( this );
+			llvm::Value* rhs = op->rhs->Generate( this );
+
+			return( lhs );
 		}
 	}
 }

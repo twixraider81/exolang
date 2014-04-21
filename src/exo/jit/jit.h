@@ -24,7 +24,7 @@ namespace exo
 	{
 		class Context;
 
-		class JIT : public virtual gc
+		class JIT
 		{
 			exo::jit::Context*			context;
 			llvm::ExecutionEngine*		engine;

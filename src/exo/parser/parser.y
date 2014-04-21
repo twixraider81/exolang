@@ -38,6 +38,7 @@
 
 
 %right	S_ASSIGN.
+%left	S_EQ S_NE S_LT S_LE S_GT S_GE.
 %left	S_PLUS S_MINUS.
 %left	S_MUL S_DIV.
 
@@ -239,7 +240,8 @@ number(n) ::= T_VFLOAT(f). {
 	n = new exo::ast::ValueFloat( TOKENSTR(f) );
 }
 
-/* an expression may be an assignment, function call, variable, number, binary expression or a constant */
+
+/* an expression may be an assignment, function call, variable, number, binary expression, comparison or a constant */
 %type expression { exo::ast::Expr* }
 expression(r) ::= T_VAR(v) S_ASSIGN expression(e). {
 	TRACESECTION( "PARSER", "expression(r) ::= T_VAR(v) S_ASSIGN expression(e).");
@@ -264,10 +266,18 @@ expression(e) ::= number(n). {
 	e = n;
 }
 expression(e) ::= expression(a) binop(o) expression(b). {
-	TRACESECTION( "PARSER", "expression(e) ::= expression(a) S_PLUS expression(b).");
+	TRACESECTION( "PARSER", "expression(e) ::= expression(a) binop(o) expression(b).");
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	e = new exo::ast::MathOp( a, o, b );
+	POINTERCHECK( o );
+	e = new exo::ast::BinaryOp( a, o, b );
+}
+expression(e) ::= expression(a) cmpop(c) expression(b). {
+	TRACESECTION( "PARSER", "expression(e) ::= expression(a) cmpop(c) expression(b).");
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, c, b );
 }
 expression(e) ::= constant(c). {
 	TRACESECTION( "PARSER", "expression(e) ::= constant(c).");
@@ -276,38 +286,43 @@ expression(e) ::= constant(c). {
 	e = c;
 }
 
+
 /* comparison operators */
+%type cmpop { std::string* }
+cmpop(c) ::= S_EQ(o). {
+	TRACESECTION( "PARSER", "cmpop(c) ::= S_EQ(o).");
+	POINTERCHECK( o );
+	c = new std::string( TOKENSTR( o ) );
+}
+cmpop(c) ::= S_NE(o). {
+	TRACESECTION( "PARSER", "cmpop(c) ::= S_NE(o).");
+	POINTERCHECK( o );
+	c = new std::string( TOKENSTR( o ) );
+}
+cmpop(c) ::= S_LT(o). {
+	TRACESECTION( "PARSER", "cmpop(c) ::= S_LT(o).");
+	POINTERCHECK( o );
+	c = new std::string( TOKENSTR( o ) );
+}
+cmpop(c) ::= S_LE(o). {
+	TRACESECTION( "PARSER", "cmpop(c) ::= S_LE(o).");
+	POINTERCHECK( o );
+	c = new std::string( TOKENSTR( o ) );
+}
+cmpop(c) ::= S_GT(o). {
+	TRACESECTION( "PARSER", "cmpop(c) ::= S_GT(o).");
+	POINTERCHECK( o );
+	c = new std::string( TOKENSTR( o ) );
+}
+cmpop(c) ::= S_GE(o). {
+	TRACESECTION( "PARSER", "cmpop(c) ::= S_GE(o).");
+	POINTERCHECK( o );
+	c = new std::string( TOKENSTR( o ) );
+}
+
+
+/* binary operators */
 %type binop { std::string* }
-binop(b) ::= S_EQ(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_EQ(o).");
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
-}
-binop(b) ::= S_NE(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_NE(o).");
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
-}
-binop(b) ::= S_LT(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_LT(o).");
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
-}
-binop(b) ::= S_LE(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_LE(o).");
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
-}
-binop(b) ::= S_GT(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_GT(o).");
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
-}
-binop(b) ::= S_GE(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_GE(o).");
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
-}
 binop(b) ::= S_PLUS(o). {
 	TRACESECTION( "PARSER", "binop(b) ::= S_PLUS(o).");
 	POINTERCHECK( o );
@@ -328,6 +343,7 @@ binop(b) ::= S_DIV(o). {
 	POINTERCHECK( o );
 	b = new std::string( TOKENSTR( o ) );
 }
+
 
 /* a constant can be a builtin */
 %type constant { exo::ast::Expr* }

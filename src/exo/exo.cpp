@@ -84,7 +84,7 @@ int main( int argc, char **argv )
 			ast->Parse( std::cin );
 		}
 
-		boost::scoped_ptr<exo::jit::Context> context( new exo::jit::Context( "main", &llvm::getGlobalContext() ) );
+		boost::scoped_ptr<exo::jit::Context> context( new exo::jit::Context( "main" ) );
 		context->Generate( ast.get() );
 
 		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( context.get() ) );

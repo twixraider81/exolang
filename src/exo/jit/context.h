@@ -35,7 +35,8 @@ namespace exo
 	    class ExprList;
 	    class FunDecl;
 	    class FunCall;
-	    class MathOp;
+	    class BinaryOp;
+	    class CmpOp;
 	    class ConstExpr;
 	    class ValueNull;
 	    class ValueBool;
@@ -51,19 +52,18 @@ namespace exo
 	{
 		class Block;
 
-		class Context : public virtual gc
+		class Context
 		{
 			public:
 				std::string			name;
 				std::stack<Block*>	blocks;
 
 				llvm::Function*		entry;
-			    llvm::Module*		module;
-			    llvm::LLVMContext*	context;
-			    //llvm::IRBuilder<>	builder;
+				llvm::Module*		module;
+			    llvm::IRBuilder<>	builder;
 
-			    Context( std::string cname, llvm::LLVMContext* c );
-			    virtual ~Context();
+			    Context( std::string cname );
+			    ~Context();
 
 			    void pushBlock( llvm::BasicBlock* block);
 			    void popBlock();
@@ -80,8 +80,9 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ValueFloat* val );
 			    llvm::Value* Generate( exo::ast::ValueBool* val );
 			    llvm::Value* Generate( exo::ast::ConstExpr* expr );
-			    llvm::Value* Generate( exo::ast::MathOp* op );
+			    llvm::Value* Generate( exo::ast::BinaryOp* op );
 			    llvm::Value* Generate( exo::ast::VarExpr* expr );
+			    llvm::Value* Generate( exo::ast::CmpOp* op );
 		};
 	}
 }

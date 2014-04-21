@@ -23,23 +23,21 @@ namespace exo
 		{
 			parser = ParseAlloc( GC_malloc );
 
+#ifdef EXO_TRACE
+			char prefix[] = "PARSER: ";
+			ParseTrace( stderr, prefix );
+#endif
+
 			if( parser == NULL ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::OutOfMemory() );
 			}
 
 			stmts = NULL;
-			token = new quex::Token;
-
-#ifdef EXO_TRACE
-			char prefix[] = "PARSER: ";
-			ParseTrace( stderr, prefix );
-#endif
 		}
 
 		Tree::~Tree()
 		{
 			::ParseFree( parser, GC_free );
-			delete token;
 		}
 
 		void Tree::Parse( std::string fName )
@@ -47,6 +45,7 @@ namespace exo
 			fileName = fName;
 			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
 
+			quex::Token* token = new quex::Token;
 			quex::lexer lexer( fileName );
 			lexer.receive( &token );
 
@@ -65,6 +64,7 @@ namespace exo
 			fileName = "<stdin>";
 			TRACESECTION( "AST", "opening <stdin>" );
 
+			quex::Token* token = new quex::Token;
 			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 
 			while( stream ) {
