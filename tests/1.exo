@@ -1,4 +1,4 @@
 int $a = 1;
-float $b = 1.5;
-bool $c = true;
-bool $d = false;
+int $b = __LINE__;
+int $c = $a + $b;
+int $d = $b - $a;
