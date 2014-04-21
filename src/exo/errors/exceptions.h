@@ -79,13 +79,34 @@ namespace exo
 		};
 
 		/**
-		 * Exception that will be incase the IR generator stumbles across an undefined variable.
+		 * Exception that will be thrown in case the IR generator stumbles across an undefined variable.
 		 */
 		class UnknownVar : public virtual Exception
 		{
 			public:
 				std::string varName;
 				UnknownVar( std::string vName );
+				virtual const char* what() const throw();
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an unknown operator.
+		 */
+		class UnknownBinaryOp : public virtual Exception
+		{
+			public:
+				std::string op;
+				UnknownBinaryOp( std::string bOp );
+				virtual const char* what() const throw();
+		};
+
+		/**
+		 * Exception that will be thrown in case we ran out of mem
+		 */
+		class OutOfMemory : public virtual Exception
+		{
+			public:
+				OutOfMemory();
 				virtual const char* what() const throw();
 		};
 
