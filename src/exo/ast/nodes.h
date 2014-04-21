@@ -135,14 +135,26 @@ namespace exo
 				FunCall( std::string n, ExprList* a );
 		};
 
-		class MathOp : public Expr
+		class BinaryOp : public Expr
 		{
 			public:
 				Expr* lhs;
 				std::string op;
 				Expr* rhs;
 
-				MathOp( Expr* a, std::string* o, Expr* b );
+				BinaryOp( Expr* a, std::string* o, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class CmpOp : public Expr
+		{
+			public:
+				Expr* lhs;
+				std::string op;
+				Expr* rhs;
+
+				CmpOp( Expr* a, std::string* o, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
 		};

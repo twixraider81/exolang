@@ -26,15 +26,19 @@ namespace exo
 	{
 		class StmtList;
 
-		class Tree : public gc
+		class Tree
 		{
 			public:
-				void*		parser;
-				std::string	fileName;
-				StmtList*	stmts;
+				void*			parser;
+				std::string		fileName;
+				StmtList*		stmts;
+				quex::Token*	token;
 
-				Tree( std::string fName );
-				Tree( std::istream& stream );
+				Tree();
+				~Tree();
+
+				void Parse( std::string fName );
+				void Parse( std::istream& stream );
 		};
 	}
 }

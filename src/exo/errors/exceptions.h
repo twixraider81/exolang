@@ -106,7 +106,6 @@ namespace exo
 		class OutOfMemory : public virtual Exception
 		{
 			public:
-				OutOfMemory();
 				virtual const char* what() const throw();
 		};
 
