@@ -27,8 +27,8 @@ namespace exo
 				BOOST_THROW_EXCEPTION( exo::exceptions::OutOfMemory() );
 			}
 
-			token = new quex::Token;
 			stmts = NULL;
+			token = new quex::Token;
 
 #ifdef EXO_TRACE
 			char prefix[] = "PARSER: ";
@@ -38,7 +38,7 @@ namespace exo
 
 		Tree::~Tree()
 		{
-			ParseFree( parser, GC_free );
+			::ParseFree( parser, GC_free );
 			delete token;
 		}
 
