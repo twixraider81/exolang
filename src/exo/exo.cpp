@@ -25,6 +25,7 @@
 /*
  * Main/CLI Invocation, see -h
  * TODO: 1. implement type system
+ * TODO: 2. document ast and jit
  * TODO: 3. use boost unit tests!
  */
 int main( int argc, char **argv )
@@ -32,10 +33,6 @@ int main( int argc, char **argv )
 	if( !exo::init::Init::Startup() ) {
 		ERRORRET( "unable to complete initialization. exiting...", -1 );
 	}
-
-	exo::ast::Tree* ast;
-	exo::jit::JIT* jit;
-	exo::jit::Context* context;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -59,10 +56,11 @@ int main( int argc, char **argv )
 		return( 0 );
 	}
 
+
 	// show version & exit
 	if( commandLine.count( "version" ) ) {
 		std::cout << "version: " << EXO_VERSION << std::endl;
-		//std::cout << "host cpu: " << llvm::sys::getHostCPUName() << std::endl;
+		std::cout << "host cpu: " << llvm::sys::getHostCPUName() << std::endl;
 		std::cout << "default jit target: " << llvm::sys::getProcessTriple() << std::endl;
 
 #ifndef EXO_GC_DISABLE
@@ -74,22 +72,23 @@ int main( int argc, char **argv )
 		return( 0 );
 	}
 
+
+	// we are running, commandline is parsed
 	try {
+		boost::scoped_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
+
 		// we build the ast from a file given via -i / --input or stdin
 		if( commandLine.count( "input" ) ) {
-			ast = new exo::ast::Tree( commandLine["input"].as<std::string>() );
+			ast->Parse( commandLine["input"].as<std::string>() );
 		} else {
-			ast = new exo::ast::Tree( std::cin );
+			ast->Parse( std::cin );
 		}
 
-		context = new exo::jit::Context( "main", &llvm::getGlobalContext() );
-		context->Generate( ast );
+		boost::scoped_ptr<exo::jit::Context> context( new exo::jit::Context( "main", &llvm::getGlobalContext() ) );
+		context->Generate( ast.get() );
 
-		jit = new exo::jit::JIT( context );
-		// we have the IR now, don't need the AST anymore
-		delete ast;
+		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( context.get() ) );
 
-		delete jit;
 	} catch( exo::exceptions::Exception& e ) {
 		ERRORMSG( e.what() );
 		ERRORMSG( boost::diagnostic_information( e ) );

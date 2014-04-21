@@ -105,9 +105,9 @@ def configure( conf ):
 	conf.check_cxx( header_name = "execinfo.h" )
 	conf.check_cxx( header_name = "unistd.h" )
 	conf.check_cxx( header_name = "vector" )
+	conf.check_cxx( header_name = "memory" )
 	conf.check_cxx( header_name = "stack" )
 
-	conf.check_cxx( header_name = "boost/shared_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
 	conf.check_cxx( header_name = "boost/exception/all.hpp" )
