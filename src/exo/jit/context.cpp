@@ -25,11 +25,16 @@ namespace exo
 {
 	namespace jit
 	{
-		Context::Context( std::string cname ) : builder( llvm::getGlobalContext() )
+		Context::Context( std::string cname, std::string target ) : builder( llvm::getGlobalContext() )
 		{
 			name = cname;
 			module = new llvm::Module( cname, llvm::getGlobalContext() );
-			module->setTargetTriple( llvm::sys::getProcessTriple() );
+			module->setTargetTriple( target );
+		}
+
+		Context::Context( std::string cname ) : Context( cname, llvm::sys::getProcessTriple() )
+		{
+
 		}
 
 		Context::~Context()
@@ -169,13 +174,13 @@ namespace exo
 			llvm::Value* rhs = op->rhs->Generate( this );
 
 			if( op->op == "+" ) {
-				return( llvm::BinaryOperator::Create( llvm::Instruction::Add, lhs, rhs, "", getCurrentBlock() ) );
+				return( builder.CreateAdd( lhs, rhs, "" ) );
 			} else if( op->op == "-" ) {
-				return( llvm::BinaryOperator::Create( llvm::Instruction::Sub, lhs, rhs, "", getCurrentBlock() ) );
+				return( builder.CreateSub( lhs, rhs, "" ) );
 			} else if( op->op == "*" ) {
-				return( llvm::BinaryOperator::Create( llvm::Instruction::Mul, lhs, rhs, "", getCurrentBlock() ) );
+				return( builder.CreateMul( lhs, rhs, "" ) );
 			} else if( op->op == "/" ) {
-				return( llvm::BinaryOperator::Create( llvm::Instruction::SDiv, lhs, rhs, "", getCurrentBlock() ) );
+				return( builder.CreateSDiv( lhs, rhs, "" ) );
 			} else {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownBinaryOp( op->op ) );
 				return( NULL );
@@ -190,7 +195,7 @@ namespace exo
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( expr->variable ) );
 			}
 
-			return( new llvm::LoadInst( Variables()[ expr->variable ], expr->variable, getCurrentBlock() ) );
+			return( builder.CreateLoad( Variables()[ expr->variable ], expr->variable ) );
 		}
 
 		llvm::Value* Context::Generate( exo::ast::CmpOp* op )

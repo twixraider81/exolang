@@ -63,6 +63,7 @@ namespace exo
 			    llvm::IRBuilder<>	builder;
 
 			    Context( std::string cname );
+			    Context( std::string cname, std::string target );
 			    ~Context();
 
 			    void pushBlock( llvm::BasicBlock* block);
