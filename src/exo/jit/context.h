@@ -35,13 +35,14 @@ namespace exo
 	    class ExprList;
 	    class FunDecl;
 	    class FunCall;
-	    class CompOp;
+	    class MathOp;
 	    class ConstExpr;
 	    class ValueNull;
 	    class ValueBool;
 	    class ValueInt;
 	    class ValueFloat;
 	    class ValueString;
+	    class VarExpr;
 
 		class Tree;
 	}
@@ -53,12 +54,13 @@ namespace exo
 		class Context : public virtual gc
 		{
 			public:
-				std::string name;
-				std::stack<Block*> blocks;
+				std::string			name;
+				std::stack<Block*>	blocks;
 
-				llvm::Function* entry;
-			    llvm::Module* module;
-			    llvm::LLVMContext* context;
+				llvm::Function*		entry;
+			    llvm::Module*		module;
+			    llvm::LLVMContext*	context;
+			    //llvm::IRBuilder<>	builder;
 
 			    Context( std::string cname, llvm::LLVMContext* c );
 			    virtual ~Context();
@@ -69,7 +71,6 @@ namespace exo
 
 			    std::map<std::string, llvm::Value*>& Variables();
 
-
 			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );
 			    llvm::Value* Generate( exo::ast::StmtList* list );
@@ -79,6 +80,8 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ValueFloat* val );
 			    llvm::Value* Generate( exo::ast::ValueBool* val );
 			    llvm::Value* Generate( exo::ast::ConstExpr* expr );
+			    llvm::Value* Generate( exo::ast::MathOp* op );
+			    llvm::Value* Generate( exo::ast::VarExpr* expr );
 		};
 	}
 }
