@@ -88,6 +88,7 @@ int main( int argc, char **argv )
 		generator->Generate( ast.get() );
 
 		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get() ) );
+		jit->Execute();
 
 	} catch( exo::exceptions::Exception& e ) {
 		ERRORMSG( e.what() );

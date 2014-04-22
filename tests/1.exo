@@ -2,3 +2,12 @@ int $a = 1;
 int $b = __LINE__;
 int $c = $a + $b;
 int $d = $b - $a;
+
+int function test( int $e )
+{
+	int $a = $e + 1;
+	return $a;
+}
+
+int $f = test( 2 );
+test( 3 );

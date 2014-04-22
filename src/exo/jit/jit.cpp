@@ -27,6 +27,7 @@ namespace exo
 			generator = g;
 			std::string errorMsg;
 
+			// takes ownership of module, thus we can't delete it ourself
 			llvm::EngineBuilder builder( generator->module );
 			builder.setEngineKind( llvm::EngineKind::JIT );
 			builder.setOptLevel( llvm::CodeGenOpt::Default );
@@ -75,6 +76,11 @@ namespace exo
 		{
 			delete engine;
 			delete fpm;
+		}
+
+		void JIT::Execute()
+		{
+			uint64_t main = engine->getFunctionAddress( "main" );
 		}
 	}
 }

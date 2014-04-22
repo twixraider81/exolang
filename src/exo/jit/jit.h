@@ -37,6 +37,8 @@ namespace exo
 				 */
 				JIT( exo::jit::Codegen* c );
 				~JIT();
+
+				void Execute();
 		};
 	}
 }
