@@ -101,6 +101,29 @@ namespace exo
 		};
 
 		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an undefined function.
+		 */
+		class UnknownFunction : public virtual Exception
+		{
+			public:
+				std::string fName;
+				UnknownFunction( std::string name );
+				virtual const char* what() const throw();
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
+		 */
+		class InvalidCall : public virtual Exception
+		{
+			public:
+				std::string fName;
+				std::string reason;
+				InvalidCall( std::string name, std::string r );
+				virtual const char* what() const throw();
+		};
+
+		/**
 		 * Exception that will be thrown in case we ran out of mem
 		 */
 		class OutOfMemory : public virtual Exception
