@@ -73,7 +73,7 @@ int main( int argc, char **argv )
 	}
 
 
-	// we are running, commandline is parsed
+	// we are running, command line is parsed
 	try {
 		boost::scoped_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
 

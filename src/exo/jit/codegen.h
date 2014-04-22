@@ -67,11 +67,11 @@ namespace exo
 			    Codegen( std::string cname, std::string target );
 			    ~Codegen();
 
-			    void pushBlock( llvm::BasicBlock* block);
-			    void popBlock();
-			    llvm::BasicBlock* getCurrentBlock();
-
-			    std::map<std::string, llvm::Value*>& Variables();
+			    void 									pushBlock( llvm::BasicBlock* block, std::string name );
+			    void 									popBlock();
+			    llvm::BasicBlock*						getCurrentBasicBlock();
+			    std::string								getCurrentBlockName();
+			    std::map<std::string, llvm::Value*>&	getCurrentBlockVars();
 
 			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
 

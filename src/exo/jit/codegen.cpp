@@ -41,35 +41,41 @@ namespace exo
 		{
 		}
 
-		void Codegen::pushBlock( llvm::BasicBlock* block)
+		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name )
 		{
 			blocks.push( new Block() );
 			blocks.top()->block = block;
+			blocks.top()->name = name;
 
-			// reset out current insert point
+			// reset our new insert point
 			builder.SetInsertPoint( blocks.top()->block );
 
-			TRACESECTION( "CONTEXT", "pushing new block onto stack, new stacksize:" << blocks.size() );
+			TRACESECTION( "CONTEXT", "pushing \"" << getCurrentBlockName() << "\" onto stack, new stacksize:" << blocks.size() );
 		}
 
 		void Codegen::popBlock()
 		{
+			TRACESECTION( "CONTEXT", "poping \"" << getCurrentBlockName() << "\" from stack, new stacksize:" << blocks.size() );
+
 			blocks.pop();
 
-			// reset out current insert point
+			// reset our insert point
 			if( blocks.size() > 0 ) {
 				builder.SetInsertPoint( blocks.top()->block );
 			}
-
-			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
 
-		llvm::BasicBlock* Codegen::getCurrentBlock()
+		llvm::BasicBlock* Codegen::getCurrentBasicBlock()
 		{
 			 return( blocks.top()->block );
 		}
 
-		std::map<std::string, llvm::Value*>& Codegen::Variables()
+		std::string Codegen::getCurrentBlockName()
+		{
+			 return( blocks.top()->name );
+		}
+
+		std::map<std::string, llvm::Value*>& Codegen::getCurrentBlockVars()
 		{
 			return( blocks.top()->variables );
 		}
@@ -100,14 +106,15 @@ namespace exo
 		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
 		{
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false);
-			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, "main", module );
+			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, name, module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), "entry", entry, 0 );
 
-			pushBlock( block );
+			pushBlock( block, name );
 
 			Generate( tree->stmts );
 
 			llvm::Value* retval = llvm::ReturnInst::Create( module->getContext(), block );
+
 			popBlock();
 
 			return( retval );
@@ -115,7 +122,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
 		{
-			TRACESECTION( "IR", "generating statements (" << name << ")" );
+			TRACESECTION( "IR", "generating statements (" << getCurrentBlockName() << ")" );
 
 			std::vector<exo::ast::Stmt*>::iterator it;
 			llvm::Value *last = NULL;
@@ -130,61 +137,61 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::VarDecl* decl )
 		{
-			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << name << ")" );
+			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << getCurrentBlockName() << ")" );
 
-			Variables()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBlock() );
+			getCurrentBlockVars()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBasicBlock() );
 
-			TRACESECTION( "IR", "new variable map size: " << Variables().size() );
+			TRACESECTION( "IR", "new variable map size: " << getCurrentBlockVars().size() );
 
 			if( decl->expression ) {
 				exo::ast::VarAssign* a = new exo::ast::VarAssign( decl->name, decl->expression );
 				a->Generate( this );
 			}
 
-			return( Variables()[ decl->name ] );
+			return( getCurrentBlockVars()[ decl->name ] );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::VarAssign* assign )
 		{
-			TRACESECTION( "IR", "assigning variable $" << assign->name << " in (" << name << ")" );
+			TRACESECTION( "IR", "assigning variable $" << assign->name << " in (" << getCurrentBlockName() << ")" );
 
-			if( Variables().find( assign->name ) == Variables().end() ) {
+			if( getCurrentBlockVars().find( assign->name ) == getCurrentBlockVars().end() ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( assign->name ) );
 			}
 
-			return( new llvm::StoreInst( assign->expression->Generate( this ), Variables()[ assign->name ], false, getCurrentBlock() ) );
+			return( new llvm::StoreInst( assign->expression->Generate( this ), getCurrentBlockVars()[ assign->name ], false, getCurrentBasicBlock() ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueInt* val )
 		{
-			TRACESECTION( "IR", "generating integer " << val->value << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating integer " << val->value << " in (" << getCurrentBlockName() << ")" );
 			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( &module->getContext(), val->value );
 			return( iType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueFloat* val )
 		{
-			TRACESECTION( "IR", "generating float: " << val->value << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating float: " << val->value << " in (" << getCurrentBlockName() << ")" );
 			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( &module->getContext(), val->value );
 			return( fType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueBool* val )
 		{
-			TRACESECTION( "IR", "generating boolean: " << val->value << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating boolean: " << val->value << " in (" << getCurrentBlockName() << ")" );
 			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( &module->getContext(), val->value );
 			return( bType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstExpr* expr )
 		{
-			TRACESECTION( "IR", "generating constant expression: " << expr->name << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating constant expression: " << expr->name << " in (" << getCurrentBlockName() << ")" );
 			return( expr->expression->Generate( this ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )
 		{
-			TRACESECTION( "IR", "generating binary operation: " << op->op << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating binary operation: " << op->op << " in (" << getCurrentBlockName() << ")" );
 
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
@@ -205,18 +212,18 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::VarExpr* expr )
 		{
-			TRACESECTION( "IR", "generating variable expression $" << expr->variable << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating variable expression $" << expr->variable << " in (" << getCurrentBlockName() << ")" );
 
-			if( Variables().find( expr->variable ) == Variables().end() ) {
+			if( getCurrentBlockVars().find( expr->variable ) == getCurrentBlockVars().end() ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( expr->variable ) );
 			}
 
-			return( builder.CreateLoad( Variables()[ expr->variable ], expr->variable ) );
+			return( builder.CreateLoad( getCurrentBlockVars()[ expr->variable ], expr->variable ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::CmpOp* op )
 		{
-			TRACESECTION( "IR", "generating comparison " << op->op << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating comparison " << op->op << " in (" << getCurrentBlockName() << ")" );
 
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
@@ -226,7 +233,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::FunDecl* decl )
 		{
-			TRACESECTION( "IR", "generating function " << decl->name << " in (" << name << ")" );
+			TRACESECTION( "IR", "generating function " << decl->name << " in (" << getCurrentBlockName() << ")" );
 
 			std::vector<llvm::Type*> fArgs;
 			std::vector<exo::ast::VarDecl*>::iterator it;
@@ -240,7 +247,7 @@ namespace exo
 			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::InternalLinkage, decl->name, module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->name, function, 0 );
 
-			pushBlock( block );
+			pushBlock( block, decl->name );
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
 				TRACESECTION( "IR", "generating " << typeid(**it).name() );
@@ -261,7 +268,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
-			TRACESECTION( "IR", "generating return statement" );
+			TRACESECTION( "IR", "generating return statement (" << getCurrentBlockName() << ")" );
 			return( builder.CreateRet( stmt->expression->Generate( this ) ) );
 		}
 	}

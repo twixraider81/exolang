@@ -26,8 +26,9 @@ namespace exo
 		class Block : public virtual gc
 		{
 			public:
-			    llvm::BasicBlock* block;
-			    std::map<std::string, llvm::Value*> variables;
+			    llvm::BasicBlock*					block;
+			    std::string							name;
+			    std::map<std::string, llvm::Value*>	variables;
 		};
 	}
 }
