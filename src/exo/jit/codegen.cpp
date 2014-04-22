@@ -45,12 +45,22 @@ namespace exo
 		{
 			blocks.push( new Block() );
 			blocks.top()->block = block;
+
+			// reset out current insert point
+			builder.SetInsertPoint( blocks.top()->block );
+
 			TRACESECTION( "CONTEXT", "pushing new block onto stack, new stacksize:" << blocks.size() );
 		}
 
 		void Codegen::popBlock()
 		{
 			blocks.pop();
+
+			// reset out current insert point
+			if( blocks.size() > 0 ) {
+				builder.SetInsertPoint( blocks.top()->block );
+			}
+
 			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
 
@@ -62,6 +72,22 @@ namespace exo
 		std::map<std::string, llvm::Value*>& Codegen::Variables()
 		{
 			return( blocks.top()->variables );
+		}
+
+		/*
+		 * FIXME: wont be needed anymore once we get proper type system
+		 */
+		llvm::Type* Codegen::getType( exo::ast::Type* type, llvm::LLVMContext& context )
+		{
+			if( type->info == &typeid( exo::jit::types::IntegerType ) ) {
+				return( llvm::Type::getInt64Ty( context ) );
+			} else if( type->info == &typeid( exo::jit::types::FloatType ) ) {
+				return( llvm::Type::getDoubleTy( context ) );
+			} else if( type->info == &typeid( exo::jit::types::BooleanType ) ) {
+				return( llvm::Type::getInt1Ty( context ) );
+			}
+
+			return( llvm::Type::getVoidTy( context ) );
 		}
 
 
@@ -76,7 +102,7 @@ namespace exo
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false);
 			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, "main", module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), "entry", entry, 0 );
-			builder.SetInsertPoint( block );
+
 			pushBlock( block );
 
 			Generate( tree->stmts );
@@ -106,17 +132,7 @@ namespace exo
 		{
 			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << name << ")" );
 
-			llvm::Type* t;
-			if( decl->type->info == &typeid( exo::jit::types::IntegerType ) ) {
-				t = llvm::Type::getInt64Ty( module->getContext() );
-			} else if( decl->type->info == &typeid( exo::jit::types::FloatType ) ) {
-				t = llvm::Type::getDoubleTy( module->getContext() );
-			} else if( decl->type->info == &typeid( exo::jit::types::BooleanType ) ) {
-				t = llvm::Type::getInt1Ty( module->getContext() );
-			} else {
-				t = llvm::Type::getVoidTy( module->getContext() );
-			}
-			Variables()[ decl->name ] = new llvm::AllocaInst( t, decl->name.c_str(), getCurrentBlock() );
+			Variables()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBlock() );
 
 			TRACESECTION( "IR", "new variable map size: " << Variables().size() );
 
@@ -206,6 +222,47 @@ namespace exo
 			llvm::Value* rhs = op->rhs->Generate( this );
 
 			return( lhs );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::FunDecl* decl )
+		{
+			TRACESECTION( "IR", "generating function " << decl->name << " in (" << name << ")" );
+
+			std::vector<llvm::Type*> fArgs;
+			std::vector<exo::ast::VarDecl*>::iterator it;
+
+			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
+				TRACESECTION( "IR", "generating argument " << (**it).name );
+				fArgs.push_back( getType( (*it)->type, module->getContext() ) );
+			}
+
+			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, false );
+			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::InternalLinkage, decl->name, module );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->name, function, 0 );
+
+			pushBlock( block );
+
+			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
+				TRACESECTION( "IR", "generating " << typeid(**it).name() );
+				(*it)->Generate( this );
+			}
+
+			Generate( decl->stmts );
+
+			/*
+			 * TODO: Generate null, auto returns or else fail
+			 */
+			//llvm::ReturnInst::Create( module->getContext(), block );
+			//llvm::verifyFunction( *function );
+			popBlock();
+
+			return( function );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
+		{
+			TRACESECTION( "IR", "generating return statement" );
+			return( builder.CreateRet( stmt->expression->Generate( this ) ) );
 		}
 	}
 }

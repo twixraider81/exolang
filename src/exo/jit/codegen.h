@@ -44,6 +44,7 @@ namespace exo
 	    class ValueFloat;
 	    class ValueString;
 	    class VarExpr;
+	    class StmtReturn;
 
 		class Tree;
 	}
@@ -72,6 +73,8 @@ namespace exo
 
 			    std::map<std::string, llvm::Value*>& Variables();
 
+			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
+
 			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );
 			    llvm::Value* Generate( exo::ast::StmtList* list );
@@ -84,6 +87,8 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::BinaryOp* op );
 			    llvm::Value* Generate( exo::ast::VarExpr* expr );
 			    llvm::Value* Generate( exo::ast::CmpOp* op );
+			    llvm::Value* Generate( exo::ast::FunDecl* op );
+			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
 		};
 	}
 }
