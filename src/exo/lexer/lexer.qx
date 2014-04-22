@@ -48,6 +48,7 @@ mode EXO:
 	"auto"							=> QUEX_TKN_T_TAUTO;
 	"callable"						=> QUEX_TKN_T_TCALLABLE;
 	"function"						=> QUEX_TKN_S_FUNCTION;
+	"return"						=> QUEX_TKN_S_RETURN;
 
 	";"								=> QUEX_TKN_S_SEMICOLON;
 	","								=> QUEX_TKN_S_COMMA;

@@ -74,17 +74,27 @@ statements(s) ::= statements(a) statement(b). {
 }
 
 
-/* statement can be a variable declaration, function declaration or an expression. statements are terminated by a semicolon */
+/* statement can be a variable declaration, function declaration, a return statement or an expression. statements are terminated by a semicolon */
 %type statement { exo::ast::Stmt* }
 statement(s) ::= vardecl(v) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement ::= vardecl S_SEMICOLON.");
 	POINTERCHECK( v );
 	s = v;
 }
+statement(s) ::= fundecl(f). {
+	TRACESECTION( "PARSER", "statement ::= fundecl.");
+	POINTERCHECK( f );
+	s = f;
+}
 statement(s) ::= fundecl(f) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement ::= fundecl S_SEMICOLON.");
 	POINTERCHECK( f );
 	s = f;
+}
+statement(s) ::= S_RETURN expression(e) S_SEMICOLON. {
+	TRACESECTION( "PARSER", "statement(s) ::= S_RETURN expression(e).");
+	POINTERCHECK( e );
+	s = new exo::ast::StmtReturn( e );
 }
 statement(s) ::= expression(e) S_SEMICOLON. {
 	TRACESECTION( "PARSER", "statement(s) ::= expression(e) S_SEMICOLON.");
@@ -249,11 +259,11 @@ number(n) ::= T_VFLOAT(f). {
 
 /* an expression may be an assignment, function call, variable, number, binary expression, comparison or a constant */
 %type expression { exo::ast::Expr* }
-expression(r) ::= T_VAR(v) S_ASSIGN expression(e). {
+expression(a) ::= T_VAR(v) S_ASSIGN expression(e). {
 	TRACESECTION( "PARSER", "expression(r) ::= T_VAR(v) S_ASSIGN expression(e).");
 	POINTERCHECK( v );
 	POINTERCHECK( e );
-	r = new exo::ast::VarAssign( TOKENSTR(v), e );
+	a = new exo::ast::VarAssign( TOKENSTR(v), e );
 }
 expression(e) ::= T_ID(i) S_LANGLE exprlist(a) S_RANGLE. {
 	TRACESECTION( "PARSER", "T_ID(i) S_LANGLE funcall S_RANGLE.");

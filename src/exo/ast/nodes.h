@@ -32,11 +32,8 @@ namespace exo
 			public:
 				Node() { };
 				virtual ~Node() { };
-				/*
-				 * FIXME: its really ugly
-				 */
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class Expr : public Node
@@ -118,12 +115,14 @@ namespace exo
 		class FunDecl : public Stmt
 		{
 			public:
-				std::string name;
-				Type* returnType;
-				VarDeclList* arguments;
-				StmtList* codeBlock;
+				std::string		name;
+				Type*			returnType;
+				VarDeclList*	arguments;
+				StmtList*		stmts;
 
 				FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class FunCall : public Expr
@@ -218,6 +217,16 @@ namespace exo
 				std::string variable;
 
 				VarExpr( std::string vName );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class StmtReturn : public StmtExpr
+		{
+			public:
+				Expr* expression;
+
+				StmtReturn( Expr* expr );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
