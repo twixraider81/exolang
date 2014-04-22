@@ -50,7 +50,6 @@
 
 /* a program is build out of statements. */
 program ::= statements(s). {
-	TRACESECTION( "PARSER", "program ::= statements(s).");
 	ast->stmts = s;
 }
 
@@ -58,46 +57,39 @@ program ::= statements(s). {
 /* statements are a single statement followed by ; and other statements */
 %type statements { exo::ast::StmtList* }
 statements(a) ::= statement(b). {
-	TRACESECTION( "PARSER", "statements(a) ::= statement(b).");
 	POINTERCHECK( b );
 	a = new exo::ast::StmtList;
 	a->list.push_back( b );
 	TRACESECTION( "PARSER", "pushing statement; size:" << a->list.size());
 }
 statements(s) ::= statements(a) statement(b). {
-	TRACESECTION( "PARSER", "statements ::= statements(a) statement(b).");
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	a->list.push_back( b );
-	TRACESECTION( "PARSER",  "pushing statement; size:" << a->list.size() );
 	s = a;
+	TRACESECTION( "PARSER",  "pushing statement; size:" << a->list.size() );
 }
 
 
 /* statement can be a variable declaration, function declaration, a return statement or an expression. statements are terminated by a semicolon */
 %type statement { exo::ast::Stmt* }
 statement(s) ::= vardecl(v) S_SEMICOLON. {
-	TRACESECTION( "PARSER", "statement ::= vardecl S_SEMICOLON.");
 	POINTERCHECK( v );
 	s = v;
 }
 statement(s) ::= fundecl(f). {
-	TRACESECTION( "PARSER", "statement ::= fundecl.");
 	POINTERCHECK( f );
 	s = f;
 }
 statement(s) ::= fundecl(f) S_SEMICOLON. {
-	TRACESECTION( "PARSER", "statement ::= fundecl S_SEMICOLON.");
 	POINTERCHECK( f );
 	s = f;
 }
 statement(s) ::= S_RETURN expression(e) S_SEMICOLON. {
-	TRACESECTION( "PARSER", "statement(s) ::= S_RETURN expression(e).");
 	POINTERCHECK( e );
 	s = new exo::ast::StmtReturn( e );
 }
 statement(s) ::= expression(e) S_SEMICOLON. {
-	TRACESECTION( "PARSER", "statement(s) ::= expression(e) S_SEMICOLON.");
 	POINTERCHECK( e );
 	s = new exo::ast::StmtExpr( e );
 }
@@ -106,11 +98,9 @@ statement(s) ::= expression(e) S_SEMICOLON. {
 /* a block is empty (i.e. protofunctions) or a collection of statements delimited by brackets */
 %type block { exo::ast::StmtList* }
 block(b) ::= S_LBRACKET S_RBRACKET. {
-	TRACESECTION( "PARSER", "block(b) ::= S_LBRACKET S_RBRACKET.");
 	b = new exo::ast::StmtList;
 }
 block(b) ::= S_LBRACKET statements(s) S_RBRACKET. {
-	TRACESECTION( "PARSER", "block(b) ::= S_LBRACKET statements(s) S_RBRACKET.");
 	POINTERCHECK( s );
 	b = s;
 }
@@ -119,31 +109,24 @@ block(b) ::= S_LBRACKET statements(s) S_RBRACKET. {
 /* a type may be a null, bool, integer, float, string or auto */
 %type type { exo::ast::Type* }
 type(t) ::= T_TBOOL. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TBOOL.");
 	t = new exo::ast::Type( &typeid( exo::jit::types::BooleanType ) );
 }
 type(t) ::= T_TINT. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TINT.");
 	t = new exo::ast::Type( &typeid( exo::jit::types::IntegerType ) );
 }
 type(t) ::= T_TFLOAT. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TFLOAT.");
 	t = new exo::ast::Type( &typeid( exo::jit::types::FloatType ) );
 }
 type(t) ::= T_TSTRING. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TSTRING.");
 	t = new exo::ast::Type( &typeid( exo::jit::types::StringType ) );
 }
 type(t) ::= T_TAUTO. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TAUTO.");
 	t = new exo::ast::Type( &typeid( exo::jit::types::AutoType ) );
 }
 type(t) ::= T_TCALLABLE. {
-	TRACESECTION( "PARSER", "type(t) ::= T_TCALLABLE.");
 	t = new exo::ast::Type( &typeid( exo::jit::types::CallableType ) );
 }
 type(t) ::= T_ID(i). {
-	TRACESECTION( "PARSER", "type(t) ::= T_ID(i).");
 	POINTERCHECK( i );
 	t = new exo::ast::Type( &typeid( exo::jit::types::ClassType ), TOKENSTR( i ) );
 }
@@ -152,13 +135,11 @@ type(t) ::= T_ID(i). {
 /* a variable declaration is a type identifier followed by a variable name optionally followed by an assignment to an expression */
 %type vardecl { exo::ast::VarDecl* }
 vardecl(d) ::= type(t) T_VAR(v). {
-	TRACESECTION( "PARSER", "vardecl(d) ::= type(t) T_VAR(v). ");
 	POINTERCHECK( t );
 	POINTERCHECK( v );
 	d = new exo::ast::VarDecl( TOKENSTR(v), t );
 }
 vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
-	TRACESECTION( "PARSER", "vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e).");
 	POINTERCHECK( t );
 	POINTERCHECK( v );
 	POINTERCHECK( e );
@@ -169,19 +150,16 @@ vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
 /* a variable declaration lists are variable declarations seperated by a colon or empty */
 %type vardecllist { exo::ast::VarDeclList* }
 vardecllist (l)::= . {
-	TRACESECTION( "PARSER", "vardecllist (l)::= .");
 	l = new exo::ast::VarDeclList;
 	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
 }
 vardecllist(l) ::= vardecl(d). {
-	TRACESECTION( "PARSER", "vardecllist(a) ::= vardecl(d).");
 	POINTERCHECK( d );
 	l = new exo::ast::VarDeclList;
 	l->list.push_back( d );
 	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
 }
 vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
-	TRACESECTION( "PARSER", "vardecllist(a) ::= vardecl(d).");
 	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->list.push_back( d );
@@ -191,27 +169,23 @@ vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
 /* a function declaration is a type identifier followed by the keyword function a functionname, optionally function arguments in brackets and and associated block */
 %type fundecl { exo::ast::FunDecl* }
 fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
-	TRACESECTION( "PARSER", "fundecl(f) ::= S_FUNCTION T_ID(i) block(b).");
 	POINTERCHECK( i );
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
-	TRACESECTION( "PARSER", "fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b).");
 	POINTERCHECK( t );
 	POINTERCHECK( i );
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), t, new exo::ast::VarDeclList, b );
 }
 fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
-	TRACESECTION( "PARSER", "fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b).");
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
-	TRACESECTION( "PARSER", "type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b).");
 	POINTERCHECK( t );
 	POINTERCHECK( i );
 	POINTERCHECK( a );
@@ -223,19 +197,16 @@ fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block
 /* a variable declaration lists are expressions seperated by a colon or empty */
 %type exprlist { exo::ast::ExprList* }
 exprlist(l) ::= . {
-	TRACESECTION( "PARSER", "exprlist(l) ::= .");
 	l = new exo::ast::ExprList;
 	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size());
 }
 exprlist(l) ::= expression(e). {
-	TRACESECTION( "PARSER", "exprlist(l) ::= .");
 	POINTERCHECK( e );
 	l = new exo::ast::ExprList;
 	l->list.push_back( e );
 	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size());
 }
 exprlist ::= exprlist(l) S_COMMA expression(e). {
-	TRACESECTION( "PARSER", "exprlist ::= exprlist(l) S_COMMA expression(e).");
 	POINTERCHECK( l );
 	POINTERCHECK( e );
 	l->list.push_back( e );
@@ -246,12 +217,10 @@ exprlist ::= exprlist(l) S_COMMA expression(e). {
 /* a number may be an integer or a float */
 %type number { exo::ast::Expr* }
 number(n) ::= T_VINT(i). {
-	TRACESECTION( "PARSER", "number(n) ::= T_VINT(i).");
 	POINTERCHECK( i );
 	n = new exo::ast::ValueInt( TOKENSTR(i) );
 }
 number(n) ::= T_VFLOAT(f). {
-	TRACESECTION( "PARSER", "number(n) ::= T_VFLOAT(f).");
 	POINTERCHECK( f );
 	n = new exo::ast::ValueFloat( TOKENSTR(f) );
 }
@@ -260,43 +229,36 @@ number(n) ::= T_VFLOAT(f). {
 /* an expression may be an assignment, function call, variable, number, binary expression, comparison or a constant */
 %type expression { exo::ast::Expr* }
 expression(a) ::= T_VAR(v) S_ASSIGN expression(e). {
-	TRACESECTION( "PARSER", "expression(r) ::= T_VAR(v) S_ASSIGN expression(e).");
 	POINTERCHECK( v );
 	POINTERCHECK( e );
 	a = new exo::ast::VarAssign( TOKENSTR(v), e );
 }
 expression(e) ::= T_ID(i) S_LANGLE exprlist(a) S_RANGLE. {
-	TRACESECTION( "PARSER", "T_ID(i) S_LANGLE funcall S_RANGLE.");
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	e = new exo::ast::FunCall( TOKENSTR(i), a );
 }
 expression(e) ::= T_VAR(v). {
-	TRACESECTION( "PARSER", "expression(e) ::= T_VAR(v).");
 	POINTERCHECK( v );
 	e = new exo::ast::VarExpr( TOKENSTR(v) );
 }
 expression(e) ::= number(n). {
-	TRACESECTION( "PARSER", "expression ::= number.");
 	POINTERCHECK( n );
 	e = n;
 }
 expression(e) ::= expression(a) binop(o) expression(b). {
-	TRACESECTION( "PARSER", "expression(e) ::= expression(a) binop(o) expression(b).");
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	POINTERCHECK( o );
 	e = new exo::ast::BinaryOp( a, o, b );
 }
 expression(e) ::= expression(a) cmpop(c) expression(b). {
-	TRACESECTION( "PARSER", "expression(e) ::= expression(a) cmpop(c) expression(b).");
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	POINTERCHECK( c );
 	e = new exo::ast::CmpOp( a, c, b );
 }
 expression(e) ::= constant(c). {
-	TRACESECTION( "PARSER", "expression(e) ::= constant(c).");
 	POINTERCHECK( e );
 	POINTERCHECK( c );
 	e = c;
@@ -306,32 +268,26 @@ expression(e) ::= constant(c). {
 /* comparison operators */
 %type cmpop { std::string* }
 cmpop(c) ::= S_EQ(o). {
-	TRACESECTION( "PARSER", "cmpop(c) ::= S_EQ(o).");
 	POINTERCHECK( o );
 	c = new std::string( TOKENSTR( o ) );
 }
 cmpop(c) ::= S_NE(o). {
-	TRACESECTION( "PARSER", "cmpop(c) ::= S_NE(o).");
 	POINTERCHECK( o );
 	c = new std::string( TOKENSTR( o ) );
 }
 cmpop(c) ::= S_LT(o). {
-	TRACESECTION( "PARSER", "cmpop(c) ::= S_LT(o).");
 	POINTERCHECK( o );
 	c = new std::string( TOKENSTR( o ) );
 }
 cmpop(c) ::= S_LE(o). {
-	TRACESECTION( "PARSER", "cmpop(c) ::= S_LE(o).");
 	POINTERCHECK( o );
 	c = new std::string( TOKENSTR( o ) );
 }
 cmpop(c) ::= S_GT(o). {
-	TRACESECTION( "PARSER", "cmpop(c) ::= S_GT(o).");
 	POINTERCHECK( o );
 	c = new std::string( TOKENSTR( o ) );
 }
 cmpop(c) ::= S_GE(o). {
-	TRACESECTION( "PARSER", "cmpop(c) ::= S_GE(o).");
 	POINTERCHECK( o );
 	c = new std::string( TOKENSTR( o ) );
 }
@@ -340,22 +296,18 @@ cmpop(c) ::= S_GE(o). {
 /* binary operators */
 %type binop { std::string* }
 binop(b) ::= S_PLUS(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_PLUS(o).");
 	POINTERCHECK( o );
 	b = new std::string( TOKENSTR( o ) );
 }
 binop(b) ::= S_MINUS(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_MINUS(o).");
 	POINTERCHECK( o );
 	b = new std::string( TOKENSTR( o ) );
 }
 binop(b) ::= S_MUL(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_MUL(o).");
 	POINTERCHECK( o );
 	b = new std::string( TOKENSTR( o ) );
 }
 binop(b) ::= S_DIV(o). {
-	TRACESECTION( "PARSER", "binop(b) ::= S_DIV(o).");
 	POINTERCHECK( o );
 	b = new std::string( TOKENSTR( o ) );
 }
@@ -364,24 +316,19 @@ binop(b) ::= S_DIV(o). {
 /* a constant can be a builtin */
 %type constant { exo::ast::Expr* }
 constant(c) ::= S_FILE(f). {
-	TRACESECTION( "PARSER", "constant(c) ::= S_FILE(f).");
 	POINTERCHECK( f );
 	c = new exo::ast::ConstExpr( TOKENSTR(f), new exo::ast::ValueString( ast->fileName ) );
 }
 constant(c) ::= S_LINE(l). {
-	TRACESECTION( "PARSER", "constant(c) ::= S_LINE(l).");
 	POINTERCHECK( l );
 	c = new exo::ast::ConstExpr( TOKENSTR(l), new exo::ast::ValueInt( std::to_string( l->line_number() ) ) );
 }
 constant(c) ::= T_VNULL. {
-	TRACESECTION( "PARSER", "constant(c) ::= T_VNULL.");
 	c = new exo::ast::ConstExpr( "false", new exo::ast::ValueNull() );
 }
 constant(c) ::= T_VTRUE. {
-	TRACESECTION( "PARSER", "constant(c) ::= T_VTRUE.");
 	c = new exo::ast::ConstExpr( "true", new exo::ast::ValueBool( true ) );
 }
 constant(c) ::= T_VFALSE. {
-	TRACESECTION( "PARSER", "constant(c) ::= T_VFALSE.");
 	c = new exo::ast::ConstExpr( "false", new exo::ast::ValueBool( false ) );
 }
