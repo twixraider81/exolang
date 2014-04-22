@@ -132,6 +132,8 @@ namespace exo
 				ExprList* arguments;
 
 				FunCall( std::string n, ExprList* a );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class BinaryOp : public Expr

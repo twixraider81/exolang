@@ -268,8 +268,33 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
-			TRACESECTION( "IR", "generating return statement (" << getCurrentBlockName() << ")" );
+			TRACESECTION( "IR", "generating return statement in (" << getCurrentBlockName() << ")" );
 			return( builder.CreateRet( stmt->expression->Generate( this ) ) );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::FunCall* call )
+		{
+			TRACESECTION( "IR", "generating function call " << call->name << " in (" << getCurrentBlockName() << ")" );
+
+			llvm::Function* callee = module->getFunction( call->name );
+
+			if( callee == 0 ) {
+				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownFunction( call->name ) );
+			}
+
+			if( callee->arg_size() != call->arguments->list.size() ) {
+				BOOST_THROW_EXCEPTION( exo::exceptions::InvalidCall( call->name, "expected arguments mismatch" ) );
+			}
+
+			std::vector<exo::ast::Expr*>::iterator it;
+			std::vector<llvm::Value*> arguments;
+
+			for( it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
+				TRACESECTION( "IR", "generating argument" << typeid(**it).name() );
+				arguments.push_back( (*it)->Generate( this ) );
+			}
+
+			return( builder.CreateCall( callee, arguments, "call" ) );
 		}
 	}
 }

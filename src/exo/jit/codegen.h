@@ -89,6 +89,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::CmpOp* op );
 			    llvm::Value* Generate( exo::ast::FunDecl* op );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
+			    llvm::Value* Generate( exo::ast::FunCall* fName );
 		};
 	}
 }
