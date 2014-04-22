@@ -60,6 +60,8 @@ namespace exo
 				Expr* expression;
 
 				StmtExpr( Expr* expr );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class Type : public Node

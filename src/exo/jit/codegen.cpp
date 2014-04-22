@@ -296,5 +296,11 @@ namespace exo
 
 			return( builder.CreateCall( callee, arguments, "call" ) );
 		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
+		{
+			TRACESECTION( "IR", "generating expression statement in (" << getCurrentBlockName() << ")" );
+			return( stmt->expression->Generate( this ) );
+		}
 	}
 }
