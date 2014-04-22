@@ -17,7 +17,7 @@
 #include "exo/exo.h"
 #include "exo/ast/tree.h"
 #include "exo/jit/jit.h"
-#include "exo/jit/context.h"
+#include "exo/jit/codegen.h"
 #include "exo/init/init.h"
 
 #include <boost/program_options.hpp>
@@ -84,10 +84,10 @@ int main( int argc, char **argv )
 			ast->Parse( std::cin );
 		}
 
-		boost::scoped_ptr<exo::jit::Context> context( new exo::jit::Context( "main" ) );
-		context->Generate( ast.get() );
+		boost::scoped_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main" ) );
+		generator->Generate( ast.get() );
 
-		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( context.get() ) );
+		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get() ) );
 
 	} catch( exo::exceptions::Exception& e ) {
 		ERRORMSG( e.what() );

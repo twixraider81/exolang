@@ -22,11 +22,11 @@ namespace exo
 {
 	namespace jit
 	{
-		class Context;
+		class Codegen;
 
 		class JIT
 		{
-			exo::jit::Context*			context;
+			exo::jit::Codegen*			generator;
 			llvm::ExecutionEngine*		engine;
 			llvm::FunctionPassManager 	*fpm;
 
@@ -35,7 +35,7 @@ namespace exo
 				 * Builds a LLVM MCJIT IR and loads the LLVM IR of the AST
 				 * TODO: make use of -0x levels - http://llvm.org/docs/doxygen/html/namespacellvm_1_1CodeGenOpt.html
 				 */
-				JIT( exo::jit::Context* c );
+				JIT( exo::jit::Codegen* c );
 				~JIT();
 		};
 	}

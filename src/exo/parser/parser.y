@@ -23,22 +23,28 @@
 %syntax_error {
 	BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedToken( TOKEN->type_id_name(), TOKEN->line_number(), TOKEN->column_number() ) );
 }
-
 %stack_overflow {
 	BOOST_THROW_EXCEPTION( exo::exceptions::StackOverflow() );
 }
 
+
+/* more like the "end" reduce ;) */
 %start_symbol program
 
 %token_prefix QUEX_TKN_
 %token_type { quex::Token* }
 
+/* the extra argument ist unused at the moment */
 %extra_argument { exo::ast::Tree *ast }
+
+/* everything decends from an ast node, tell lemon about it */
 %default_type { exo::ast::Node* }
 
 
+/* token precedences */
 %right	S_ASSIGN.
-%left	S_EQ S_NE S_LT S_LE S_GT S_GE.
+%left	S_EQ S_NE.
+%left	S_LT S_LE S_GT S_GE.
 %left	S_PLUS S_MINUS.
 %left	S_MUL S_DIV.
 

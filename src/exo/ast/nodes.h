@@ -18,7 +18,7 @@
 
 #include "exo/exo.h"
 #include "exo/jit/llvm.h"
-#include "exo/jit/context.h"
+#include "exo/jit/codegen.h"
 
 /*
  * TODO: user boost templates instead of std::vector
@@ -35,7 +35,7 @@ namespace exo
 				/*
 				 * FIXME: its really ugly
 				 */
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 
 		};
 
@@ -54,7 +54,7 @@ namespace exo
 
 				StmtList();
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class StmtExpr : public Stmt
@@ -85,7 +85,7 @@ namespace exo
 				VarDecl( std::string vName, Type* vType, Expr* expr );
 				VarDecl( std::string vName, Type* vType );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class VarAssign : public Expr
@@ -96,7 +96,7 @@ namespace exo
 
 				VarAssign( std::string vName, Expr* expr );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); }
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
 		class VarDeclList : public Stmt
@@ -144,7 +144,7 @@ namespace exo
 
 				BinaryOp( Expr* a, std::string* o, Expr* b );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class CmpOp : public Expr
@@ -156,7 +156,7 @@ namespace exo
 
 				CmpOp( Expr* a, std::string* o, Expr* b );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ConstExpr : public Expr
@@ -167,7 +167,7 @@ namespace exo
 
 				ConstExpr( std::string n, Expr* e );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueNull : public Expr
@@ -175,7 +175,7 @@ namespace exo
 			public:
 				ValueNull();
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); }
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
 		class ValueBool : public Expr
@@ -184,7 +184,7 @@ namespace exo
 				bool value;
 				ValueBool( bool bVal );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueInt : public Expr
@@ -193,7 +193,7 @@ namespace exo
 				std::string value;
 				ValueInt( std::string iVal );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueFloat : public Expr
@@ -202,7 +202,7 @@ namespace exo
 				std::string value;
 				ValueFloat( std::string fVal );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class ValueString : public Expr
@@ -219,7 +219,7 @@ namespace exo
 
 				VarExpr( std::string vName );
 
-				virtual llvm::Value* Generate( exo::jit::Context* ctx ) { return( ctx->Generate( this ) ); };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 	}
 }

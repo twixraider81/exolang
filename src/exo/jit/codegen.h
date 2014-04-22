@@ -52,7 +52,7 @@ namespace exo
 	{
 		class Block;
 
-		class Context
+		class Codegen
 		{
 			public:
 				std::string			name;
@@ -62,9 +62,9 @@ namespace exo
 				llvm::Module*		module;
 			    llvm::IRBuilder<>	builder;
 
-			    Context( std::string cname );
-			    Context( std::string cname, std::string target );
-			    ~Context();
+			    Codegen( std::string cname );
+			    Codegen( std::string cname, std::string target );
+			    ~Codegen();
 
 			    void pushBlock( llvm::BasicBlock* block);
 			    void popBlock();

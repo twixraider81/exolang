@@ -18,60 +18,60 @@
 #include "exo/jit/block.h"
 #include "exo/ast/nodes.h"
 #include "exo/ast/tree.h"
-#include "exo/jit/context.h"
+#include "exo/jit/codegen.h"
 #include "exo/jit/type/types.h"
 
 namespace exo
 {
 	namespace jit
 	{
-		Context::Context( std::string cname, std::string target ) : builder( llvm::getGlobalContext() )
+		Codegen::Codegen( std::string cname, std::string target ) : builder( llvm::getGlobalContext() )
 		{
 			name = cname;
 			module = new llvm::Module( cname, llvm::getGlobalContext() );
 			module->setTargetTriple( target );
 		}
 
-		Context::Context( std::string cname ) : Context( cname, llvm::sys::getProcessTriple() )
+		Codegen::Codegen( std::string cname ) : Codegen( cname, llvm::sys::getProcessTriple() )
 		{
 
 		}
 
-		Context::~Context()
+		Codegen::~Codegen()
 		{
 		}
 
-		void Context::pushBlock( llvm::BasicBlock* block)
+		void Codegen::pushBlock( llvm::BasicBlock* block)
 		{
 			blocks.push( new Block() );
 			blocks.top()->block = block;
 			TRACESECTION( "CONTEXT", "pushing new block onto stack, new stacksize:" << blocks.size() );
 		}
 
-		void Context::popBlock()
+		void Codegen::popBlock()
 		{
 			blocks.pop();
 			TRACESECTION( "CONTEXT", "poping block from stack, new stacksize:" << blocks.size() );
 		}
 
-		llvm::BasicBlock* Context::getCurrentBlock()
+		llvm::BasicBlock* Codegen::getCurrentBlock()
 		{
 			 return( blocks.top()->block );
 		}
 
-		std::map<std::string, llvm::Value*>& Context::Variables()
+		std::map<std::string, llvm::Value*>& Codegen::Variables()
 		{
 			return( blocks.top()->variables );
 		}
 
 
-		llvm::Value* Context::Generate( exo::ast::Node* node )
+		llvm::Value* Codegen::Generate( exo::ast::Node* node )
 		{
 			BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedNode( typeid(*node).name() ) );
 			return( NULL );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::Tree* tree )
+		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
 		{
 			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false);
 			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, "main", module );
@@ -87,7 +87,7 @@ namespace exo
 			return( retval );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::StmtList* stmts )
+		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
 		{
 			TRACESECTION( "IR", "generating statements (" << name << ")" );
 
@@ -102,7 +102,7 @@ namespace exo
 			return( last );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::VarDecl* decl )
+		llvm::Value* Codegen::Generate( exo::ast::VarDecl* decl )
 		{
 			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << name << ")" );
 
@@ -128,7 +128,7 @@ namespace exo
 			return( Variables()[ decl->name ] );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::VarAssign* assign )
+		llvm::Value* Codegen::Generate( exo::ast::VarAssign* assign )
 		{
 			TRACESECTION( "IR", "assigning variable $" << assign->name << " in (" << name << ")" );
 
@@ -139,34 +139,34 @@ namespace exo
 			return( new llvm::StoreInst( assign->expression->Generate( this ), Variables()[ assign->name ], false, getCurrentBlock() ) );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::ValueInt* val )
+		llvm::Value* Codegen::Generate( exo::ast::ValueInt* val )
 		{
 			TRACESECTION( "IR", "generating integer " << val->value << " in (" << name << ")" );
 			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( &module->getContext(), val->value );
 			return( iType->value );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::ValueFloat* val )
+		llvm::Value* Codegen::Generate( exo::ast::ValueFloat* val )
 		{
 			TRACESECTION( "IR", "generating float: " << val->value << " in (" << name << ")" );
 			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( &module->getContext(), val->value );
 			return( fType->value );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::ValueBool* val )
+		llvm::Value* Codegen::Generate( exo::ast::ValueBool* val )
 		{
 			TRACESECTION( "IR", "generating boolean: " << val->value << " in (" << name << ")" );
 			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( &module->getContext(), val->value );
 			return( bType->value );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::ConstExpr* expr )
+		llvm::Value* Codegen::Generate( exo::ast::ConstExpr* expr )
 		{
 			TRACESECTION( "IR", "generating constant expression: " << expr->name << " in (" << name << ")" );
 			return( expr->expression->Generate( this ) );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::BinaryOp* op )
+		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )
 		{
 			TRACESECTION( "IR", "generating binary operation: " << op->op << " in (" << name << ")" );
 
@@ -187,7 +187,7 @@ namespace exo
 			}
 		}
 
-		llvm::Value* Context::Generate( exo::ast::VarExpr* expr )
+		llvm::Value* Codegen::Generate( exo::ast::VarExpr* expr )
 		{
 			TRACESECTION( "IR", "generating variable expression $" << expr->variable << " in (" << name << ")" );
 
@@ -198,7 +198,7 @@ namespace exo
 			return( builder.CreateLoad( Variables()[ expr->variable ], expr->variable ) );
 		}
 
-		llvm::Value* Context::Generate( exo::ast::CmpOp* op )
+		llvm::Value* Codegen::Generate( exo::ast::CmpOp* op )
 		{
 			TRACESECTION( "IR", "generating comparison " << op->op << " in (" << name << ")" );
 

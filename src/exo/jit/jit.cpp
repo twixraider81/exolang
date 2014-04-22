@@ -16,18 +16,18 @@
 #include "exo/exo.h"
 
 #include "exo/jit/jit.h"
-#include "exo/jit/context.h"
+#include "exo/jit/codegen.h"
 
 namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( exo::jit::Context* c )
+		JIT::JIT( exo::jit::Codegen* g )
 		{
-			context = c;
+			generator = g;
 			std::string errorMsg;
 
-			llvm::EngineBuilder builder( context->module );
+			llvm::EngineBuilder builder( generator->module );
 			builder.setEngineKind( llvm::EngineKind::JIT );
 			builder.setOptLevel( llvm::CodeGenOpt::Default );
 			builder.setErrorStr( &errorMsg );
@@ -40,18 +40,18 @@ namespace exo
 
 #ifdef EXO_TRACE
 			TRACE( "Intermediate LLVM IR" );
-			context->module->dump();
+			generator->module->dump();
 #endif
 
 			llvm::TargetMachine* target = builder.selectTarget();
 			llvm::PassRegistry &registry = *llvm::PassRegistry::getPassRegistry();
 			llvm::initializeScalarOpts( registry );
 
-			fpm = new llvm::FunctionPassManager( context->module );
+			fpm = new llvm::FunctionPassManager( generator->module );
 			fpm->add( llvm::createVerifierPass( llvm::PrintMessageAction ) );
 			target->addAnalysisPasses( *fpm );
-			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( context->module->getTargetTriple() ) ) );
-			fpm->add( new llvm::DataLayout( context->module ) );
+			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( generator->module->getTargetTriple() ) ) );
+			fpm->add( new llvm::DataLayout( generator->module ) );
 			fpm->add( llvm::createBasicAliasAnalysisPass() );
 			fpm->add( llvm::createLICMPass() );
 			fpm->add( llvm::createGVNPass() );
@@ -61,13 +61,13 @@ namespace exo
 			fpm->add( llvm::createInstructionCombiningPass() );
 			fpm->add( llvm::createCFGSimplificationPass() );
 
-			fpm->run( *context->entry );
+			fpm->run( *generator->entry );
 
 			engine->finalizeObject();
 
 #ifdef EXO_TRACE
 				TRACE( "Final LLVM IR" );
-				context->module->dump();
+				generator->module->dump();
 #endif
 		}
 
