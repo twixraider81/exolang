@@ -46,14 +46,14 @@ namespace exo
 		void Tree::Parse( std::string fName )
 		{
 			fileName = fName;
-			TRACESECTION( "AST", "opening file: <" << fileName << ">" );
+			BOOST_LOG_TRIVIAL(trace) <<  "Opening <" << fileName << ">";
 
 			quex::Token* token = new quex::Token;
 			quex::lexer lexer( fileName );
 			lexer.receive( &token );
 
 			while( token->type_id() != QUEX_TKN_TERMINATION ) {
-				TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> in " << fileName << " on " << token->line_number() << ":" << token->column_number() );
+				BOOST_LOG_TRIVIAL(trace) << "Received <" << token->type_id_name() << "> in " << fileName << " on " << token->line_number() << ":" << token->column_number();
 
 				::Parse( parser, token->type_id(), token, this );
 				lexer.receive( &token );
@@ -65,7 +65,7 @@ namespace exo
 		void Tree::Parse( std::istream& stream )
 		{
 			fileName = "<stdin>";
-			TRACESECTION( "AST", "opening <stdin>" );
+			BOOST_LOG_TRIVIAL(trace) << "Opening <stdin>";
 
 			quex::Token* token = new quex::Token;
 			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
@@ -83,7 +83,7 @@ namespace exo
 				lexer.receive( &token );
 
 				while( token->type_id() != QUEX_TKN_TERMINATION ) {
-					TRACESECTION( "LEXER", "received <" << token->type_id_name() << "> on " << token->line_number() << ":" << token->column_number() );
+					BOOST_LOG_TRIVIAL(trace) << "Received <" << token->type_id_name() << "> on " << token->line_number() << ":" << token->column_number();
 
 					::Parse( parser, token->type_id(), token, this );
 					lexer.receive( &token );

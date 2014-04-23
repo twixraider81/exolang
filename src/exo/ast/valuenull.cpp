@@ -21,7 +21,7 @@ namespace exo
 	{
 		ValueNull::ValueNull()
 		{
-			TRACESECTION( "AST", "null" );
+			BOOST_LOG_TRIVIAL(trace) << "Creating null";
 		}
 	}
 }

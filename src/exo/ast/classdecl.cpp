@@ -21,7 +21,7 @@ namespace exo
 	{
 		ClassDecl::ClassDecl( std::string n, ClassBlock* b )
 		{
-			TRACESECTION( "AST", "declaring class: " << n );
+			BOOST_LOG_TRIVIAL(trace) << "Declaring class \"" << n << "\"";
 			name = n;
 			block = b;
 		}

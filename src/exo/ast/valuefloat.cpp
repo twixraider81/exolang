@@ -21,7 +21,7 @@ namespace exo
 	{
 		ValueFloat::ValueFloat( std::string fVal )
 		{
-			TRACESECTION( "AST", "float:" << fVal );
+			BOOST_LOG_TRIVIAL(trace) << "Creating float \"" << fVal << "\"";
 			value = fVal;
 		}
 	}

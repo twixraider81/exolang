@@ -21,7 +21,7 @@ namespace exo
 	{
 		ConstExpr::ConstExpr( std::string n, Expr* e )
 		{
-			TRACESECTION( "AST", "constant expression: " << n << "; " );
+			BOOST_LOG_TRIVIAL(trace) << "Constant expression " << n;
 			name = n;
 			expression = e;
 		}

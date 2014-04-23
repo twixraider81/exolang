@@ -21,7 +21,7 @@ namespace exo
 	{
 		CmpOp::CmpOp( Expr* a, std::string *o, Expr* b )
 		{
-			TRACESECTION( "AST", "comparison " << o );
+			BOOST_LOG_TRIVIAL(trace) << "Comparison " << o;
 			lhs = a;
 			op = *o;
 			rhs = b;

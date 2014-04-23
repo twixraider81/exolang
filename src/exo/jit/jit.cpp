@@ -40,7 +40,7 @@ namespace exo
 			}
 
 #ifdef EXO_TRACE
-			TRACE( "Intermediate LLVM IR" );
+			BOOST_LOG_TRIVIAL(trace) << "Intermediate LLVM IR";
 			generator->module->dump();
 #endif
 
@@ -67,7 +67,7 @@ namespace exo
 			engine->finalizeObject();
 
 #ifdef EXO_TRACE
-				TRACE( "Final LLVM IR" );
+				BOOST_LOG_TRIVIAL(trace) << "Final LLVM IR";
 				generator->module->dump();
 #endif
 		}
@@ -80,10 +80,10 @@ namespace exo
 
 		void JIT::Execute()
 		{
-			TRACE( "Running main." );
+			BOOST_LOG_TRIVIAL(trace) << "Running main.";
 			void( *jitMain )() = (void(*)())engine->getFunctionAddress( "main" );
 			jitMain();
-			TRACE( "Finished." );
+			BOOST_LOG_TRIVIAL(trace) << "Finished.";
 		}
 	}
 }

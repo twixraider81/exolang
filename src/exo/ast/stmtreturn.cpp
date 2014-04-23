@@ -21,7 +21,7 @@ namespace exo
 	{
 		StmtReturn::StmtReturn( Expr* expr ) : StmtExpr( expr )
 		{
-			TRACESECTION( "AST", "creating return statement" );
+			BOOST_LOG_TRIVIAL(trace) << "Creating return statement";
 			expression = expr;
 		}
 	}

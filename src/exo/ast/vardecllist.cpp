@@ -21,7 +21,7 @@ namespace exo
 	{
 		VarDeclList::VarDeclList()
 		{
-			TRACESECTION( "AST", "creating variable declaration list" );
+			BOOST_LOG_TRIVIAL(trace) << "Creating variable declaration list";
 		}
 	}
 }

@@ -21,7 +21,7 @@ namespace exo
 	{
 		ValueInt::ValueInt( std::string iVal )
 		{
-			TRACESECTION( "AST", "integer:" << iVal );
+			BOOST_LOG_TRIVIAL(trace) << "Creating integer \"" << iVal << "\"";
 			value = iVal;
 		}
 	}

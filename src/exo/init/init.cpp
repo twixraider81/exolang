@@ -22,8 +22,27 @@ namespace exo
 {
 	namespace init
 	{
-		bool Init::Startup()
+		bool Init::Startup( int logLevel )
 		{
+			// a bit ugly
+			if( logLevel < 1 || logLevel > 6 ) {
+				BOOST_LOG_TRIVIAL(warning) << "Invalid log level.";
+			} else {
+				if( logLevel == 1 ) {
+					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::trace );
+				} else if( logLevel == 2 ) {
+					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
+				} else if( logLevel == 3 ) {
+					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
+				} else if( logLevel == 4 ) {
+					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::warning );
+				} else if( logLevel == 5 ) {
+					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::error );
+				} else if( logLevel == 6 ) {
+					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::fatal );
+				}
+			}
+
 #ifndef EXO_GC_DISABLE
 			GC_INIT();
 			GC_enable_incremental();

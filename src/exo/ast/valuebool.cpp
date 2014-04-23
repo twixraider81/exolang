@@ -21,7 +21,7 @@ namespace exo
 	{
 		ValueBool::ValueBool( bool bVal )
 		{
-			TRACESECTION( "AST", "boolean:" << bVal );
+			BOOST_LOG_TRIVIAL(trace) << "Creating boolean \"" << bVal << "\"";
 			value = bVal;
 		}
 	}

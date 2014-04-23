@@ -21,7 +21,7 @@ namespace exo
 	{
 		ExprList::ExprList()
 		{
-			TRACESECTION( "AST", "creating arguments/expression list" );
+			BOOST_LOG_TRIVIAL(trace) << "Creating arguments/expressions";
 		}
 	}
 }

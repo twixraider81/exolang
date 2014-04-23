@@ -21,7 +21,7 @@ namespace exo
 	{
 		BinaryOp::BinaryOp( Expr* a, std::string *o, Expr* b )
 		{
-			TRACESECTION( "AST", "binary operation " << o );
+			BOOST_LOG_TRIVIAL(trace) << "Binary operation " << o;
 			lhs = a;
 			op = *o;
 			rhs = b;

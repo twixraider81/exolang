@@ -21,7 +21,7 @@ namespace exo
 	{
 		ValueString::ValueString( std::string sVal )
 		{
-			TRACESECTION( "AST", "string:" << sVal );
+			BOOST_LOG_TRIVIAL(trace) << "Creating string \"" << sVal << "\"";
 			value = sVal;
 		}
 	}

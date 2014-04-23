@@ -50,12 +50,12 @@ namespace exo
 			// reset our new insert point
 			builder.SetInsertPoint( blocks.top()->block );
 
-			TRACESECTION( "CONTEXT", "pushing \"" << getCurrentBlockName() << "\" onto stack, new stacksize:" << blocks.size() );
+			BOOST_LOG_TRIVIAL(trace) << "Pushing \"" << getCurrentBlockName() << "\" onto stack, stacksize:" << blocks.size();
 		}
 
 		void Codegen::popBlock()
 		{
-			TRACESECTION( "CONTEXT", "poping \"" << getCurrentBlockName() << "\" from stack, new stacksize:" << blocks.size() );
+			BOOST_LOG_TRIVIAL(trace) << "Poping \"" << getCurrentBlockName() << "\" from stack, stacksize:" << blocks.size();
 
 			blocks.pop();
 
@@ -124,13 +124,12 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
 		{
-			TRACESECTION( "IR", "generating statements (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating statements (" << getCurrentBlockName() << ")";
 
 			std::vector<exo::ast::Stmt*>::iterator it;
 			llvm::Value *last = NULL;
 
 			for( it = stmts->list.begin(); it != stmts->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating " << typeid(**it).name() );
 				last = (*it)->Generate( this );
 			}
 
@@ -139,11 +138,11 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::VarDecl* decl )
 		{
-			TRACESECTION( "IR", "creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << getCurrentBlockName() << ")";
 
 			getCurrentBlockVars()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBasicBlock() );
 
-			TRACESECTION( "IR", "new variable map size: " << getCurrentBlockVars().size() );
+			BOOST_LOG_TRIVIAL(trace) << "Amount of local variables: " << getCurrentBlockVars().size();
 
 			if( decl->expression ) {
 				exo::ast::VarAssign* a = new exo::ast::VarAssign( decl->name, decl->expression );
@@ -155,7 +154,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::VarAssign* assign )
 		{
-			TRACESECTION( "IR", "assigning variable $" << assign->name << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Assigning variable $" << assign->name << " in (" << getCurrentBlockName() << ")";
 
 			if( getCurrentBlockVars().find( assign->name ) == getCurrentBlockVars().end() ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( assign->name ) );
@@ -166,34 +165,34 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueInt* val )
 		{
-			TRACESECTION( "IR", "generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( &module->getContext(), val->value );
 			return( iType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueFloat* val )
 		{
-			TRACESECTION( "IR", "generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( &module->getContext(), val->value );
 			return( fType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueBool* val )
 		{
-			TRACESECTION( "IR", "generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( &module->getContext(), val->value );
 			return( bType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstExpr* expr )
 		{
-			TRACESECTION( "IR", "generating constant expression \"" << expr->name << "\" in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating constant expression \"" << expr->name << "\" in (" << getCurrentBlockName() << ")";
 			return( expr->expression->Generate( this ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )
 		{
-			TRACESECTION( "IR", "generating binary operation: " << op->op << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating binary operation \"" << op->op << "\" in (" << getCurrentBlockName() << ")";
 
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
@@ -214,7 +213,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::VarExpr* expr )
 		{
-			TRACESECTION( "IR", "generating variable expression $" << expr->variable << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating variable expression $" << expr->variable << " in (" << getCurrentBlockName() << ")";
 
 			if( getCurrentBlockVars().find( expr->variable ) == getCurrentBlockVars().end() ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( expr->variable ) );
@@ -225,7 +224,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::CmpOp* op )
 		{
-			TRACESECTION( "IR", "generating comparison " << op->op << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating comparison " << op->op << " in (" << getCurrentBlockName() << ")";
 
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
@@ -235,13 +234,13 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::FunDecl* decl )
 		{
-			TRACESECTION( "IR", "generating function " << decl->name << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> fArgs;
 			std::vector<exo::ast::VarDecl*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating argument $" << (**it).name );
+				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
 				fArgs.push_back( getType( (*it)->type, module->getContext() ) );
 			}
 
@@ -252,7 +251,6 @@ namespace exo
 			pushBlock( block, decl->name );
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating " << typeid(**it).name() );
 				(*it)->Generate( this );
 			}
 
@@ -270,13 +268,13 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
-			TRACESECTION( "IR", "generating return statement in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating return statement in (" << getCurrentBlockName() << ")";
 			return( builder.CreateRet( stmt->expression->Generate( this ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::FunCall* call )
 		{
-			TRACESECTION( "IR", "generating function call " << call->name << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating function call to \"" << call->name << "\" in (" << getCurrentBlockName() << ")";
 
 			llvm::Function* callee = module->getFunction( call->name );
 
@@ -292,7 +290,7 @@ namespace exo
 			std::vector<llvm::Value*> arguments;
 
 			for( it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating argument $" << typeid(**it).name() );
+				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << typeid(**it).name();
 				arguments.push_back( (*it)->Generate( this ) );
 			}
 
@@ -301,19 +299,19 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
-			TRACESECTION( "IR", "generating expression statement in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << getCurrentBlockName() << ")";
 			return( stmt->expression->Generate( this ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::FunDeclProto* decl )
 		{
-			TRACESECTION( "IR", "prototyping function " << decl->name << " in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating prototype function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> fArgs;
 			std::vector<exo::ast::VarDecl*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating argument $" << (**it).name );
+				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
 				fArgs.push_back( getType( (*it)->type, module->getContext() ) );
 			}
 
@@ -325,12 +323,12 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ClassDecl* decl )
 		{
-			TRACESECTION( "IR", "creating class " << decl->name << "; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")" );
+			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> properties;
 			std::vector<exo::ast::VarDecl*>::iterator pit;
 			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
-				TRACESECTION( "IR", "generating property $" << (*pit)->name << " (" << decl->name << ")" );
+				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (*pit)->name << " (" << decl->name << ")";
 				properties.push_back( getType( (*pit)->type, module->getContext() ) );
 			}
 
@@ -343,7 +341,7 @@ namespace exo
 				// think about how to construct sane names
 				std::string mName = "__" + decl->name + "_" + (*mit)->name;
 
-				TRACESECTION( "IR", "generating method " << (*mit)->name << " (" << decl->name << " - " << mName << ")" );
+				BOOST_LOG_TRIVIAL(trace) << "Generating method \"" << (*mit)->name << "\" (" << decl->name << " - " << mName << ")";
 
 				std::vector<llvm::Type*> mArgs;
 				std::vector<exo::ast::VarDecl*>::iterator it;
@@ -351,7 +349,7 @@ namespace exo
 				// pointer to a class struct as 1.st param
 				mArgs.push_back( llvm::PointerType::getUnqual( structClass ) );
 				for( it = (*mit)->arguments->list.begin(); it != (*mit)->arguments->list.end(); it++ ) {
-					TRACESECTION( "IR", "generating argument $" << (*it)->name );
+					BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (*it)->name;
 					mArgs.push_back( getType( (*it)->type, module->getContext() ) );
 				}
 
@@ -362,7 +360,6 @@ namespace exo
 				pushBlock( block, (*mit)->name );
 
 				for( it = (*mit)->arguments->list.begin(); it != (*mit)->arguments->list.end(); it++ ) {
-					TRACESECTION( "IR", "generating " << typeid(**it).name() );
 					(*it)->Generate( this );
 				}
 

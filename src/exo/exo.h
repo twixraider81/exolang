@@ -53,6 +53,9 @@ class gc {};
 #include <boost/scoped_ptr.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 #include "exo/errors/error.h"
 #include "exo/errors/exceptions.h"

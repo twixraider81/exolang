@@ -27,20 +27,18 @@
  * TODO: 1. implement type system
  * TODO: 2. document ast and jit
  * TODO: 3. use boost unit tests!
- * TODO: 4. use dtrace
  */
 int main( int argc, char **argv )
 {
-	if( !exo::init::Init::Startup() ) {
-		ERRORRET( "unable to complete initialization. exiting...", -1 );
-	}
+	int severity;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
 	availOptions.add_options()
-		( "help,h",		"show usage/help" )
-		( "version,v",	"show version" )
-		( "input,i",	boost::program_options::value< std::string >(),	"parse file" )
+		( "help,h",			"show usage/help" )
+		( "version,v",		"show version" )
+		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
+		( "input,i",		boost::program_options::value<std::string>(),						"parse file" )
     ;
 
 	boost::program_options::positional_options_description positionalOptions;
@@ -56,7 +54,6 @@ int main( int argc, char **argv )
 		std::cout << availOptions;
 		return( 0 );
 	}
-
 
 	// show version & exit
 	if( commandLine.count( "version" ) ) {
@@ -75,6 +72,11 @@ int main( int argc, char **argv )
 
 
 	// we are running, command line is parsed
+	if( !exo::init::Init::Startup( severity ) ) {
+		BOOST_LOG_TRIVIAL(fatal) << "Unable to complete initialization. exiting...";
+		return( -1 );
+	}
+
 	try {
 		boost::scoped_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
 
@@ -92,14 +94,14 @@ int main( int argc, char **argv )
 		jit->Execute();
 
 	} catch( exo::exceptions::Exception& e ) {
-		ERRORMSG( e.what() );
-		ERRORMSG( boost::diagnostic_information( e ) );
+		BOOST_LOG_TRIVIAL(fatal) << e.what();
+		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
 	} catch( boost::exception& e ) {
-		ERRORMSG( boost::diagnostic_information( e ) );
+		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
 	}  catch( std::exception& e ) {
-		ERRORMSG( e.what() );
+		BOOST_LOG_TRIVIAL(fatal) << e.what();
 	} catch( ... ) {
-		ERRORMSG( "unknown exception" );
+		BOOST_LOG_TRIVIAL(fatal) << "unknown exception";
 	}
 
 	exo::init::Init::Shutdown();

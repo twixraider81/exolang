@@ -24,10 +24,9 @@ namespace exo
 		{
 			public:
 				/**
-				 * Initializes the GarbageCollector, LLVM and registers Signals Handlers.
-				 * MUST be called immediately after Startup.
+				 * Initializes the GarbageCollector, LLVM and register Signals Handlers.
 				 */
-				static bool Startup();
+				static bool Startup( int logLevel );
 
 				/**
 				 * Shuts down our Interpreter. Only the garbage Collection for now.

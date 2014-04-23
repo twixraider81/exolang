@@ -33,7 +33,7 @@ namespace exo
 				/* skip first stack frame (points here) */
 				for( int i = 1; i < size && array != NULL; ++i )
 				{
-					TRACESECTION( "SIGSEGV", "(" << i << ") " << array[i] );
+					BOOST_LOG_TRIVIAL(debug) << "(" << i << ") " << array[i];
 				}
 #endif
 				BOOST_THROW_EXCEPTION( exo::exceptions::Segfault() );
@@ -42,7 +42,7 @@ namespace exo
 
 		void sigtermHandler( int signal, siginfo_t *si, void *arg )
 		{
-			TRACE( "shuting down." );
+			BOOST_LOG_TRIVIAL(trace) << "Shutting down.";
 			exo::init::Init::Shutdown();
 		}
 
@@ -55,7 +55,7 @@ namespace exo
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
-				ERRORMSG( "failed to register segementation fault handler" );
+				BOOST_LOG_TRIVIAL(warning) << "Failed to register segementation fault handler!";
 			}
 
 
@@ -65,7 +65,7 @@ namespace exo
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGTERM, &sa, NULL ) == -1 || sigaction( SIGINT, &sa, NULL ) == -1 ) {
-				ERRORMSG( "failed to register sigterm handler" );
+				BOOST_LOG_TRIVIAL(warning) << "Failed to register sigterm handler!";
 			}
 		}
 	}

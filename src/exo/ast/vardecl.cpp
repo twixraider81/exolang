@@ -21,14 +21,14 @@ namespace exo
 	{
 		VarDecl::VarDecl( std::string vName, Type* vType )
 		{
-			TRACESECTION( "AST", "declaring variable: $" << vName << ":" );
+			BOOST_LOG_TRIVIAL(trace) << "Declaring $" << vName;
 			name = vName;
 			type = vType;
 		}
 
 		VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
 		{
-			TRACESECTION( "AST", "declaring/assigning variable: $" << vName << ":" );
+			BOOST_LOG_TRIVIAL(trace) << "Declaring/assigning $" << vName;
 			name = vName;
 			type = vType;
 			expression = expr;

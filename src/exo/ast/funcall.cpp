@@ -21,7 +21,7 @@ namespace exo
 	{
 		FunCall::FunCall( std::string n, ExprList* a )
 		{
-			TRACESECTION( "AST", "calling function " << n );
+			BOOST_LOG_TRIVIAL(trace) << "Calling function \"" << n << "\"";
 			name = n;
 			arguments = a;
 		}

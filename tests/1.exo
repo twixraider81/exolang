@@ -38,4 +38,4 @@ class testClass
 };
 
 testClass $i;
-int $j = $i.getOne() + $i.getTwo();
+//int $j = $i.getOne() + $i.getTwo();

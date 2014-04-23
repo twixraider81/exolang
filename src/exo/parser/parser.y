@@ -60,14 +60,14 @@ statements(a) ::= statement(b). {
 	POINTERCHECK( b );
 	a = new exo::ast::StmtList;
 	a->list.push_back( b );
-	TRACESECTION( "PARSER", "pushing statement; size:" << a->list.size());
+	BOOST_LOG_TRIVIAL(trace) << "Pushing statement; size:" << a->list.size();
 }
 statements(s) ::= statements(a) statement(b). {
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	a->list.push_back( b );
 	s = a;
-	TRACESECTION( "PARSER",  "pushing statement; size:" << a->list.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing statement; size:" << a->list.size();
 }
 
 
@@ -155,19 +155,19 @@ vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
 %type vardecllist { exo::ast::VarDeclList* }
 vardecllist (l)::= . {
 	l = new exo::ast::VarDeclList;
-	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
+	BOOST_LOG_TRIVIAL(trace) << "Pushing variable declaration; size:" << l->list.size();
 }
 vardecllist(l) ::= vardecl(d). {
 	POINTERCHECK( d );
 	l = new exo::ast::VarDeclList;
 	l->list.push_back( d );
-	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
+	BOOST_LOG_TRIVIAL(trace) << "Pushing variable declaration; size:" << l->list.size();
 }
 vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
 	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->list.push_back( d );
-	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
+	BOOST_LOG_TRIVIAL(trace) << "Pushing variable declaration; size:" << l->list.size();
 }
 
 
@@ -231,33 +231,33 @@ classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET classblock(b) S_RBRACKET. {
 %type classblock { exo::ast::ClassBlock* }
 classblock(b) ::= . {
 	b = new exo::ast::ClassBlock;
-	TRACESECTION( "PARSER", "pushing class declaration; properties: " << b->properties.size() << ", methods: " << b->methods.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing class declaration; properties: " << b->properties.size() << ", methods: " << b->methods.size();
 }
 classblock(b) ::= vardecl(d) S_SEMICOLON. {
 	POINTERCHECK( d );
 	b = new exo::ast::ClassBlock;
 	b->properties.push_back( d );
-	TRACESECTION( "PARSER", "pushing property declaration; properties: " << b->properties.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing property; properties: " << b->properties.size();
 }
 classblock(b) ::= fundecl(d) S_SEMICOLON. {
 	POINTERCHECK( d );
 	b = new exo::ast::ClassBlock;
 	b->methods.push_back( d );
-	TRACESECTION( "PARSER", "pushing method declaration; methods: " << b->methods.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing method; methods: " << b->methods.size();
 }
 classblock(b) ::= classblock(l) vardecl(d) S_SEMICOLON. {
 	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->properties.push_back( d );
 	b = l;
-	TRACESECTION( "PARSER", "pushing property declaration; properties: " << l->properties.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing property; properties: " << l->properties.size();
 }
 classblock(b) ::= classblock(l) fundecl(d) S_SEMICOLON. {
 	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->methods.push_back( d );
 	b = l;
-	TRACESECTION( "PARSER", "pushing method declaration; methods: " << l->methods.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing method; methods: " << l->methods.size();
 }
 
 
@@ -265,19 +265,19 @@ classblock(b) ::= classblock(l) fundecl(d) S_SEMICOLON. {
 %type exprlist { exo::ast::ExprList* }
 exprlist(l) ::= . {
 	l = new exo::ast::ExprList;
-	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing expression; expressions:" << l->list.size();
 }
 exprlist(l) ::= expression(e). {
 	POINTERCHECK( e );
 	l = new exo::ast::ExprList;
 	l->list.push_back( e );
-	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing expression; expressions:" << l->list.size();
 }
 exprlist ::= exprlist(l) S_COMMA expression(e). {
 	POINTERCHECK( l );
 	POINTERCHECK( e );
 	l->list.push_back( e );
-	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size() );
+	BOOST_LOG_TRIVIAL(trace) << "Pushing declaration; expressions:" << l->list.size();
 }
 
 

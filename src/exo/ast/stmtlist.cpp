@@ -21,7 +21,7 @@ namespace exo
 	{
 		StmtList::StmtList()
 		{
-			TRACESECTION( "AST", "creating statement list" );
+			BOOST_LOG_TRIVIAL(trace) << "Creating list of statements";
 		}
 	}
 }
