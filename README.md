@@ -3,37 +3,51 @@ exolang
 
 Goal
 ----
-The aim is to develop a jiting/compiling rapid prototyping "script" language. (Cause developing in C/C++/C#/Java is horribly slow and espcially incase of C error prone or complicated. I look at you C++.).
-It will borrow or base on PHP syntax while trying to alleviate the pains or wrong doings of that it.
-
-Quickstart
-----------
-./bootstrap.sh						(you will need to build lemon/quex to rebuild the lexer/parser for now)
-./bootstrap.sh -l					(if you want to build debug llvm under ./bin/)
-
-./waf clean configure --mode=release	(clean & configure for release/debug release or trace release. that prints alot of messages)
-./waf clean configure --mode=trace --llvm=bin/bin/llvm-config --gc=disable (if you want to disable gc and build llvm via bootstrap -l)
-
-Take a look at ./waf help to specifiy other options for you system, like an llvm-config (./waf clean configure --llvm=llvm-config-3.5)
-
-After that:
-./waf buildparser buildlexer build
-
-build/exolang <filename>			(i.e tests/1.exo)
-build/exolang -i <filename>			(i.e tests/1.exo)
-build/exolang						(to parse stdin)
-
-build/exolang -h					(to show help and available options)
+The aim is to develop a jiting/compiling rapid prototyping "script" language.
 
 Prerequisites
 -------------
-On Debian simply do:
-apt-get install libgc-dev llvm-3.5 libc++-dev libboost1.53-all-dev
+I develop on a Debian syste. In order to install the prerequisites it's suffice to do do:
+apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind
+You will need atleast boost 1.54.
 
+Now call the bootstrap script:
+
+./bootstrap.sh
+
+This will to build the lemon parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
+The bootstrap script can also build a LLVM debug+asserts build under ./bin, use bootstrap as follows.
+
+./bootstrap.sh -l
+
+Building
+--------
+Next configure the build.
+
+./waf clean configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
+
+After that start the build process via:
+
+./waf buildparser buildlexer build
+
+Usage
+-----
+After the build is complete, the binary will reside under build/exolang. To run a script do for example:
+build/exolang tests/1.exo
+
+You can check the available command line options via:
+build/exolang -h
+
+I.e. run a script and get verbose trace:
+build/exolang -s 1 tests/1.exo
+
+waf has a few extra commands at your disposal. Check:
+./waf --help
 
 Thanks & 3rd Party licenses
 ---------------------------
 Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>
 Quex lexer generator	- <http://quex.sourceforge.net/>
-Boehm GC				- <https://github.com/ivmai/bdwgc>
-Loren Segal				- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>
+waf			- <https://code.google.com/p/waf/>
+Boehm GC		- <https://github.com/ivmai/bdwgc>
+Loren Segal		- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>
