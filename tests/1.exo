@@ -30,3 +30,6 @@ class testClass
 		return 1;
 	};
 };
+
+testClass $i;
+int $j = $i.getOne();
