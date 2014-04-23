@@ -7,12 +7,11 @@ The aim is to develop a jiting/compiling rapid prototyping "script" language.
 
 Prerequisites
 -------------
-I develop on a Debiann syste. In order to install the prerequisites it's suffice to do do:
+I develop on a Debian system. In order to install the prerequisites there, it's suffice to do:
 
 apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind
-You will need atleast boost 1.54.
 
-Now call the bootstrap script:
+You will need atleast boost 1.54. Next call the bootstrap script:
 
 ./bootstrap.sh
 
