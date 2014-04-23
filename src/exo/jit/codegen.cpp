@@ -244,7 +244,7 @@ namespace exo
 			}
 
 			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, false );
-			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, decl->name, module );
+			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::InternalLinkage, decl->name, module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->name, function, 0 );
 
 			pushBlock( block, decl->name );
@@ -301,6 +301,24 @@ namespace exo
 		{
 			TRACESECTION( "IR", "generating expression statement in (" << getCurrentBlockName() << ")" );
 			return( stmt->expression->Generate( this ) );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::FunDeclProto* decl )
+		{
+			TRACESECTION( "IR", "prototyping function " << decl->name << " in (" << getCurrentBlockName() << ")" );
+
+			std::vector<llvm::Type*> fArgs;
+			std::vector<exo::ast::VarDecl*>::iterator it;
+
+			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
+				TRACESECTION( "IR", "generating argument " << (**it).name );
+				fArgs.push_back( getType( (*it)->type, module->getContext() ) );
+			}
+
+			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, false );
+			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, decl->name, module );
+
+			return( function );
 		}
 	}
 }

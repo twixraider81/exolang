@@ -166,18 +166,21 @@ vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
 	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
 }
 
-/* a function declaration is a type identifier followed by the keyword function a functionname, optionally function arguments in brackets and and associated block */
-%type fundecl { exo::ast::FunDecl* }
-fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
-	POINTERCHECK( i );
-	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList, b );
-}
-fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
+
+/* a function declaration is a type identifier followed by the keyword function a functionname, optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype */
+%type fundecl { exo::ast::FunDeclProto* }
+fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	POINTERCHECK( t );
 	POINTERCHECK( i );
+	POINTERCHECK( a );
 	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), t, new exo::ast::VarDeclList, b );
+	f = new exo::ast::FunDecl( TOKENSTR(i), t, a, b );
+}
+fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
+	POINTERCHECK( t );
+	POINTERCHECK( i );
+	POINTERCHECK( a );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, a );
 }
 fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	POINTERCHECK( i );
@@ -185,12 +188,30 @@ fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a, b );
 }
-fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
-	POINTERCHECK( t );
+fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
 	POINTERCHECK( i );
 	POINTERCHECK( a );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a );
+}
+fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
+	POINTERCHECK( t );
+	POINTERCHECK( i );
 	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), t, a, b );
+	f = new exo::ast::FunDecl( TOKENSTR(i), t, new exo::ast::VarDeclList, b );
+}
+fundecl(f) ::= type(t) S_FUNCTION T_ID(i). {
+	POINTERCHECK( t );
+	POINTERCHECK( i );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, new exo::ast::VarDeclList );
+}
+fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
+	POINTERCHECK( i );
+	POINTERCHECK( b );
+	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList, b );
+}
+fundecl(f) ::= S_FUNCTION T_ID(i). {
+	POINTERCHECK( i );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList );
 }
 
 

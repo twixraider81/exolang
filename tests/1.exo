@@ -11,3 +11,9 @@ int function test( int $e )
 
 int $f = test( 2 );
 test( 3 );
+
+// external prototype
+float function sin( float $x );
+float $g = 31.5;
+float $h = sin( $g );
+sin( 32.3 );

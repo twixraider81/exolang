@@ -36,15 +36,15 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class Expr : public Node
+		class Expr : public virtual Node
 		{
 		};
 
-		class Stmt : public Node
+		class Stmt : public virtual Node
 		{
 		};
 
-		class StmtList : public Expr
+		class StmtList : public virtual Expr
 		{
 			public:
 				std::vector<Stmt*> list;
@@ -54,7 +54,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class StmtExpr : public Stmt
+		class StmtExpr : public virtual Stmt
 		{
 			public:
 				Expr* expression;
@@ -64,7 +64,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class Type : public Node
+		class Type : public virtual Node
 		{
 			public:
 				const std::type_info*	info;
@@ -74,7 +74,7 @@ namespace exo
 				Type( const std::type_info* t , std::string tName );
 		};
 
-		class VarDecl : public Stmt
+		class VarDecl : public virtual Stmt
 		{
 			public:
 				std::string name;
@@ -87,7 +87,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class VarAssign : public Expr
+		class VarAssign : public virtual Expr
 		{
 			public:
 				std::string name;
@@ -98,7 +98,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
-		class VarDeclList : public Stmt
+		class VarDeclList : public virtual Stmt
 		{
 			public:
 				std::vector<VarDecl*> list;
@@ -106,7 +106,7 @@ namespace exo
 				VarDeclList();
 		};
 
-		class ExprList : public Expr
+		class ExprList : public virtual Expr
 		{
 			public:
 				std::vector<Expr*> list;
@@ -114,12 +114,21 @@ namespace exo
 				ExprList();
 		};
 
-		class FunDecl : public Stmt
+		class FunDeclProto : public virtual Stmt
 		{
 			public:
 				std::string		name;
 				Type*			returnType;
 				VarDeclList*	arguments;
+
+				FunDeclProto( std::string n, Type* rType, VarDeclList* vArgs );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class FunDecl : public virtual FunDeclProto
+		{
+			public:
 				StmtList*		stmts;
 
 				FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
@@ -127,7 +136,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class FunCall : public Expr
+		class FunCall : public virtual Expr
 		{
 			public:
 				std::string name;
@@ -138,7 +147,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class BinaryOp : public Expr
+		class BinaryOp : public virtual Expr
 		{
 			public:
 				Expr* lhs;
@@ -150,7 +159,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class CmpOp : public Expr
+		class CmpOp : public virtual Expr
 		{
 			public:
 				Expr* lhs;
@@ -162,7 +171,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class ConstExpr : public Expr
+		class ConstExpr : public virtual Expr
 		{
 			public:
 				std::string	name;
@@ -173,7 +182,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class ValueNull : public Expr
+		class ValueNull : public virtual Expr
 		{
 			public:
 				ValueNull();
@@ -181,7 +190,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
-		class ValueBool : public Expr
+		class ValueBool : public virtual Expr
 		{
 			public:
 				bool value;
@@ -190,7 +199,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class ValueInt : public Expr
+		class ValueInt : public virtual Expr
 		{
 			public:
 				std::string value;
@@ -199,7 +208,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class ValueFloat : public Expr
+		class ValueFloat : public virtual Expr
 		{
 			public:
 				std::string value;
@@ -208,14 +217,14 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class ValueString : public Expr
+		class ValueString : public virtual Expr
 		{
 			public:
 				std::string value;
 				ValueString( std::string sVal );
 		};
 
-		class VarExpr : public Expr
+		class VarExpr : public virtual Expr
 		{
 			public:
 				std::string variable;
@@ -225,7 +234,7 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class StmtReturn : public StmtExpr
+		class StmtReturn : public virtual StmtExpr
 		{
 			public:
 				Expr* expression;

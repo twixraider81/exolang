@@ -19,10 +19,12 @@ namespace exo
 {
 	namespace ast
 	{
-		FunDecl::FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock ) : FunDeclProto( n, rType, vArgs )
+		FunDeclProto::FunDeclProto( std::string n, Type* rType, VarDeclList* vArgs )
 		{
-			TRACESECTION( "AST", "declaring function statements:" << n );
-			stmts = cBlock;
+			TRACESECTION( "AST", "prototyping function:" << n );
+			name = n;
+			returnType = rType;
+			arguments = vArgs;
 		}
 	}
 }

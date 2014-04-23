@@ -81,6 +81,7 @@ namespace exo
 		void JIT::Execute()
 		{
 			uint64_t main = engine->getFunctionAddress( "main" );
+			void( *pMain )() = (void(*)())main;
 		}
 	}
 }
