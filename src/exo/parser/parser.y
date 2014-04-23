@@ -71,19 +71,23 @@ statements(s) ::= statements(a) statement(b). {
 }
 
 
-/* statement can be a variable declaration, function declaration, a return statement or an expression. statements are terminated by a semicolon */
+/* statement can be a variable declaration, function (proto) declaration, class declaration, a return statement or an expression. statements are terminated by a semicolon */
 %type statement { exo::ast::Stmt* }
 statement(s) ::= vardecl(v) S_SEMICOLON. {
 	POINTERCHECK( v );
 	s = v;
 }
-statement(s) ::= fundecl(f). {
+statement(s) ::= fundeclproto(f) S_SEMICOLON. {
 	POINTERCHECK( f );
 	s = f;
 }
 statement(s) ::= fundecl(f) S_SEMICOLON. {
 	POINTERCHECK( f );
 	s = f;
+}
+statement(s) ::= classdecl(c) S_SEMICOLON. {
+	POINTERCHECK( c );
+	s = c;
 }
 statement(s) ::= S_RETURN expression(e) S_SEMICOLON. {
 	POINTERCHECK( e );
@@ -168,7 +172,28 @@ vardecllist ::= vardecllist(l) S_COMMA vardecl(d). {
 
 
 /* a function declaration is a type identifier followed by the keyword function a functionname, optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype */
-%type fundecl { exo::ast::FunDeclProto* }
+%type fundeclproto { exo::ast::FunDeclProto* }
+fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
+	POINTERCHECK( t );
+	POINTERCHECK( i );
+	POINTERCHECK( a );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, a );
+}
+fundeclproto(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
+	POINTERCHECK( i );
+	POINTERCHECK( a );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a );
+}
+fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i). {
+	POINTERCHECK( t );
+	POINTERCHECK( i );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, new exo::ast::VarDeclList );
+}
+fundeclproto(f) ::= S_FUNCTION T_ID(i). {
+	POINTERCHECK( i );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList );
+}
+%type fundecl { exo::ast::FunDecl* }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	POINTERCHECK( t );
 	POINTERCHECK( i );
@@ -176,22 +201,11 @@ fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), t, a, b );
 }
-fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
-	POINTERCHECK( t );
-	POINTERCHECK( i );
-	POINTERCHECK( a );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, a );
-}
 fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a, b );
-}
-fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
-	POINTERCHECK( i );
-	POINTERCHECK( a );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
 	POINTERCHECK( t );
@@ -199,39 +213,69 @@ fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), t, new exo::ast::VarDeclList, b );
 }
-fundecl(f) ::= type(t) S_FUNCTION T_ID(i). {
-	POINTERCHECK( t );
-	POINTERCHECK( i );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, new exo::ast::VarDeclList );
-}
 fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
 	POINTERCHECK( i );
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList, b );
 }
-fundecl(f) ::= S_FUNCTION T_ID(i). {
+
+
+/* a class declaration is a class keyword, followed by an identifier and class block */
+%type classdecl { exo::ast::ClassDecl* }
+classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET classblock(b) S_RBRACKET. {
 	POINTERCHECK( i );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList );
+	POINTERCHECK( b );
+	c = new exo::ast::ClassDecl( TOKENSTR(i), b );
+}
+/* a class block contains the declarations of a class. that is properties and methods. */
+%type classblock { exo::ast::ClassBlock* }
+classblock(l) ::= . {
+	l = new exo::ast::ClassBlock;
+	TRACESECTION( "PARSER", "pushing class declaration; properties: " << l->properties.size() << ", methods: " << l->methods.size() );
+}
+classblock(l) ::= vardecl(d) S_SEMICOLON. {
+	POINTERCHECK( d );
+	l = new exo::ast::ClassBlock;
+	l->properties.push_back( d );
+	TRACESECTION( "PARSER", "pushing property declaration; properties: " << l->properties.size() );
+}
+classblock(l) ::= fundecl(d) S_SEMICOLON. {
+	POINTERCHECK( d );
+	l = new exo::ast::ClassBlock;
+	l->methods.push_back( d );
+	TRACESECTION( "PARSER", "pushing method declaration; methods: " << l->methods.size() );
+}
+classblock ::= classblock(l) vardecl(d) S_SEMICOLON. {
+	POINTERCHECK( l );
+	POINTERCHECK( d );
+	l->properties.push_back( d );
+	TRACESECTION( "PARSER", "pushing property declaration; properties: " << l->properties.size() );
+}
+classblock ::= classblock(l) fundecl(d) S_SEMICOLON. {
+	POINTERCHECK( l );
+	POINTERCHECK( d );
+	l->methods.push_back( d );
+	TRACESECTION( "PARSER", "pushing method declaration; methods: " << l->methods.size() );
 }
 
 
-/* a variable declaration lists are expressions seperated by a colon or empty */
+/* an expression list */
 %type exprlist { exo::ast::ExprList* }
 exprlist(l) ::= . {
 	l = new exo::ast::ExprList;
-	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size());
+	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size() );
 }
 exprlist(l) ::= expression(e). {
 	POINTERCHECK( e );
 	l = new exo::ast::ExprList;
 	l->list.push_back( e );
-	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size());
+	TRACESECTION( "PARSER", "pushing expressions; size:" << l->list.size() );
 }
 exprlist ::= exprlist(l) S_COMMA expression(e). {
 	POINTERCHECK( l );
 	POINTERCHECK( e );
 	l->list.push_back( e );
-	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size());
+	TRACESECTION( "PARSER", "pushing declaration; size:" << l->list.size() );
 }
 
 

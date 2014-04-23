@@ -20,9 +20,6 @@
 #include "exo/jit/llvm.h"
 #include "exo/jit/codegen.h"
 
-/*
- * TODO: user boost templates instead of std::vector
- */
 namespace exo
 {
 	namespace ast
@@ -240,6 +237,26 @@ namespace exo
 				Expr* expression;
 
 				StmtReturn( Expr* expr );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ClassBlock : public virtual Stmt
+		{
+			public:
+				std::vector<VarDecl*>	properties;
+				std::vector<FunDecl*>	methods;
+
+				ClassBlock();
+		};
+
+		class ClassDecl : public virtual Stmt
+		{
+			public:
+				std::string	name;
+				ClassBlock*	block;
+
+				ClassDecl( std::string n, ClassBlock* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
