@@ -80,8 +80,10 @@ namespace exo
 
 		void JIT::Execute()
 		{
+			TRACE( "Running main." );
 			void( *jitMain )() = (void(*)())engine->getFunctionAddress( "main" );
 			jitMain();
+			TRACE( "Finished." );
 		}
 	}
 }
