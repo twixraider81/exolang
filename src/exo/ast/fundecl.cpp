@@ -21,7 +21,7 @@ namespace exo
 	{
 		FunDecl::FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock ) : FunDeclProto( n, rType, vArgs )
 		{
-			TRACESECTION( "AST", "declaring function statements:" << n );
+			TRACESECTION( "AST", "creating function body: " << n );
 			stmts = cBlock;
 		}
 	}
