@@ -1,6 +1,0 @@
-[submodule "src/bdwgc"]
-	path = src/bdwgc
-	url = https://github.com/ivmai/bdwgc.git
-[submodule "src/libatomicops"]
-	path = src/libatomicops
-	url = https://github.com/ivmai/libatomic_ops.git
