@@ -30,9 +30,9 @@ BUILDDIR = TOP + '/build'
 # load options
 def options( opt ):
 	opt.load( 'compiler_cxx compiler_c python' )
-	opt.add_option( '--mode', action = 'store', default = 'release', help = 'the mode to compile in (release,debug,trace)' )
+	opt.add_option( '--mode', action = 'store', default = 'release', help = 'the mode to compile in (release,debug)' )
 	opt.add_option( '--llvm', action = 'store', default = 'llvm-config', help = 'path to llvm-config' )
-	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug it will make us leak!' )
+	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug purposes only, it will make us leak!' )
 
 # configure
 def configure( conf ):
@@ -70,17 +70,17 @@ def configure( conf ):
 	cxxflags += exoflags
 
 	if conf.options.mode == 'release':
-		cxxflags += [ '-O3', '-DQUEX_OPTION_ASSERTS_DISABLED' ]
+		cxxflags += [ '-O3', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_DISABLED' ]
 	elif conf.options.mode == 'debug':
-		cxxflags += [ '-O0', '-g', '-DEXO_DEBUG', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED' ]
-	elif conf.options.mode == 'trace':
-		cxxflags += [ '-O0', '-g', '-DEXO_DEBUG', '-DEXO_TRACE', '-DGC_DEBUG', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED' ]
+		cxxflags += [ '-O0', '-g', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DEXO_DEBUG' ]
+
 
 	if conf.options.gc == 'disable':
 		cxxflags += [ '-DEXO_GC_DISABLE' ]
 		conf.msg( 'garbage collector', 'disabled', 'RED' )
 	else:
 		conf.msg( 'garbage collector', 'enabled', 'GREEN' )
+
 
 	conf.env.append_value( 'CXXFLAGS', cxxflags )
 	conf.env.append_value( 'LINKFLAGS',ldflags  )
@@ -112,6 +112,9 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
 	conf.check_cxx( header_name = "boost/exception/all.hpp" )
 	conf.check_cxx( header_name = "boost/throw_exception.hpp" )
+	conf.check_cxx( header_name = "boost/log/core.hpp" )
+	conf.check_cxx( header_name = "boost/log/trivial.hpp" )
+	conf.check_cxx( header_name = "boost/log/expressions.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
@@ -132,6 +135,8 @@ def configure( conf ):
 
 	# lib checks
 	conf.check_cxx( lib = "boost_program_options" )
+	conf.check_cxx( lib = "boost_log" )
+	conf.check_cxx( lib = "boost_log_setup" )
 	conf.check_cxx( lib = "pthread" )
 	conf.check_cxx( lib = "ffi" )
 	conf.check_cxx( lib = "curses" )
@@ -141,7 +146,7 @@ def configure( conf ):
 # build
 def build( bld ):
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	libs = [ 'gc', 'boost_program_options', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
+	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
