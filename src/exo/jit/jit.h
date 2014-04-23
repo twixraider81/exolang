@@ -33,9 +33,8 @@ namespace exo
 			public:
 				/**
 				 * Builds a LLVM MCJIT IR and loads the LLVM IR of the AST
-				 * TODO: make use of -0x levels - http://llvm.org/docs/doxygen/html/namespacellvm_1_1CodeGenOpt.html
 				 */
-				JIT( exo::jit::Codegen* c );
+				JIT( exo::jit::Codegen* c, int optimize );
 				~JIT();
 
 				void Execute();

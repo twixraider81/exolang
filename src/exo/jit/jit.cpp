@@ -22,7 +22,7 @@ namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( exo::jit::Codegen* g )
+		JIT::JIT( exo::jit::Codegen* g, int optimize )
 		{
 			generator = g;
 			std::string errorMsg;
@@ -30,7 +30,22 @@ namespace exo
 			// takes ownership of module, thus we can't delete it ourself
 			llvm::EngineBuilder builder( generator->module );
 			builder.setEngineKind( llvm::EngineKind::JIT );
-			builder.setOptLevel( llvm::CodeGenOpt::Default );
+
+			// a bit ugly
+			if( optimize < 0 || optimize > 3 ) {
+				BOOST_LOG_TRIVIAL(warning) << "Invalid optimization level.";
+			} else {
+				if( optimize == 0 ) {
+					builder.setOptLevel( llvm::CodeGenOpt::None );
+				} else if( optimize == 1 ) {
+					builder.setOptLevel( llvm::CodeGenOpt::Less );
+				} else if( optimize == 2 ) {
+					builder.setOptLevel( llvm::CodeGenOpt::Default );
+				} else if( optimize == 3 ) {
+					builder.setOptLevel( llvm::CodeGenOpt::Aggressive );
+				}
+			}
+
 			builder.setErrorStr( &errorMsg );
 
 			engine = builder.setUseMCJIT( true ).create();

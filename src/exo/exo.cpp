@@ -30,7 +30,7 @@
  */
 int main( int argc, char **argv )
 {
-	int severity;
+	int severity, optimize;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -38,6 +38,7 @@ int main( int argc, char **argv )
 		( "help,h",			"show usage/help" )
 		( "version,v",		"show version" )
 		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
+		( "optimize,o", 	boost::program_options::value<int>(&optimize)->default_value(2),	"set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
 		( "input,i",		boost::program_options::value<std::string>(),						"parse file" )
     ;
 
@@ -90,7 +91,7 @@ int main( int argc, char **argv )
 		boost::scoped_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main" ) );
 		generator->Generate( ast.get() );
 
-		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get() ) );
+		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get(), optimize ) );
 		jit->Execute();
 
 	} catch( exo::exceptions::Exception& e ) {
