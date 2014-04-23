@@ -15,6 +15,7 @@ test( 3 );
 // external prototype
 float function sin( float $x );
 float function cos( float $x );
+
 float $g = 31.5;
 float $h = sin( $g );
 sin( 32.3 );
@@ -29,7 +30,12 @@ class testClass
 	{
 		return 1;
 	};
+
+	int function getTwo()
+	{
+		return 2;
+	};
 };
 
 testClass $i;
-int $j = $i.getOne();
+int $j = $i.getOne() + $i.getTwo();
