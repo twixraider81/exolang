@@ -16,12 +16,14 @@ You will need atleast boost 1.54. Next call the bootstrap script:
 ./bootstrap.sh
 
 This will to build the lemon parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
-The bootstrap script can also build a LLVM debug+asserts build under ./bin, use bootstrap as follows.
+The bootstrap script can also build a LLVM debug+asserts build under ./bin. To do that use bootstrap as follows.
 
 ./bootstrap.sh -l
 
-The bootstrap script can also be used to clear the whole project folder. It will delete all temporaries and built binaries. Just issue:
+Furthermore the bootstrap script can also be used to clear the whole project folder.
+This will delete all temporaries and built binaries. Just issue:
 ./bootstrap -c
+And crap begone!
 
 Building
 --------
