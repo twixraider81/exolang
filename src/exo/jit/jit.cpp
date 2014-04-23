@@ -49,38 +49,21 @@ namespace exo
 			llvm::initializeScalarOpts( registry );
 
 			fpm = new llvm::FunctionPassManager( generator->module );
-#ifdef EXO_DEBUG
 			fpm->add( llvm::createVerifierPass( llvm::PrintMessageAction ) );
-#endif
 			target->addAnalysisPasses( *fpm );
 			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( generator->module->getTargetTriple() ) ) );
 			fpm->add( new llvm::DataLayout( generator->module ) );
-
-			// Stateless Alias Analysis
 			fpm->add( llvm::createBasicAliasAnalysisPass() );
-			// Eliminate redundant values and load
-			fpm->add( llvm::createGVNPass() );
-			// CSE pass - eleminates redudant instructions
-			fpm->add( llvm::createEarlyCSEPass() );
-			// Promote Memory to Register - eleminate alloca's
-			fpm->add( llvm::createPromoteMemoryToRegisterPass() );
-			// Optimized out global vars
-			fpm->add( llvm::createGlobalOptimizerPass() );
-			// Eliminate dead stores
-			fpm->add( llvm::createDeadStoreEliminationPass() );
-			// Loop Invariant Code Motion Pass
 			fpm->add( llvm::createLICMPass() );
-			// Vectorization passes
+			fpm->add( llvm::createGVNPass() );
+			fpm->add( llvm::createPromoteMemoryToRegisterPass() );
 			fpm->add( llvm::createLoopVectorizePass() );
-			// fpm->add( llvm::createSLPVectorizerPass() );
-			// Combine instructions...
+			fpm->add( llvm::createEarlyCSEPass() );
 			fpm->add( llvm::createInstructionCombiningPass() );
-			// Inline functions
-			fpm->add( llvm::createFunctionInliningPass() );
-			// Combine blocks, simplyfy control flow
 			fpm->add( llvm::createCFGSimplificationPass() );
 
 			fpm->run( *generator->entry );
+
 			engine->finalizeObject();
 
 #ifdef EXO_TRACE
