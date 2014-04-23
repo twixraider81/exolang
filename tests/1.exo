@@ -14,6 +14,8 @@ test( 3 );
 
 // external prototype
 float function sin( float $x );
+float function cos( float $x );
 float $g = 31.5;
 float $h = sin( $g );
 sin( 32.3 );
+cos( 0.3 );
