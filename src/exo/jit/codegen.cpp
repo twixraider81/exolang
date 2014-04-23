@@ -91,6 +91,8 @@ namespace exo
 				return( llvm::Type::getDoubleTy( context ) );
 			} else if( type->info == &typeid( exo::jit::types::BooleanType ) ) {
 				return( llvm::Type::getInt1Ty( context ) );
+			} else if( type->info == &typeid( exo::jit::types::ClassType ) ) {
+				return( module->getTypeByName( type->name ) );
 			}
 
 			return( llvm::Type::getVoidTy( context ) );
@@ -164,28 +166,28 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueInt* val )
 		{
-			TRACESECTION( "IR", "generating integer " << val->value << " in (" << getCurrentBlockName() << ")" );
+			TRACESECTION( "IR", "generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")" );
 			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( &module->getContext(), val->value );
 			return( iType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueFloat* val )
 		{
-			TRACESECTION( "IR", "generating float: " << val->value << " in (" << getCurrentBlockName() << ")" );
+			TRACESECTION( "IR", "generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")" );
 			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( &module->getContext(), val->value );
 			return( fType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ValueBool* val )
 		{
-			TRACESECTION( "IR", "generating boolean: " << val->value << " in (" << getCurrentBlockName() << ")" );
+			TRACESECTION( "IR", "generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")" );
 			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( &module->getContext(), val->value );
 			return( bType->value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstExpr* expr )
 		{
-			TRACESECTION( "IR", "generating constant expression: " << expr->name << " in (" << getCurrentBlockName() << ")" );
+			TRACESECTION( "IR", "generating constant expression \"" << expr->name << "\" in (" << getCurrentBlockName() << ")" );
 			return( expr->expression->Generate( this ) );
 		}
 
@@ -239,7 +241,7 @@ namespace exo
 			std::vector<exo::ast::VarDecl*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating argument " << (**it).name );
+				TRACESECTION( "IR", "generating argument $" << (**it).name );
 				fArgs.push_back( getType( (*it)->type, module->getContext() ) );
 			}
 
@@ -290,7 +292,7 @@ namespace exo
 			std::vector<llvm::Value*> arguments;
 
 			for( it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating argument" << typeid(**it).name() );
+				TRACESECTION( "IR", "generating argument $" << typeid(**it).name() );
 				arguments.push_back( (*it)->Generate( this ) );
 			}
 
@@ -311,7 +313,7 @@ namespace exo
 			std::vector<exo::ast::VarDecl*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				TRACESECTION( "IR", "generating argument " << (**it).name );
+				TRACESECTION( "IR", "generating argument $" << (**it).name );
 				fArgs.push_back( getType( (*it)->type, module->getContext() ) );
 			}
 
@@ -319,6 +321,60 @@ namespace exo
 			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, decl->name, module );
 
 			return( function );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ClassDecl* decl )
+		{
+			TRACESECTION( "IR", "creating class " << decl->name << "; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")" );
+
+			std::vector<llvm::Type*> properties;
+			std::vector<exo::ast::VarDecl*>::iterator pit;
+			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
+				TRACESECTION( "IR", "generating property $" << (*pit)->name << " (" << decl->name << ")" );
+				properties.push_back( getType( (*pit)->type, module->getContext() ) );
+			}
+
+			llvm::StructType* structClass = llvm::StructType::create( module->getContext(), properties, decl->name );
+
+
+			std::vector<llvm::Type*> methods;
+			std::vector<exo::ast::FunDecl*>::iterator mit;
+			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
+				// think about how to construct sane names
+				std::string mName = "__" + decl->name + "_" + (*mit)->name;
+
+				TRACESECTION( "IR", "generating method " << (*mit)->name << " (" << decl->name << " - " << mName << ")" );
+
+				std::vector<llvm::Type*> mArgs;
+				std::vector<exo::ast::VarDecl*>::iterator it;
+
+				// pointer to a class struct as 1.st param
+				mArgs.push_back( llvm::PointerType::getUnqual( structClass ) );
+				for( it = (*mit)->arguments->list.begin(); it != (*mit)->arguments->list.end(); it++ ) {
+					TRACESECTION( "IR", "generating argument $" << (*it)->name );
+					mArgs.push_back( getType( (*it)->type, module->getContext() ) );
+				}
+
+				llvm::FunctionType* mType = llvm::FunctionType::get( getType( (*mit)->returnType, module->getContext() ), mArgs, false );
+				llvm::Function* method = llvm::Function::Create( mType, llvm::GlobalValue::InternalLinkage, mName, module );
+				llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), mName, method, 0 );
+
+				pushBlock( block, (*mit)->name );
+
+				for( it = (*mit)->arguments->list.begin(); it != (*mit)->arguments->list.end(); it++ ) {
+					TRACESECTION( "IR", "generating " << typeid(**it).name() );
+					(*it)->Generate( this );
+				}
+
+				Generate( (*mit)->stmts );
+
+				popBlock();
+			}
+
+			/*
+			 * FIXME: should probably return nothing
+			 */
+			return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 	}
 }
