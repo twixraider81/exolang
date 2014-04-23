@@ -7,7 +7,8 @@ The aim is to develop a jiting/compiling rapid prototyping "script" language.
 
 Prerequisites
 -------------
-I develop on a Debian syste. In order to install the prerequisites it's suffice to do do:
+I develop on a Debiann syste. In order to install the prerequisites it's suffice to do do:
+
 apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind
 You will need atleast boost 1.54.
 
@@ -20,9 +21,12 @@ The bootstrap script can also build a LLVM debug+asserts build under ./bin, use 
 
 ./bootstrap.sh -l
 
+The bootstrap script can also be used to clear the whole project folder. It will delete all temporaries and built binaries. Just issue:
+./bootstrap -c
+
 Building
 --------
-Next configure the build.
+Next configure the build. For now since it's under heavy development:
 
 ./waf clean configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
 
