@@ -1,3 +1,3 @@
-set args -i tests/3.exo
+set args -i tests/1.exo
 b main
 r

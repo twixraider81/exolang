@@ -7,7 +7,7 @@ int function test( int $e )
 {
 	int $a = $e + 1;
 	return $a;
-}
+};
 
 int $f = test( 2 );
 test( 3 );
@@ -19,3 +19,14 @@ float $g = 31.5;
 float $h = sin( $g );
 sin( 32.3 );
 cos( 0.3 );
+
+class testClass
+{
+	int $intVal;
+	float $floatVal;
+
+	int function getOne()
+	{
+		return 1;
+	};
+};
