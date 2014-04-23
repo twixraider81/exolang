@@ -229,32 +229,34 @@ classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET classblock(b) S_RBRACKET. {
 }
 /* a class block contains the declarations of a class. that is properties and methods. */
 %type classblock { exo::ast::ClassBlock* }
-classblock(l) ::= . {
-	l = new exo::ast::ClassBlock;
-	TRACESECTION( "PARSER", "pushing class declaration; properties: " << l->properties.size() << ", methods: " << l->methods.size() );
+classblock(b) ::= . {
+	b = new exo::ast::ClassBlock;
+	TRACESECTION( "PARSER", "pushing class declaration; properties: " << b->properties.size() << ", methods: " << b->methods.size() );
 }
-classblock(l) ::= vardecl(d) S_SEMICOLON. {
+classblock(b) ::= vardecl(d) S_SEMICOLON. {
 	POINTERCHECK( d );
-	l = new exo::ast::ClassBlock;
-	l->properties.push_back( d );
-	TRACESECTION( "PARSER", "pushing property declaration; properties: " << l->properties.size() );
+	b = new exo::ast::ClassBlock;
+	b->properties.push_back( d );
+	TRACESECTION( "PARSER", "pushing property declaration; properties: " << b->properties.size() );
 }
-classblock(l) ::= fundecl(d) S_SEMICOLON. {
+classblock(b) ::= fundecl(d) S_SEMICOLON. {
 	POINTERCHECK( d );
-	l = new exo::ast::ClassBlock;
-	l->methods.push_back( d );
-	TRACESECTION( "PARSER", "pushing method declaration; methods: " << l->methods.size() );
+	b = new exo::ast::ClassBlock;
+	b->methods.push_back( d );
+	TRACESECTION( "PARSER", "pushing method declaration; methods: " << b->methods.size() );
 }
-classblock ::= classblock(l) vardecl(d) S_SEMICOLON. {
+classblock(b) ::= classblock(l) vardecl(d) S_SEMICOLON. {
 	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->properties.push_back( d );
+	b = l;
 	TRACESECTION( "PARSER", "pushing property declaration; properties: " << l->properties.size() );
 }
-classblock ::= classblock(l) fundecl(d) S_SEMICOLON. {
+classblock(b) ::= classblock(l) fundecl(d) S_SEMICOLON. {
 	POINTERCHECK( l );
 	POINTERCHECK( d );
 	l->methods.push_back( d );
+	b = l;
 	TRACESECTION( "PARSER", "pushing method declaration; methods: " << l->methods.size() );
 }
 
