@@ -116,6 +116,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/log/trivial.hpp" )
 	conf.check_cxx( header_name = "boost/log/expressions.hpp" )
 	#conf.check_cxx( header_name = "boost/filesystem.hpp" )
+	conf.check_cxx( header_name = "boost/lexical_cast.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )

@@ -56,6 +56,7 @@ class gc {};
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
 #include "exo/errors/error.h"
