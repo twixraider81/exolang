@@ -28,12 +28,14 @@ namespace exo
 			}
 
 			stmts = NULL;
+
+			currentToken = new quex::Token;
 		}
 
 		Tree::~Tree()
 		{
 			::ParseFree( parser, GC_free );
-
+			//delete currentToken; ? whats freeing our token?
 			// no freeing of stmts! codegen has ownership and will take care of that.
 		}
 
@@ -42,18 +44,17 @@ namespace exo
 			fileName = fName;
 			BOOST_LOG_TRIVIAL(trace) <<  "Opening <" << fileName << ">";
 
-			quex::Token* token = new quex::Token;
 			quex::lexer lexer( fileName );
-			lexer.receive( &token );
+			lexer.receive( &currentToken );
 
-			while( token->type_id() != QUEX_TKN_TERMINATION ) {
-				BOOST_LOG_TRIVIAL(trace) << "Received <" << token->type_id_name() << "> in " << fileName << " on " << token->line_number() << ":" << token->column_number();
+			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
+				BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> in " << fileName << " on " << currentToken->line_number() << ":" << currentToken->column_number();
 
-				::Parse( parser, token->type_id(), token, this );
-				lexer.receive( &token );
+				::Parse( parser, currentToken->type_id(), currentToken, this );
+				lexer.receive( &currentToken );
 			}
 
-			::Parse( parser, 0, token, this );
+			::Parse( parser, 0, currentToken, this );
 		}
 
 		void Tree::Parse( std::istream& stream )
@@ -61,7 +62,6 @@ namespace exo
 			fileName = "<stdin>";
 			BOOST_LOG_TRIVIAL(trace) << "Opening <stdin>";
 
-			quex::Token* token = new quex::Token;
 			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 
 			while( stream ) {
@@ -74,16 +74,16 @@ namespace exo
 				}
 
 				lexer.buffer_fill_region_finish( stream.gcount() - 1 );
-				lexer.receive( &token );
+				lexer.receive( &currentToken );
 
-				while( token->type_id() != QUEX_TKN_TERMINATION ) {
-					BOOST_LOG_TRIVIAL(trace) << "Received <" << token->type_id_name() << "> on " << token->line_number() << ":" << token->column_number();
+				while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
+					BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> on " << currentToken->line_number() << ":" << currentToken->column_number();
 
-					::Parse( parser, token->type_id(), token, this );
-					lexer.receive( &token );
+					::Parse( parser, currentToken->type_id(), currentToken, this );
+					lexer.receive( &currentToken );
 				}
 
-				::Parse( parser, 0, token, this );
+				::Parse( parser, 0, currentToken, this );
 			}
 		}
 	}

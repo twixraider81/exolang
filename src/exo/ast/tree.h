@@ -32,6 +32,7 @@ namespace exo
 				void*			parser;
 				std::string		fileName;
 				StmtList*		stmts;
+				quex::Token*	currentToken;
 
 				Tree();
 				~Tree();
