@@ -23,14 +23,6 @@ namespace exo
 		{
 			parser = ParseAlloc( GC_malloc );
 
-			/*
-			 * FIXME: figure out whats garbling the prefix on syntax errors.
-			 */
-#ifdef EXO_TRACE
-			char prefix[] = "PARSER: ";
-			ParseTrace( stderr, prefix );
-#endif
-
 			if( parser == NULL ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::OutOfMemory() );
 			}
