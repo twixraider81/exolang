@@ -337,7 +337,16 @@ number(n) ::= T_VFLOAT(f). {
 }
 
 
-/* an expression may be an assignment, function call, variable, number, binary expression, comparison or a constant */
+/* a string */
+%type string { exo::ast::Expr* }
+string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE. {
+	BOOST_LOG_TRIVIAL(trace) << "string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE.";
+	POINTERCHECK( q );
+	s = new exo::ast::ValueString( TOKENSTR(q) );
+}
+
+
+/* an expression may be an assignment, function call, variable, number, binary expression, comparison, constant, string */
 %type expression { exo::ast::Expr* }
 expression(a) ::= T_VAR(v) S_ASSIGN expression(e). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= T_VAR(V) S_ASSIGN expression(E).";
@@ -379,6 +388,11 @@ expression(e) ::= constant(c). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= constant(C).";
 	POINTERCHECK( c );
 	e = c;
+}
+expression(e) ::= string(s). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(e) ::= string(s).";
+	POINTERCHECK( s );
+	e = s;
 }
 
 
@@ -439,7 +453,9 @@ binop(b) ::= S_DIV(o). {
 	b = new std::string( TOKENSTR( o ) );
 }
 
-
+/*
+ * TODO: use ConstantValue for basic LLVM Types
+ */
 /* a constant can be a builtin */
 %type constant { exo::ast::Expr* }
 constant(c) ::= S_FILE(f). {

@@ -33,7 +33,9 @@ mode EXO:
 <skip_range: "#" "\n">				/* skip singleline comments */
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
-	<<FAIL>>						{ BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) ); }
+	<<FAIL>>						{
+		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) );
+	}
 
 	"__HALT__"						=> QUEX_TKN_TERMINATION;
 	"__halt_compiler"				=> QUEX_TKN_TERMINATION;
@@ -78,4 +80,35 @@ mode EXO:
 	"-"								=> QUEX_TKN_S_MINUS(Lexeme);
 	"*"								=> QUEX_TKN_S_MUL(Lexeme);
 	"/"								=> QUEX_TKN_S_DIV(Lexeme);
+
+	"\""							{
+		self_send(QUEX_TKN_T_QUOTE);
+		self << DOUBLE_STRING;
+		RETURN;
+    }
+}
+
+
+mode DOUBLE_STRING:
+<entry: EXO>
+<exit:  EXO>
+{
+	<<EOF>>							=> QUEX_TKN_TERMINATION;
+	<<FAIL>>						{
+		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) );
+	}
+
+	on_entry						{
+		self_accumulator_clear();
+	}
+
+	on_exit							{ 
+		self_accumulator_flush(QUEX_TKN_T_VSTRING); 
+		self_send(QUEX_TKN_T_QUOTE);
+	}
+
+	"\\\""							{ self_accumulator_add(Lexeme, LexemeEnd); }
+	"\\\\"							{ self_accumulator_add(Lexeme, LexemeEnd); }
+	"\""							{ self << EXO; RETURN; }
+	.								{ self_accumulator_add(Lexeme, LexemeEnd); }
 }
