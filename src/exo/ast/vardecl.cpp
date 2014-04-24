@@ -21,7 +21,7 @@ namespace exo
 	{
 		VarDecl::VarDecl( std::string vName, Type* vType )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Declaring $" << vName;
+			BOOST_LOG_TRIVIAL(debug) << "Declaring $" << vName;
 			name = vName;
 			type = vType;
 			expression = NULL;
@@ -29,7 +29,7 @@ namespace exo
 
 		VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Declaring/assigning $" << vName;
+			BOOST_LOG_TRIVIAL(debug) << "Declaring/assigning $" << vName;
 			name = vName;
 			type = vType;
 			expression = expr;

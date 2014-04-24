@@ -21,7 +21,7 @@ namespace exo
 	{
 		StmtExpr::StmtExpr( Expr* expr )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating expression statement";
+			BOOST_LOG_TRIVIAL(debug) << "Creating expression statement";
 			expression = expr;
 		}
 	}

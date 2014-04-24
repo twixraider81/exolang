@@ -21,7 +21,7 @@ namespace exo
 	{
 		VarAssign::VarAssign( std::string vName, Expr* expr )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Assigning $" << vName;
+			BOOST_LOG_TRIVIAL(debug) << "Assigning $" << vName;
 			name = vName;
 			expression = expr;
 		}

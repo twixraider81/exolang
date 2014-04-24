@@ -21,7 +21,7 @@ namespace exo
 	{
 		ConstStr::ConstStr( std::string v )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Constant string \"" << v << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Constant string \"" << v << "\"";
 			value = v;
 		}
 	}

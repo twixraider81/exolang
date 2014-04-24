@@ -21,7 +21,7 @@ namespace exo
 	{
 		FunDeclProto::FunDeclProto( std::string n, Type* rType, VarDeclList* vArgs )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating function prototype/extern \"" << n << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Creating function prototype/extern \"" << n << "\"";
 			name = n;
 			returnType = rType;
 			arguments = vArgs;

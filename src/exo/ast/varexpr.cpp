@@ -21,7 +21,7 @@ namespace exo
 	{
 		VarExpr::VarExpr( std::string vName )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Accessing $" << vName;
+			BOOST_LOG_TRIVIAL(debug) << "Accessing $" << vName;
 			variable = vName;
 		}
 	}

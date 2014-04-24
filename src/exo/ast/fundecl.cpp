@@ -21,7 +21,7 @@ namespace exo
 	{
 		FunDecl::FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock ) : FunDeclProto( n, rType, vArgs )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating function \"" << n << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Creating function \"" << n << "\"";
 			stmts = cBlock;
 		}
 	}

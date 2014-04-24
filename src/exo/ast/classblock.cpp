@@ -21,7 +21,7 @@ namespace exo
 	{
 		ClassBlock::ClassBlock()
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating class members";
+			BOOST_LOG_TRIVIAL(debug) << "Creating class members";
 		}
 	}
 }

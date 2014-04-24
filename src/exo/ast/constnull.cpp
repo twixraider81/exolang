@@ -21,7 +21,7 @@ namespace exo
 	{
 		ConstNull::ConstNull()
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Constant null";
+			BOOST_LOG_TRIVIAL(debug) << "Constant null";
 		}
 	}
 }

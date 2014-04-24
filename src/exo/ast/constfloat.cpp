@@ -21,7 +21,7 @@ namespace exo
 	{
 		ConstFloat::ConstFloat( double v )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Constant double \"" << v << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Constant double \"" << v << "\"";
 			value = v;
 		}
 	}

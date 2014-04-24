@@ -21,7 +21,7 @@ namespace exo
 	{
 		Type::Type( std::string tName )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Type \"" << tName << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Type \"" << tName << "\"";
 			name = tName;
 		}
 	}

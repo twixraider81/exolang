@@ -21,7 +21,7 @@ namespace exo
 	{
 		ConstInt::ConstInt( long long v )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Constant integer \"" << v << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Constant integer \"" << v << "\"";
 			value = v;
 		}
 	}
