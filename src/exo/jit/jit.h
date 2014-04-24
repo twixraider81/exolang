@@ -26,13 +26,13 @@ namespace exo
 
 		class JIT
 		{
-			exo::jit::Codegen*			generator;
-			llvm::ExecutionEngine*		engine;
-			llvm::FunctionPassManager 	*fpm;
+			exo::jit::Codegen*					generator;
+			llvm::ExecutionEngine*				engine;
+			llvm::legacy::FunctionPassManager*	fpm;
 
 			public:
 				/**
-				 * Builds a LLVM MCJIT IR and loads the LLVM IR of the AST
+				 * Builds a LLVM MachineCode JIT IR and loads the LLVM IR of the AST
 				 */
 				JIT( exo::jit::Codegen* c, int optimize );
 				~JIT();

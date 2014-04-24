@@ -47,27 +47,26 @@ namespace exo
 			}
 
 			builder.setErrorStr( &errorMsg );
-
-			engine = builder.setUseMCJIT( true ).create();
+			builder.setUseMCJIT( true );
+			engine = builder.create();
 
 			if( !engine ) {
 				BOOST_THROW_EXCEPTION( exo::exceptions::LLVM( errorMsg ) );
 			}
 
-#ifdef EXO_TRACE
-			BOOST_LOG_TRIVIAL(trace) << "Intermediate LLVM IR";
-			generator->module->dump();
-#endif
-
+			/*
+			 * TODO: The docs for this whole stuff related to passes seem wildly out of date. Should use the "new" ModulePassManager, FunctionPassManager, AnalysisPassManager
+			 */
 			llvm::TargetMachine* target = builder.selectTarget();
+			// what? http://llvm.org/docs/doxygen/html/InitializePasses_8h_source.html
 			llvm::PassRegistry &registry = *llvm::PassRegistry::getPassRegistry();
 			llvm::initializeScalarOpts( registry );
+			llvm::initializeTransformUtils( registry );
 
-			fpm = new llvm::FunctionPassManager( generator->module );
-			fpm->add( llvm::createVerifierPass( llvm::PrintMessageAction ) );
-			target->addAnalysisPasses( *fpm );
+			fpm = new llvm::legacy::FunctionPassManager( generator->module );
 			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( generator->module->getTargetTriple() ) ) );
 			fpm->add( new llvm::DataLayout( generator->module ) );
+			target->addAnalysisPasses( *fpm );
 			fpm->add( llvm::createBasicAliasAnalysisPass() );
 			fpm->add( llvm::createLICMPass() );
 			fpm->add( llvm::createGVNPass() );
@@ -77,14 +76,17 @@ namespace exo
 			fpm->add( llvm::createInstructionCombiningPass() );
 			fpm->add( llvm::createCFGSimplificationPass() );
 
-			fpm->run( *generator->entry );
+			std::string buffer;
+			llvm::raw_string_ostream ostream( buffer );
+			generator->module->print( ostream, NULL );
+			BOOST_LOG_TRIVIAL(trace) << "Intermediate LLVM IR" << buffer;
 
+			fpm->run( *generator->entry );
 			engine->finalizeObject();
 
-#ifdef EXO_TRACE
-				BOOST_LOG_TRIVIAL(trace) << "Final LLVM IR";
-				generator->module->dump();
-#endif
+			buffer = "";
+			generator->module->print( ostream, NULL );
+			BOOST_LOG_TRIVIAL(trace) << "Final LLVM IR" << buffer;
 		}
 
 		JIT::~JIT()
