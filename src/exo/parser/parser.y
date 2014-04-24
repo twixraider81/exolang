@@ -326,7 +326,6 @@ expression(e) ::= expression(a) cmpop(c) expression(b). {
 	e = new exo::ast::CmpOp( a, c, b );
 }
 expression(e) ::= constant(c). {
-	POINTERCHECK( e );
 	POINTERCHECK( c );
 	e = c;
 }
