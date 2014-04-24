@@ -127,6 +127,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Support/Host.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
+	conf.check_cxx( header_name = "llvm/Support/FileSystem.h" )
 	conf.check_cxx( header_name = "llvm/Target/TargetLibraryInfo.h" )
 
 	if conf.options.gc != 'disable':
