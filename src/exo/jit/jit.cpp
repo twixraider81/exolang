@@ -87,6 +87,8 @@ namespace exo
 			buffer = "";
 			generator->module->print( ostream, NULL );
 			BOOST_LOG_TRIVIAL(trace) << "Final LLVM IR" << buffer;
+
+			delete target;
 		}
 
 		JIT::~JIT()
