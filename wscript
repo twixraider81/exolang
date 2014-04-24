@@ -139,6 +139,7 @@ def configure( conf ):
 	conf.check_cxx( lib = "boost_log" )
 	conf.check_cxx( lib = "boost_log_setup" )
 	conf.check_cxx( lib = "boost_system" )
+	conf.check_cxx( lib = "boost_filesystem" )
 	conf.check_cxx( lib = "pthread" )
 	conf.check_cxx( lib = "ffi" )
 	conf.check_cxx( lib = "curses" )
@@ -148,7 +149,7 @@ def configure( conf ):
 # build
 def build( bld ):
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
+	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'boost_filesystem', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
