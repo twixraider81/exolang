@@ -29,6 +29,8 @@ namespace exo
 			    llvm::BasicBlock*					block;
 			    std::string							name;
 			    std::map<std::string, llvm::Value*>	variables;
+
+			    virtual ~Block();
 		};
 	}
 }
