@@ -111,12 +111,6 @@ if [ "$LLVM" == "1" ]; then
 	make install
 fi
 
-# check if clang installed, shouldn't happen
-if ! which "clang++"; then
-	echo "clang++ not found; exiting"
-	exit 0;
-fi
-
 cd "$DIR"
 
 # fetch waf

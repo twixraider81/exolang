@@ -22,14 +22,16 @@ The bootstrap script can also build a LLVM debug+asserts build under ./bin. To d
 
 Furthermore the bootstrap script can also be used to clear the whole project folder.
 This will delete all temporaries and built binaries. Just issue:
+
 ./bootstrap -c
+
 And crap begone!
 
 Building
 --------
 Next configure the build. For now since it's under heavy development:
 
-./waf clean configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
+./waf configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
 
 After that start the build process via:
 
