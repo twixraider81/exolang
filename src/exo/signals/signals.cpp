@@ -30,6 +30,7 @@ namespace exo
 
 				size = backtrace( array, 10 );
 
+				BOOST_LOG_TRIVIAL(debug) << "Ooops, segementation fault:";
 				/* skip first stack frame (points here) */
 				for( int i = 1; i < size && array != NULL; ++i )
 				{
