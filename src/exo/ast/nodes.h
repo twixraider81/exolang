@@ -64,11 +64,9 @@ namespace exo
 		class Type : public virtual Node
 		{
 			public:
-				const std::type_info*	info;
 				std::string name;
 
-				Type( const std::type_info* t );
-				Type( const std::type_info* t , std::string tName );
+				Type( std::string tName );
 		};
 
 		class VarDecl : public virtual Stmt
@@ -168,59 +166,6 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class ConstExpr : public virtual Expr
-		{
-			public:
-				std::string	name;
-				Expr*		expression;
-
-				ConstExpr( std::string n, Expr* e );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ValueNull : public virtual Expr
-		{
-			public:
-				ValueNull();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
-		};
-
-		class ValueBool : public virtual Expr
-		{
-			public:
-				bool value;
-				ValueBool( bool bVal );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ValueInt : public virtual Expr
-		{
-			public:
-				std::string value;
-				ValueInt( std::string iVal );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ValueFloat : public virtual Expr
-		{
-			public:
-				std::string value;
-				ValueFloat( std::string fVal );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ValueString : public virtual Expr
-		{
-			public:
-				std::string value;
-				ValueString( std::string sVal );
-		};
-
 		class VarExpr : public virtual Expr
 		{
 			public:
@@ -257,6 +202,54 @@ namespace exo
 				ClassBlock*	block;
 
 				ClassDecl( std::string n, ClassBlock* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstStr : public virtual Expr
+		{
+			public:
+				std::string value;
+
+				ConstStr( std::string v );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstInt : public virtual Expr
+		{
+			public:
+				long long value;
+
+				ConstInt( long long value );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstNull : public virtual Expr
+		{
+			public:
+				ConstNull();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstBool : public virtual Expr
+		{
+			public:
+				bool value;
+
+				ConstBool( bool value );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstFloat : public virtual Expr
+		{
+			public:
+				double value;
+
+				ConstFloat( double value );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

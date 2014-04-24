@@ -41,3 +41,43 @@ class testClass
 
 testClass $i;
 //int $j = $i.getOne() + $i.getTwo();
+
+/*
+class Object
+{
+	/**
+	 * Performs a addition with the operand and returns the result
+	 */
+	Object operator<+>( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a subtraction with the operand and returns the result
+	 */
+	Object operator<->( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a multiplication with the operand and returns the result
+	 */
+	Object operator<*>( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a division with the operand and returns the result
+	 */
+	Object operator</>( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a concatenation with the operand and returns the result
+	 */
+	Object operator<.>( Object rhs )
+	{
+	}
+}
+*/

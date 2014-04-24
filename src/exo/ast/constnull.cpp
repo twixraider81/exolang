@@ -19,9 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		ValueNull::ValueNull()
+		ConstNull::ConstNull()
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating null";
+			BOOST_LOG_TRIVIAL(trace) << "Constant null";
 		}
 	}
 }

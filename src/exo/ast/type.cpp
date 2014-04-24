@@ -19,15 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		Type::Type( const std::type_info* t )
+		Type::Type( std::string tName )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Referenced type \"" << t->name() << "\"";
-			info = t;
-		}
-
-		Type::Type( const std::type_info* t , std::string tName ) : Type( t )
-		{
-			BOOST_LOG_TRIVIAL(trace) << "Referenced type \"" << t->name() << "\", " << tName;
+			BOOST_LOG_TRIVIAL(trace) << "Type \"" << tName << "\"";
 			name = tName;
 		}
 	}

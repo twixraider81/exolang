@@ -13,28 +13,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/jit/type/types.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
-	namespace jit
+	namespace ast
 	{
-		namespace types
+		ConstStr::ConstStr( std::string v )
 		{
-			IntegerType::IntegerType( llvm::LLVMContext* c, long long lVal ) : Type( c ), ScalarType( c )
-			{
-				type = llvm::Type::getInt64Ty( *c );
-				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, lVal ) );
-			}
-
-			/*
-			 * TODO: use boost::numeric_
-			 */
-			IntegerType::IntegerType( llvm::LLVMContext* c, std::string lVal ) : Type( c ), ScalarType( c )
-			{
-				type = llvm::Type::getInt64Ty( *c );
-				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, atoi( lVal.c_str() ) ) );
-			}
+			BOOST_LOG_TRIVIAL(trace) << "Constant string \"" << v << "\"";
+			value = v;
 		}
 	}
 }

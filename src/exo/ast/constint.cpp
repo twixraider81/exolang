@@ -13,19 +13,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/jit/type/types.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
-	namespace jit
+	namespace ast
 	{
-		namespace types
+		ConstInt::ConstInt( long long v )
 		{
-			ClassType::ClassType( llvm::LLVMContext* c, std::string cVal ) : Type( c )
-			{
-				type = llvm::Type::getInt64Ty( *c );
-				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 1 ) );
-			}
+			BOOST_LOG_TRIVIAL(trace) << "Constant integer \"" << v << "\"";
+			value = v;
 		}
 	}
 }

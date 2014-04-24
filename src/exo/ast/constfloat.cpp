@@ -19,10 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		ValueString::ValueString( std::string sVal )
+		ConstFloat::ConstFloat( double v )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating string \"" << sVal << "\"";
-			value = sVal;
+			BOOST_LOG_TRIVIAL(trace) << "Constant double \"" << v << "\"";
+			value = v;
 		}
 	}
 }

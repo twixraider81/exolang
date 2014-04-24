@@ -19,7 +19,6 @@
 #include "exo/ast/nodes.h"
 #include "exo/ast/tree.h"
 #include "exo/jit/codegen.h"
-#include "exo/jit/type/types.h"
 
 namespace exo
 {
@@ -85,14 +84,19 @@ namespace exo
 		 */
 		llvm::Type* Codegen::getType( exo::ast::Type* type, llvm::LLVMContext& context )
 		{
-			if( type->info == &typeid( exo::jit::types::IntegerType ) ) {
+			if( type->name == "int" ) {
 				return( llvm::Type::getInt64Ty( context ) );
-			} else if( type->info == &typeid( exo::jit::types::FloatType ) ) {
+			} else if( type->name == "float" ) {
 				return( llvm::Type::getDoubleTy( context ) );
-			} else if( type->info == &typeid( exo::jit::types::BooleanType ) ) {
+			} else if( type->name == "bool" ) {
 				return( llvm::Type::getInt1Ty( context ) );
-			} else if( type->info == &typeid( exo::jit::types::ClassType ) ) {
-				return( module->getTypeByName( type->name ) );
+			} else if( type->name == "string" ) {
+				return( llvm::ConstantDataArray::getString( context, "", true )->getType() );
+			}
+
+			llvm::Type* ltype = module->getTypeByName( type->name );
+			if( ltype != NULL ) {
+				return( ltype );
 			}
 
 			return( llvm::Type::getVoidTy( context ) );
@@ -138,7 +142,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::VarDecl* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating variable $" << decl->name << " " << decl->type->info->name() << " in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(trace) << "Creating variable $" << decl->name << " " << decl->type->name << " in (" << getCurrentBlockName() << ")";
 
 			getCurrentBlockVars()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBasicBlock() );
 
@@ -166,31 +170,39 @@ namespace exo
 			return( new llvm::StoreInst( assign->expression->Generate( this ), getCurrentBlockVars()[ assign->name ], false, getCurrentBasicBlock() ) );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::ValueInt* val )
+		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			exo::jit::types::IntegerType* iType = new exo::jit::types::IntegerType( &module->getContext(), val->value );
-			return( iType->value );
+			BOOST_LOG_TRIVIAL(trace) << "Generating null in (" << getCurrentBlockName() << ")";
+			return( llvm::Constant::getNullValue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::ValueFloat* val )
-		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			exo::jit::types::FloatType* fType = new exo::jit::types::FloatType( &module->getContext(), val->value );
-			return( fType->value );
-		}
-
-		llvm::Value* Codegen::Generate( exo::ast::ValueBool* val )
+		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			exo::jit::types::BooleanType* bType = new exo::jit::types::BooleanType( &module->getContext(), val->value );
-			return( bType->value );
+
+			if( val->value ) {
+				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
+			} else {
+				return( llvm::ConstantInt::getFalse( llvm::Type::getInt1Ty( module->getContext() ) ) );
+			}
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::ConstExpr* expr )
+		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating constant expression \"" << expr->name << "\" in (" << getCurrentBlockName() << ")";
-			return( expr->expression->Generate( this ) );
+			BOOST_LOG_TRIVIAL(trace) << "Generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			return( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, val->value ) ) );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
+		{
+			BOOST_LOG_TRIVIAL(trace) << "Generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			return( llvm::ConstantFP::get( module->getContext(), llvm::APFloat( val->value ) ) );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
+		{
+			BOOST_LOG_TRIVIAL(trace) << "Generating string \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			return( llvm::ConstantDataArray::getString( module->getContext(), val->value, true ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )

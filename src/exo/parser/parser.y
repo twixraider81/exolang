@@ -17,7 +17,6 @@
 	#include "exo/exo.h"
 	#include "exo/ast/nodes.h"
 	#include "exo/ast/tree.h"
-	#include "exo/jit/type/types.h"
 }
 
 %syntax_error {
@@ -125,32 +124,32 @@ block(b) ::= S_LBRACKET statements(s) S_RBRACKET. {
 %type type { exo::ast::Type* }
 type(t) ::= T_TBOOL. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TBOOL.";
-	t = new exo::ast::Type( &typeid( exo::jit::types::BooleanType ) );
+	t = new exo::ast::Type( "bool" );
 }
 type(t) ::= T_TINT. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TINT.";
-	t = new exo::ast::Type( &typeid( exo::jit::types::IntegerType ) );
+	t = new exo::ast::Type( "int" );
 }
 type(t) ::= T_TFLOAT. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TFLOAT.";
-	t = new exo::ast::Type( &typeid( exo::jit::types::FloatType ) );
+	t = new exo::ast::Type( "float" );
 }
 type(t) ::= T_TSTRING. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TSTRING.";
-	t = new exo::ast::Type( &typeid( exo::jit::types::StringType ) );
+	t = new exo::ast::Type( "string" );
 }
 type(t) ::= T_TAUTO. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TAUTO.";
-	t = new exo::ast::Type( &typeid( exo::jit::types::AutoType ) );
+	t = new exo::ast::Type( "auto" );
 }
 type(t) ::= T_TCALLABLE. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TCALLABLE.";
-	t = new exo::ast::Type( &typeid( exo::jit::types::CallableType ) );
+	t = new exo::ast::Type( "callable" );
 }
 type(t) ::= T_ID(i). {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_ID(I).";
 	POINTERCHECK( i );
-	t = new exo::ast::Type( &typeid( exo::jit::types::ClassType ), TOKENSTR( i ) );
+	t = new exo::ast::Type( TOKENSTR( i ) );
 }
 
 
@@ -208,7 +207,7 @@ fundeclproto(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
 	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE.";
 	POINTERCHECK( i );
 	POINTERCHECK( a );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( "auto" ), a );
 }
 fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i). {
 	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= type(T) S_FUNCTION T_ID(I).";
@@ -219,7 +218,7 @@ fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i). {
 fundeclproto(f) ::= S_FUNCTION T_ID(i). {
 	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= S_FUNCTION T_ID(I).";
 	POINTERCHECK( i );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList );
+	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( "auto" ), new exo::ast::VarDeclList );
 }
 %type fundecl { exo::ast::FunDecl* }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
@@ -235,7 +234,7 @@ fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	POINTERCHECK( i );
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), a, b );
+	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( "auto" ), a, b );
 }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
 	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= type(T) S_FUNCTION T_ID(I) block(B).";
@@ -248,7 +247,7 @@ fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
 	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= S_FUNCTION T_ID(I) block(B).";
 	POINTERCHECK( i );
 	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( &typeid( exo::jit::types::AutoType ) ), new exo::ast::VarDeclList, b );
+	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( "auto" ), new exo::ast::VarDeclList, b );
 }
 
 
@@ -323,29 +322,6 @@ exprlist(f) ::= exprlist(l) S_COMMA expression(e). {
 }
 
 
-/* a number may be an integer or a float */
-%type number { exo::ast::Expr* }
-number(n) ::= T_VINT(i). {
-	BOOST_LOG_TRIVIAL(trace) << "number(N) ::= T_VINT(I).";
-	POINTERCHECK( i );
-	n = new exo::ast::ValueInt( TOKENSTR(i) );
-}
-number(n) ::= T_VFLOAT(f). {
-	BOOST_LOG_TRIVIAL(trace) << "number(N) ::= T_VFLOAT(F).";
-	POINTERCHECK( f );
-	n = new exo::ast::ValueFloat( TOKENSTR(f) );
-}
-
-
-/* a string */
-%type string { exo::ast::Expr* }
-string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE. {
-	BOOST_LOG_TRIVIAL(trace) << "string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE.";
-	POINTERCHECK( q );
-	s = new exo::ast::ValueString( TOKENSTR(q) );
-}
-
-
 /* an expression may be an assignment, function call, variable, number, binary expression, comparison, constant, string */
 %type expression { exo::ast::Expr* }
 expression(a) ::= T_VAR(v) S_ASSIGN expression(e). {
@@ -365,11 +341,6 @@ expression(e) ::= T_VAR(v). {
 	POINTERCHECK( v );
 	e = new exo::ast::VarExpr( TOKENSTR(v) );
 }
-expression(e) ::= number(n). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= number(N).";
-	POINTERCHECK( n );
-	e = n;
-}
 expression(e) ::= expression(a) binop(o) expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) binop(O) expression(B).";
 	POINTERCHECK( a );
@@ -388,11 +359,6 @@ expression(e) ::= constant(c). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= constant(C).";
 	POINTERCHECK( c );
 	e = c;
-}
-expression(e) ::= string(s). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(e) ::= string(s).";
-	POINTERCHECK( s );
-	e = s;
 }
 
 
@@ -453,30 +419,58 @@ binop(b) ::= S_DIV(o). {
 	b = new std::string( TOKENSTR( o ) );
 }
 
-/*
- * TODO: use ConstantValue for basic LLVM Types
- */
-/* a constant can be a builtin */
+
+/* a constant can be a builtin, a number or a string */
 %type constant { exo::ast::Expr* }
 constant(c) ::= S_FILE(f). {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= S_FILE(F).";
 	POINTERCHECK( f );
-	c = new exo::ast::ConstExpr( TOKENSTR(f), new exo::ast::ValueString( ast->fileName ) );
+	c = new exo::ast::ConstStr( ast->fileName );
 }
 constant(c) ::= S_LINE(l). {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= S_LINE(L).";
 	POINTERCHECK( l );
-	c = new exo::ast::ConstExpr( TOKENSTR(l), new exo::ast::ValueInt( std::to_string( l->line_number() ) ) );
+	c = new exo::ast::ConstInt( l->line_number() );
 }
 constant(c) ::= T_VNULL. {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_VNULL.";
-	c = new exo::ast::ConstExpr( "false", new exo::ast::ValueNull() );
+	c = new exo::ast::ConstNull();
 }
 constant(c) ::= T_VTRUE. {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_VTRUE.";
-	c = new exo::ast::ConstExpr( "true", new exo::ast::ValueBool( true ) );
+	c = new exo::ast::ConstBool( true );
 }
 constant(c) ::= T_VFALSE. {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_VFALSE.";
-	c = new exo::ast::ConstExpr( "false", new exo::ast::ValueBool( false ) );
+	c = new exo::ast::ConstBool( false );
+}
+constant(c) ::= number(n). {
+	BOOST_LOG_TRIVIAL(trace) << "constant(c) ::= number(n).";
+	POINTERCHECK( n );
+	c = n;
+}
+constant(c) ::= string(s). {
+	BOOST_LOG_TRIVIAL(trace) << "constant(c) ::= string(s).";
+	POINTERCHECK( s );
+	c = s;
+}
+
+/* a number may be an integer or a float */
+%type number { exo::ast::Expr* }
+number(n) ::= T_VINT(i). {
+	BOOST_LOG_TRIVIAL(trace) << "number(N) ::= T_VINT(I).";
+	POINTERCHECK( i );
+	n = new exo::ast::ConstInt( boost::lexical_cast<long>( TOKENSTR(i) ) );
+}
+number(n) ::= T_VFLOAT(f). {
+	BOOST_LOG_TRIVIAL(trace) << "number(N) ::= T_VFLOAT(F).";
+	POINTERCHECK( f );
+	n = new exo::ast::ConstFloat( boost::lexical_cast<double>( TOKENSTR(f) ) );
+}
+/* a string */
+%type string { exo::ast::Expr* }
+string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE. {
+	BOOST_LOG_TRIVIAL(trace) << "string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE.";
+	POINTERCHECK( q );
+	s = new exo::ast::ConstStr( TOKENSTR(q) );
 }

@@ -13,19 +13,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/jit/type/types.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
-	namespace jit
+	namespace ast
 	{
-		namespace types
+		ConstBool::ConstBool( bool v )
 		{
-			MethodType::MethodType( llvm::LLVMContext* c, std::string mVal ) : Type( c ), CallableType( c, mVal )
-			{
-				type = llvm::Type::getInt64Ty( *c );
-				value = llvm::ConstantInt::get( *c, llvm::APInt( 64, 1 ) );
-			}
+			BOOST_LOG_TRIVIAL(trace) << "Constant boolean \"" << ( v ? "true" : "false" ) << "\"";
+			value = v;
 		}
 	}
 }
