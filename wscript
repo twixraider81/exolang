@@ -115,12 +115,13 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/log/core.hpp" )
 	conf.check_cxx( header_name = "boost/log/trivial.hpp" )
 	conf.check_cxx( header_name = "boost/log/expressions.hpp" )
+	#conf.check_cxx( header_name = "boost/filesystem.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
-	conf.check_cxx( header_name = "llvm/PassManager.h" )
+	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
 	conf.check_cxx( header_name = "llvm/Assembly/PrintModulePass.h" )
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/Host.h" )
@@ -137,6 +138,7 @@ def configure( conf ):
 	conf.check_cxx( lib = "boost_program_options" )
 	conf.check_cxx( lib = "boost_log" )
 	conf.check_cxx( lib = "boost_log_setup" )
+	conf.check_cxx( lib = "boost_system" )
 	conf.check_cxx( lib = "pthread" )
 	conf.check_cxx( lib = "ffi" )
 	conf.check_cxx( lib = "curses" )
@@ -146,7 +148,7 @@ def configure( conf ):
 # build
 def build( bld ):
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
+	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
