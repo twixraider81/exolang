@@ -35,12 +35,13 @@ int main( int argc, char **argv )
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
 	availOptions.add_options()
-		( "help,h",			"show usage/help" )
-		( "version,v",		"show version" )
-		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
-		( "optimize,o", 	boost::program_options::value<int>(&optimize)->default_value(2),	"set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
-		( "input,i",		boost::program_options::value<std::string>(),						"parse file" )
-    ;
+		( "help,h",			"Show this usage/help" )
+		( "input,i",		boost::program_options::value<std::string>(),						"Parse file" )
+		( "emit,e",			boost::program_options::value<std::string>(),						"Emit LLVM IR file & don't run script" )
+		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
+		( "optimize,o", 	boost::program_options::value<int>(&optimize)->default_value(2),	"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
+		( "version,v",		"Show version" )
+		;
 
 	boost::program_options::positional_options_description positionalOptions;
 	positionalOptions.add( "input", -1 );
@@ -60,7 +61,7 @@ int main( int argc, char **argv )
 	if( commandLine.count( "version" ) ) {
 		std::cout << "version: " << EXO_VERSION << std::endl;
 		std::cout << "host cpu: " << llvm::sys::getHostCPUName() << std::endl;
-		std::cout << "default jit target: " << llvm::sys::getProcessTriple() << std::endl;
+		std::cout << "jit target: " << llvm::sys::getProcessTriple() << std::endl;
 
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
@@ -92,7 +93,12 @@ int main( int argc, char **argv )
 		generator->Generate( ast.get() );
 
 		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get(), optimize ) );
-		jit->Execute();
+
+		if( !commandLine.count( "emit" ) ) {
+			jit->Execute();
+		} else {
+			jit->Emit( commandLine["emit"].as<std::string>() );
+		}
 
 	} catch( exo::exceptions::Exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << e.what();

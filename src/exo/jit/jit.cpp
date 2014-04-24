@@ -102,5 +102,24 @@ namespace exo
 			jitMain();
 			BOOST_LOG_TRIVIAL(trace) << "Finished.";
 		}
+
+
+		void JIT::Emit( std::string fileName )
+		{
+			boost::filesystem::path path( fileName );
+			path.replace_extension( ".ll" );
+
+			BOOST_LOG_TRIVIAL(trace) << "Emmiting LLVM IR as \"" << path.native() << "\"";
+
+			std::string errorMsg;
+			llvm::raw_fd_ostream fstream( path.c_str(), errorMsg, llvm::sys::fs::F_None );
+
+			if( fstream.has_error() ) {
+				BOOST_LOG_TRIVIAL(error) << errorMsg;
+				return;
+			}
+
+			generator->module->print( fstream, NULL );
+		}
 	}
 }

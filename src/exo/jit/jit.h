@@ -38,6 +38,7 @@ namespace exo
 				~JIT();
 
 				void Execute();
+				void Emit( std::string fileName );
 		};
 	}
 }
