@@ -89,6 +89,7 @@ int main( int argc, char **argv )
 			ast->Parse( std::cin );
 		}
 
+		// codegen takes ownership of the ast nodes, this will however leak horribly on unproper shutdown
 		boost::scoped_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main" ) );
 		generator->Generate( ast.get() );
 

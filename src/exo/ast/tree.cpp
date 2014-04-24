@@ -33,6 +33,8 @@ namespace exo
 		Tree::~Tree()
 		{
 			::ParseFree( parser, GC_free );
+
+			// no freeing of stmts! codegen has ownership and will take care of that.
 		}
 
 		void Tree::Parse( std::string fName )
