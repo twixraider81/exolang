@@ -24,6 +24,7 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Declaring $" << vName;
 			name = vName;
 			type = vType;
+			expression = NULL;
 		}
 
 		VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
