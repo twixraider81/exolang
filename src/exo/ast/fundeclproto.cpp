@@ -26,5 +26,11 @@ namespace exo
 			returnType = rType;
 			arguments = vArgs;
 		}
+
+		FunDeclProto::~FunDeclProto()
+		{
+			delete returnType;
+			delete arguments;
+		}
 	}
 }

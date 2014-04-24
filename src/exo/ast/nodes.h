@@ -54,6 +54,7 @@ namespace exo
 		class StmtExpr : public virtual Stmt
 		{
 			public:
+				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
 				StmtExpr( Expr* expr );
@@ -74,10 +75,12 @@ namespace exo
 			public:
 				std::string name;
 				Type* type;
+				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
 				VarDecl( std::string vName, Type* vType, Expr* expr );
 				VarDecl( std::string vName, Type* vType );
+				virtual ~VarDecl();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -86,6 +89,7 @@ namespace exo
 		{
 			public:
 				std::string name;
+				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
 				VarAssign( std::string vName, Expr* expr );
@@ -117,6 +121,7 @@ namespace exo
 				VarDeclList*	arguments;
 
 				FunDeclProto( std::string n, Type* rType, VarDeclList* vArgs );
+				virtual ~FunDeclProto();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -124,6 +129,7 @@ namespace exo
 		class FunDecl : public virtual FunDeclProto
 		{
 			public:
+				// there exists a codegen method, which takes ownership and frees the stmts
 				StmtList*		stmts;
 
 				FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
@@ -138,6 +144,7 @@ namespace exo
 				ExprList* arguments;
 
 				FunCall( std::string n, ExprList* a );
+				virtual ~FunCall();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -202,6 +209,7 @@ namespace exo
 				ClassBlock*	block;
 
 				ClassDecl( std::string n, ClassBlock* b );
+				virtual ~ClassDecl();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

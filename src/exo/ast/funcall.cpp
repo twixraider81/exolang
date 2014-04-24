@@ -25,5 +25,11 @@ namespace exo
 			name = n;
 			arguments = a;
 		}
+
+		FunCall::~FunCall()
+		{
+			// there is no codegen method for the block, thus free it ourself
+			delete arguments;
+		}
 	}
 }

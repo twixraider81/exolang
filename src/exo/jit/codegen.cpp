@@ -38,6 +38,7 @@ namespace exo
 
 		Codegen::~Codegen()
 		{
+			// do not delete module, llvm will take ownershit
 		}
 
 		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name )
@@ -105,7 +106,10 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::Node* node )
 		{
-			BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedNode( typeid(*node).name() ) );
+			std::string nName = typeid(*node).name();
+			delete node;
+
+			BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedNode( nName ) );
 			return( NULL );
 		}
 
@@ -123,6 +127,7 @@ namespace exo
 
 			popBlock();
 
+			// no freeing here, we get a pointer. should probably change that.
 			return( retval );
 		}
 
@@ -137,12 +142,15 @@ namespace exo
 				last = (**it).Generate( this );
 			}
 
+			// free
+			delete stmts;
 			return( last );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::VarDecl* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Creating variable $" << decl->name << " " << decl->type->name << " in (" << getCurrentBlockName() << ")";
+			std::string dName = decl->name;
 
 			getCurrentBlockVars()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBasicBlock() );
 
@@ -154,31 +162,44 @@ namespace exo
 				a->Generate( this );
 			}
 
-			return( getCurrentBlockVars()[ decl->name ] );
+			// free
+			delete decl;
+			return( getCurrentBlockVars()[ dName ] );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::VarAssign* assign )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Assigning variable $" << assign->name << " in (" << getCurrentBlockName() << ")";
+			std::string vName = assign->name;
 
-			if( getCurrentBlockVars().find( assign->name ) == getCurrentBlockVars().end() ) {
-				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( assign->name ) );
+			if( getCurrentBlockVars().find( vName ) == getCurrentBlockVars().end() ) {
+				// free
+				delete assign;
+				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( vName ) );
 			}
 
-			POINTERCHECK( assign->expression );
-			POINTERCHECK( getCurrentBlockVars()[ assign->name ] );
-			return( new llvm::StoreInst( assign->expression->Generate( this ), getCurrentBlockVars()[ assign->name ], false, getCurrentBasicBlock() ) );
+			llvm::Value* vVal = assign->expression->Generate( this );
+
+			// free
+			delete assign;
+			return( new llvm::StoreInst( vVal, getCurrentBlockVars()[ vName ], false, getCurrentBasicBlock() ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating null in (" << getCurrentBlockName() << ")";
+
+			// free
+			delete val;
 			return( llvm::Constant::getNullValue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+
+			// free
+			delete val;
 
 			if( val->value ) {
 				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
@@ -190,19 +211,31 @@ namespace exo
 		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			return( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, val->value ) ) );
+			long long i = val->value;
+
+			// free
+			delete val;
+			return( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, i ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			return( llvm::ConstantFP::get( module->getContext(), llvm::APFloat( val->value ) ) );
+			double d = val->value;
+
+			// free
+			delete val;
+			return( llvm::ConstantFP::get( module->getContext(), llvm::APFloat( d ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating string \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			return( llvm::ConstantDataArray::getString( module->getContext(), val->value, true ) );
+			std::string s = val->value;
+
+			// free
+			delete val;
+			return( llvm::ConstantDataArray::getString( module->getContext(), s, true ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )
@@ -212,13 +245,18 @@ namespace exo
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
 
-			if( op->op == "+" ) {
+			std::string o = op->op;
+
+			// free
+			delete op;
+
+			if( o == "+" ) {
 				return( builder.CreateAdd( lhs, rhs, "" ) );
-			} else if( op->op == "-" ) {
+			} else if( o == "-" ) {
 				return( builder.CreateSub( lhs, rhs, "" ) );
-			} else if( op->op == "*" ) {
+			} else if( o == "*" ) {
 				return( builder.CreateMul( lhs, rhs, "" ) );
-			} else if( op->op == "/" ) {
+			} else if( o == "/" ) {
 				return( builder.CreateSDiv( lhs, rhs, "" ) );
 			} else {
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownBinaryOp( op->op ) );
@@ -234,7 +272,11 @@ namespace exo
 				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( expr->variable ) );
 			}
 
-			return( builder.CreateLoad( getCurrentBlockVars()[ expr->variable ], expr->variable ) );
+			std::string vName = expr->variable;
+
+			// free
+			delete expr;
+			return( builder.CreateLoad( getCurrentBlockVars()[ vName ],vName ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::CmpOp* op )
@@ -244,6 +286,8 @@ namespace exo
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
 
+			// free
+			delete op;
 			return( lhs );
 		}
 
@@ -272,19 +316,25 @@ namespace exo
 			Generate( decl->stmts );
 
 			/*
-			 * TODO: Generate null, auto returns or else fail
+			 * TODO: Generate null, auto returns or else fail if we got no return statement
 			 */
 			//llvm::ReturnInst::Create( module->getContext(), block );
 			//llvm::verifyFunction( *function );
 			popBlock();
 
+			// free
+			delete decl;
 			return( function );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating return statement in (" << getCurrentBlockName() << ")";
-			return( builder.CreateRet( stmt->expression->Generate( this ) ) );
+			llvm::Value* value = stmt->expression->Generate( this );
+
+			// free
+			delete stmt;
+			return( builder.CreateRet( value ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::FunCall* call )
@@ -309,13 +359,19 @@ namespace exo
 				arguments.push_back( (**it).Generate( this ) );
 			}
 
+			// free
+			delete call;
 			return( builder.CreateCall( callee, arguments, "call" ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << getCurrentBlockName() << ")";
-			return( stmt->expression->Generate( this ) );
+			llvm::Value* value = stmt->expression->Generate( this );
+
+			// free
+			delete stmt;
+			return( value );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::FunDeclProto* decl )
@@ -333,6 +389,8 @@ namespace exo
 			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, false );
 			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, decl->name, module );
 
+			// free
+			delete decl;
 			return( function );
 		}
 
@@ -382,6 +440,9 @@ namespace exo
 
 				popBlock();
 			}
+
+			// free
+			delete decl;
 
 			/*
 			 * FIXME: should probably return nothing

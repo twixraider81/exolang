@@ -25,5 +25,11 @@ namespace exo
 			name = n;
 			block = b;
 		}
+
+		ClassDecl::~ClassDecl()
+		{
+			// there is no codegen method for the block, thus free it ourself
+			delete block;
+		}
 	}
 }

@@ -34,5 +34,11 @@ namespace exo
 			type = vType;
 			expression = expr;
 		}
+
+		VarDecl::~VarDecl()
+		{
+			// there is no codegen method for the type, thus free it ourself
+			delete type;
+		}
 	}
 }
