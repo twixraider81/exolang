@@ -2,6 +2,8 @@ int $a = 1;
 int $b = __LINE__;
 int $c = $a + $b;
 int $d = $b - $a;
+bool $j = true;
+bool $k = false;
 string $s = __FILE__;
 
 int function test( int $e )
