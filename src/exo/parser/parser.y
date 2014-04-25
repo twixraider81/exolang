@@ -251,8 +251,15 @@ fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
 }
 
 
-/* a class declaration is a class keyword, followed by an identifier and class block */
+/* a class declaration is a class keyword, followed by an identifier optionally and extend with a classname, and and associated class block */
 %type classdecl { exo::ast::ClassDecl* }
+classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET classblock(b) S_RBRACKET. {
+	BOOST_LOG_TRIVIAL(trace) << "classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET classblock(b) S_RBRACKET.";
+	POINTERCHECK( i );
+	POINTERCHECK( p );
+	POINTERCHECK( b );
+	c = new exo::ast::ClassDecl( TOKENSTR(i), TOKENSTR(p), b );
+}
 classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET classblock(b) S_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "T_CLASS T_ID(I) S_LBRACKET classblock(B) S_RBRACKET.";
 	POINTERCHECK( i );

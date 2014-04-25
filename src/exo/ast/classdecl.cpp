@@ -24,6 +24,13 @@ namespace exo
 			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\"";
 			name = n;
 			block = b;
+			parent = "";
+		}
+
+		ClassDecl::ClassDecl( std::string n, std::string p, ClassBlock* b ) : ClassDecl( n, b )
+		{
+			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\" parent \"" << p << "\"";
+			parent = p;
 		}
 
 		ClassDecl::~ClassDecl()

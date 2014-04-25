@@ -206,9 +206,11 @@ namespace exo
 		{
 			public:
 				std::string	name;
+				std::string	parent;
 				ClassBlock*	block;
 
 				ClassDecl( std::string n, ClassBlock* b );
+				ClassDecl( std::string n, std::string p, ClassBlock* b );
 				virtual ~ClassDecl();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
