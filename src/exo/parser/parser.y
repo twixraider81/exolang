@@ -421,12 +421,12 @@ constant(c) ::= T_VFALSE. {
 	c = new exo::ast::ConstBool( false );
 }
 constant(c) ::= number(n). {
-	BOOST_LOG_TRIVIAL(trace) << "constant(c) ::= number(n).";
+	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= number(N).";
 	POINTERCHECK( n );
 	c = n;
 }
 constant(c) ::= string(s). {
-	BOOST_LOG_TRIVIAL(trace) << "constant(c) ::= string(s).";
+	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= string(S).";
 	POINTERCHECK( s );
 	c = s;
 }

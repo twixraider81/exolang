@@ -28,14 +28,11 @@ namespace exo
 			}
 
 			stmts = NULL;
-
-			currentToken = new quex::Token;
 		}
 
 		Tree::~Tree()
 		{
 			::ParseFree( parser, GC_free );
-			//delete currentToken; ? whats freeing our token?
 			// no freeing of stmts! codegen has ownership and will take care of that.
 		}
 
@@ -44,6 +41,8 @@ namespace exo
 			fileName = fName;
 			BOOST_LOG_TRIVIAL(trace) <<  "Opening <" << fileName << ">";
 
+			// pointer to buffer, no need to alloc
+			quex::Token* currentToken = 0x0;
 			quex::lexer lexer( fileName );
 			lexer.receive( &currentToken );
 
@@ -62,6 +61,8 @@ namespace exo
 			fileName = "<stdin>";
 			BOOST_LOG_TRIVIAL(trace) << "Opening <stdin>";
 
+			// pointer to buffer, no need to alloc
+			quex::Token* currentToken = 0x0;
 			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 
 			while( stream ) {
