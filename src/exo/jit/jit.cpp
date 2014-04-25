@@ -67,13 +67,18 @@ namespace exo
 			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( generator->module->getTargetTriple() ) ) );
 			fpm->add( new llvm::DataLayout( generator->module ) );
 			target->addAnalysisPasses( *fpm );
+
 			fpm->add( llvm::createBasicAliasAnalysisPass() );
-			fpm->add( llvm::createLICMPass() );
-			fpm->add( llvm::createGVNPass() );
+
 			fpm->add( llvm::createPromoteMemoryToRegisterPass() );
+			fpm->add( llvm::createLICMPass() );
 			fpm->add( llvm::createLoopVectorizePass() );
 			fpm->add( llvm::createEarlyCSEPass() );
+
 			fpm->add( llvm::createInstructionCombiningPass() );
+			fpm->add( llvm::createReassociatePass() );
+			fpm->add( llvm::createGVNPass() );
+
 			fpm->add( llvm::createCFGSimplificationPass() );
 
 			std::string buffer;
