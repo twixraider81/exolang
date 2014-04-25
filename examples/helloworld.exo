@@ -1,0 +1,6 @@
+/*
+ * The classic "Hello World!"
+ */
+
+int function puts( string $str );
+puts( "Hello World!" );
