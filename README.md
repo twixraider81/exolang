@@ -40,13 +40,13 @@ After that start the build process via:
 Usage
 -----
 After the build is complete, the binary will reside under build/exolang. To run a script do for example:
-build/exolang tests/1.exo
+build/exolang build/exolang examples/helloworld.exo
 
 You can check the available command line options via:
 build/exolang -h
 
 I.e. run a script and get verbose trace:
-build/exolang -s 1 tests/1.exo
+build/exolang -s 1 examples/helloworld.exo
 
 waf has a few extra commands at your disposal. Check:
 ./waf --help

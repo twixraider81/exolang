@@ -184,12 +184,12 @@ def gdb( ctx ):
 # memcheck target
 def memcheck( ctx ):
 	"Start Valgrind and do memcheck"
-	subprocess.call( 'valgrind --leak-check=full --track-origins=yes --show-leak-kinds=definite,possible --demangle=yes --db-attach=yes ' + BUILDDIR + '/exolang tests/1.exo', shell=True )
+	subprocess.call( 'valgrind --leak-check=full --track-origins=yes --show-leak-kinds=definite,possible --demangle=yes --db-attach=yes ' + BUILDDIR + '/exolang src/tests/1.exo', shell=True )
 def vmemcheck( ctx ):
 	"Start Valgrind and do VERBOSE memcheck"
-	subprocess.call( 'valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --demangle=yes --db-attach=yes -v ' + BUILDDIR + '/exolang tests/1.exo', shell=True )
+	subprocess.call( 'valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --demangle=yes --db-attach=yes -v ' + BUILDDIR + '/exolang src/tests/1.exo', shell=True )
 
 # callgrind target
 def callgrind( ctx ):
 	"Start Valgrind and do callgrind"
-	subprocess.call( 'valgrind --tool=callgrind --demangle=yes --db-attach=yes --callgrind-out-file=' + BUILDDIR + '/exolang.out ' + BUILDDIR + '/exolang tests/1.exo', shell=True )
+	subprocess.call( 'valgrind --tool=callgrind --demangle=yes --db-attach=yes --callgrind-out-file=' + BUILDDIR + '/exolang.out ' + BUILDDIR + '/exolang src/tests/1.exo', shell=True )
