@@ -75,6 +75,7 @@ namespace exo
 			    std::map<std::string, llvm::Value*>&	getCurrentBlockVars();
 
 			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
+			    llvm::Type* getType( exo::ast::Node* node, llvm::LLVMContext& context );
 
 			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );

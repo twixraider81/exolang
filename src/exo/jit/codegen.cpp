@@ -92,7 +92,7 @@ namespace exo
 			} else if( type->name == "bool" ) {
 				return( llvm::Type::getInt1Ty( context ) );
 			} else if( type->name == "string" ) {
-				return( llvm::ConstantDataArray::getString( context, "", true )->getType() );
+				return( llvm::Type::getInt8PtrTy( context ) );
 			}
 
 			llvm::Type* ltype = module->getTypeByName( type->name );
@@ -100,6 +100,11 @@ namespace exo
 				return( ltype );
 			}
 
+			return( llvm::Type::getVoidTy( context ) );
+		}
+
+		llvm::Type* Codegen::getType( exo::ast::Node* node, llvm::LLVMContext& context )
+		{
 			return( llvm::Type::getVoidTy( context ) );
 		}
 
@@ -231,11 +236,14 @@ namespace exo
 		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating string \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
-			std::string s = val->value;
+
+			llvm::Constant* stringConst = llvm::ConstantDataArray::getString( module->getContext(), val->value );
+			llvm::Value* stringVar = builder.CreateAlloca( stringConst->getType() );
+			builder.CreateStore( stringConst, stringVar );
 
 			// free
 			delete val;
-			return( llvm::ConstantDataArray::getString( module->getContext(), s, true ) );
+			return( builder.CreateBitCast( stringVar, llvm::Type::getInt8PtrTy( module->getContext() ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )
