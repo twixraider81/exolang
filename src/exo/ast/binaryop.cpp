@@ -19,11 +19,11 @@ namespace exo
 {
 	namespace ast
 	{
-		BinaryOp::BinaryOp( Expr* a, std::string *o, Expr* b )
+		BinaryOp::BinaryOp( Expr* a, std::string o, Expr* b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Binary operation " << *o;
+			BOOST_LOG_TRIVIAL(debug) << "Binary operation " << o;
 			lhs = a;
-			op = *o;
+			op = o;
 			rhs = b;
 		}
 	}

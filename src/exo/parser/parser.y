@@ -41,11 +41,13 @@
 
 
 /* token precedences */
-%right	S_ASSIGN.
-%left	S_EQ S_NE.
-%left	S_LT S_LE S_GT S_GE.
-%left	S_PLUS S_MINUS.
-%left	S_MUL S_DIV.
+%right		T_TBOOL T_TINT T_TFLOAT T_TSTRING T_TAUTO T_TCALLABLE T_ID.
+%right		S_ASSIGN.
+%left		S_EQ S_NE.
+%left		S_LT S_LE S_GT S_GE.
+%left		S_PLUS S_MINUS.
+%left		S_MUL S_DIV.
+%left		S_SEMICOLON.
 
 /* a program is build out of statements. */
 program ::= statements(s). {
@@ -203,23 +205,6 @@ fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE.
 	POINTERCHECK( a );
 	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, a );
 }
-fundeclproto(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
-	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE.";
-	POINTERCHECK( i );
-	POINTERCHECK( a );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( "auto" ), a );
-}
-fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i). {
-	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= type(T) S_FUNCTION T_ID(I).";
-	POINTERCHECK( t );
-	POINTERCHECK( i );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, new exo::ast::VarDeclList );
-}
-fundeclproto(f) ::= S_FUNCTION T_ID(i). {
-	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= S_FUNCTION T_ID(I).";
-	POINTERCHECK( i );
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), new exo::ast::Type( "auto" ), new exo::ast::VarDeclList );
-}
 %type fundecl { exo::ast::FunDecl* }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE block(B).";
@@ -229,63 +214,49 @@ fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block
 	POINTERCHECK( b );
 	f = new exo::ast::FunDecl( TOKENSTR(i), t, a, b );
 }
-fundecl(f) ::= S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
-	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE block(B).";
-	POINTERCHECK( i );
-	POINTERCHECK( a );
-	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( "auto" ), a, b );
-}
-fundecl(f) ::= type(t) S_FUNCTION T_ID(i) block(b). {
-	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= type(T) S_FUNCTION T_ID(I) block(B).";
-	POINTERCHECK( t );
-	POINTERCHECK( i );
-	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), t, new exo::ast::VarDeclList, b );
-}
-fundecl(f) ::= S_FUNCTION T_ID(i) block(b). {
-	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= S_FUNCTION T_ID(I) block(B).";
-	POINTERCHECK( i );
-	POINTERCHECK( b );
-	f = new exo::ast::FunDecl( TOKENSTR(i), new exo::ast::Type( "auto" ), new exo::ast::VarDeclList, b );
-}
 
 
 /* a class declaration is a class keyword, followed by an identifier optionally and extend with a classname, and and associated class block */
 %type classdecl { exo::ast::ClassDecl* }
 classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET classblock(b) S_RBRACKET. {
-	BOOST_LOG_TRIVIAL(trace) << "classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET classblock(b) S_RBRACKET.";
+	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) T_EXTENDS T_ID(P) S_LBRACKET classblock(B) S_RBRACKET.";
 	POINTERCHECK( i );
 	POINTERCHECK( p );
 	POINTERCHECK( b );
 	c = new exo::ast::ClassDecl( TOKENSTR(i), TOKENSTR(p), b );
 }
+classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET S_RBRACKET. {
+	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) T_EXTENDS T_ID(P) S_LBRACKET S_RBRACKET.";
+	POINTERCHECK( i );
+	POINTERCHECK( p );
+	c = new exo::ast::ClassDecl( TOKENSTR(i), TOKENSTR(p), new exo::ast::ClassBlock );
+}
 classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET classblock(b) S_RBRACKET. {
-	BOOST_LOG_TRIVIAL(trace) << "T_CLASS T_ID(I) S_LBRACKET classblock(B) S_RBRACKET.";
+	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) S_LBRACKET classblock(B) S_RBRACKET.";
 	POINTERCHECK( i );
 	POINTERCHECK( b );
 	c = new exo::ast::ClassDecl( TOKENSTR(i), b );
 }
+classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET S_RBRACKET. {
+	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) S_LBRACKET S_RBRACKET.";
+	POINTERCHECK( i );
+	c = new exo::ast::ClassDecl( TOKENSTR(i), new exo::ast::ClassBlock );
+}
 /* a class block contains the declarations of a class. that is properties and methods. */
 %type classblock { exo::ast::ClassBlock* }
-classblock(b) ::= . {
-	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= .";
-	b = new exo::ast::ClassBlock;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing class declaration; properties: " << b->properties.size() << ", methods: " << b->methods.size();
-}
 classblock(b) ::= vardecl(d) S_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= vardecl(D) S_SEMICOLON.";
 	POINTERCHECK( d );
 	b = new exo::ast::ClassBlock;
 	b->properties.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing property; properties: " << b->properties.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->name << "\"; properties: " << b->properties.size();
 }
 classblock(b) ::= fundecl(d) S_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= fundecl(D) S_SEMICOLON.";
 	POINTERCHECK( d );
 	b = new exo::ast::ClassBlock;
 	b->methods.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing method; methods: " << b->methods.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->name << "\"; methods: " << b->methods.size();
 }
 classblock(b) ::= classblock(l) vardecl(d) S_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) vardecl(D) S_SEMICOLON.";
@@ -293,7 +264,7 @@ classblock(b) ::= classblock(l) vardecl(d) S_SEMICOLON. {
 	POINTERCHECK( d );
 	l->properties.push_back( d );
 	b = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing property; properties: " << l->properties.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->name << "\"; properties: " << l->properties.size();
 }
 classblock(b) ::= classblock(l) fundecl(d) S_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) fundecl(D) S_SEMICOLON.";
@@ -301,7 +272,7 @@ classblock(b) ::= classblock(l) fundecl(d) S_SEMICOLON. {
 	POINTERCHECK( d );
 	l->methods.push_back( d );
 	b = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing method; methods: " << l->methods.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->name << "\"; methods: " << l->methods.size();
 }
 
 
@@ -329,7 +300,7 @@ exprlist(f) ::= exprlist(l) S_COMMA expression(e). {
 }
 
 
-/* an expression may be an assignment, function call, variable, number, binary expression, comparison, constant, string */
+/* an expression may be an assignment, function call, variable, constant, binary expression, comparison */
 %type expression { exo::ast::Expr* }
 expression(a) ::= T_VAR(v) S_ASSIGN expression(e). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= T_VAR(V) S_ASSIGN expression(E).";
@@ -348,82 +319,80 @@ expression(e) ::= T_VAR(v). {
 	POINTERCHECK( v );
 	e = new exo::ast::VarExpr( TOKENSTR(v) );
 }
-expression(e) ::= expression(a) binop(o) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) binop(O) expression(B).";
-	POINTERCHECK( a );
-	POINTERCHECK( b );
-	POINTERCHECK( o );
-	e = new exo::ast::BinaryOp( a, o, b );
-}
-expression(e) ::= expression(a) cmpop(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) cmpop(C) expression(B).";
-	POINTERCHECK( a );
-	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, c, b );
-}
 expression(e) ::= constant(c). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= constant(C).";
 	POINTERCHECK( c );
 	e = c;
 }
-
-
-/* comparison operators */
-%type cmpop { std::string* }
-cmpop(c) ::= S_EQ(o). {
-	BOOST_LOG_TRIVIAL(trace) << "cmpop(C) ::= S_EQ(O).";
+expression(e) ::= expression(a) S_PLUS(o) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_PLUS(O) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
 	POINTERCHECK( o );
-	c = new std::string( TOKENSTR( o ) );
+	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
 }
-cmpop(c) ::= S_NE(o). {
-	BOOST_LOG_TRIVIAL(trace) << "cmpop(C) ::= S_NE(O).";
+expression(e) ::= expression(a) S_MINUS(o) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MINUS(O) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
 	POINTERCHECK( o );
-	c = new std::string( TOKENSTR( o ) );
+	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
 }
-cmpop(c) ::= S_LT(o). {
-	BOOST_LOG_TRIVIAL(trace) << "cmpop(C) ::= S_LT(O).";
+expression(e) ::= expression(a) S_MUL(o) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MUL(O) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
 	POINTERCHECK( o );
-	c = new std::string( TOKENSTR( o ) );
+	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
 }
-cmpop(c) ::= S_LE(o). {
-	BOOST_LOG_TRIVIAL(trace) << "cmpop(C) ::= S_LE(O).";
+expression(e) ::= expression(a) S_DIV(o) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_DIV(O) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
 	POINTERCHECK( o );
-	c = new std::string( TOKENSTR( o ) );
+	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
 }
-cmpop(c) ::= S_GT(o). {
-	BOOST_LOG_TRIVIAL(trace) << "cmpop(C) ::= S_GT(O).";
-	POINTERCHECK( o );
-	c = new std::string( TOKENSTR( o ) );
+expression(e) ::= expression(a) S_EQ(c) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_EQ(C) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
 }
-cmpop(c) ::= S_GE(o). {
-	BOOST_LOG_TRIVIAL(trace) << "cmpop(C) ::= S_GE(O).";
-	POINTERCHECK( o );
-	c = new std::string( TOKENSTR( o ) );
+expression(e) ::= expression(a) S_NE(c) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_NE(C) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
 }
-
-
-/* binary operators */
-%type binop { std::string* }
-binop(b) ::= S_PLUS(o). {
-	BOOST_LOG_TRIVIAL(trace) << "binop(B) ::= S_PLUS(O).";
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
+expression(e) ::= expression(a) S_LT(c) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LT(C) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
 }
-binop(b) ::= S_MINUS(o). {
-	BOOST_LOG_TRIVIAL(trace) << "binop(B) ::= S_MINUS(O).";
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
+expression(e) ::= expression(a) S_LE(c) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LE(C) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
 }
-binop(b) ::= S_MUL(o). {
-	BOOST_LOG_TRIVIAL(trace) << "binop(B) ::= S_MUL(O).";
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
+expression(e) ::= expression(a) S_GT(c) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GT(C) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
 }
-binop(b) ::= S_DIV(o). {
-	BOOST_LOG_TRIVIAL(trace) << "binop(B) ::= S_DIV(O).";
-	POINTERCHECK( o );
-	b = new std::string( TOKENSTR( o ) );
+expression(e) ::= expression(a) S_GE(c) expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GE(C) expression(B).";
+	POINTERCHECK( a );
+	POINTERCHECK( b );
+	POINTERCHECK( c );
+	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
 }
 
 
@@ -474,10 +443,10 @@ number(n) ::= T_VFLOAT(f). {
 	POINTERCHECK( f );
 	n = new exo::ast::ConstFloat( boost::lexical_cast<double>( TOKENSTR(f) ) );
 }
-/* a string */
+/* a string is delimited by double quotes */
 %type string { exo::ast::Expr* }
 string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE. {
-	BOOST_LOG_TRIVIAL(trace) << "string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE.";
+	BOOST_LOG_TRIVIAL(trace) << "string(S) ::= T_QUOTE T_VSTRING(Q) T_QUOTE.";
 	POINTERCHECK( q );
 	s = new exo::ast::ConstStr( TOKENSTR(q) );
 }

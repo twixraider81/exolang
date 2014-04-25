@@ -156,7 +156,7 @@ namespace exo
 				std::string op;
 				Expr* rhs;
 
-				BinaryOp( Expr* a, std::string* o, Expr* b );
+				BinaryOp( Expr* a, std::string o, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -168,7 +168,7 @@ namespace exo
 				std::string op;
 				Expr* rhs;
 
-				CmpOp( Expr* a, std::string* o, Expr* b );
+				CmpOp( Expr* a, std::string o, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

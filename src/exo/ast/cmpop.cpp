@@ -19,11 +19,11 @@ namespace exo
 {
 	namespace ast
 	{
-		CmpOp::CmpOp( Expr* a, std::string *o, Expr* b )
+		CmpOp::CmpOp( Expr* a, std::string o, Expr* b )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Comparison " << o;
 			lhs = a;
-			op = *o;
+			op = o;
 			rhs = b;
 		}
 	}
