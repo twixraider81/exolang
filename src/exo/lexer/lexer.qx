@@ -37,6 +37,10 @@ mode EXO:
 		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) );
 	}
 
+	on_skip_range_open				{
+		self_send(QUEX_TKN_TERMINATION);
+	}
+
 	"__HALT__"						=> QUEX_TKN_TERMINATION;
 	"__halt_compiler"				=> QUEX_TKN_TERMINATION;
 	"__FILE__"						=> QUEX_TKN_S_FILE(Lexeme);
