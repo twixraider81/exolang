@@ -2,7 +2,7 @@ int $a = 1;
 int $b = __LINE__;
 int $c = $a + $b;
 int $d = $b - $a;
-//string $s = __FILE__;
+string $s = __FILE__;
 
 int function test( int $e )
 {
@@ -17,6 +17,7 @@ test( 3 );
 float function sin( float $x );
 float function cos( float $x );
 int function puts( string $str );
+puts( $s );
 
 float $g = 31.5;
 float $h = sin( $g );
