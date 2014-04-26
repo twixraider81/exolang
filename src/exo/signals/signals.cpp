@@ -65,8 +65,8 @@ namespace exo
 			sa.sa_sigaction = sigtermHandler;
 			sa.sa_flags = SA_SIGINFO;
 
-			if( sigaction( SIGTERM, &sa, NULL ) == -1 || sigaction( SIGINT, &sa, NULL ) == -1 ) {
-				BOOST_LOG_TRIVIAL(warning) << "Failed to register sigterm handler!";
+			if( sigaction( SIGTERM, &sa, NULL ) == -1 || sigaction( SIGINT, &sa, NULL ) == -1 || sigaction( SIGABRT, &sa, NULL ) == -1  ) {
+				BOOST_LOG_TRIVIAL(warning) << "Failed to register sigterm,sigint,sigabrt handler!";
 			}
 		}
 	}
