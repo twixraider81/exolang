@@ -324,83 +324,72 @@ expression(e) ::= constant(c). {
 	POINTERCHECK( c );
 	e = c;
 }
-expression(e) ::= expression(a) S_PLUS(o) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_PLUS(O) expression(B).";
+expression(e) ::= expression(a) S_PLUS expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_PLUS expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( o );
-	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
+	e = new exo::ast::BinaryOp( a, "+", b );
 }
-expression(e) ::= expression(a) S_MINUS(o) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MINUS(O) expression(B).";
+expression(e) ::= expression(a) S_MINUS expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MINUS expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( o );
-	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
+	e = new exo::ast::BinaryOp( a, "-", b );
 }
-expression(e) ::= expression(a) S_MUL(o) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MUL(O) expression(B).";
+expression(e) ::= expression(a) S_MUL expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MUL expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( o );
-	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
+	e = new exo::ast::BinaryOp( a, "*", b );
 }
-expression(e) ::= expression(a) S_DIV(o) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_DIV(O) expression(B).";
+expression(e) ::= expression(a) S_DIV expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_DIV expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( o );
-	e = new exo::ast::BinaryOp( a, TOKENSTR(o), b );
+	e = new exo::ast::BinaryOp( a, "/", b );
 }
-expression(e) ::= expression(a) S_EQ(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_EQ(C) expression(B).";
+expression(e) ::= expression(a) S_EQ expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_EQ expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
+	e = new exo::ast::CmpOp( a, "==", b );
 }
-expression(e) ::= expression(a) S_NE(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_NE(C) expression(B).";
+expression(e) ::= expression(a) S_NE expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_NE expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
+	e = new exo::ast::CmpOp( a, "!=", b );
 }
-expression(e) ::= expression(a) S_LT(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LT(C) expression(B).";
+expression(e) ::= expression(a) S_LT expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LT expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
+	e = new exo::ast::CmpOp( a, "<", b );
 }
-expression(e) ::= expression(a) S_LE(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LE(C) expression(B).";
+expression(e) ::= expression(a) S_LE expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LE expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
+	e = new exo::ast::CmpOp( a, "<=", b );
 }
-expression(e) ::= expression(a) S_GT(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GT(C) expression(B).";
+expression(e) ::= expression(a) S_GT expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GT expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
+	e = new exo::ast::CmpOp( a, ">", b );
 }
-expression(e) ::= expression(a) S_GE(c) expression(b). {
-	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GE(C) expression(B).";
+expression(e) ::= expression(a) S_GE expression(b). {
+	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GE expression(B).";
 	POINTERCHECK( a );
 	POINTERCHECK( b );
-	POINTERCHECK( c );
-	e = new exo::ast::CmpOp( a, TOKENSTR(c), b );
+	e = new exo::ast::CmpOp( a, ">=", b );
 }
 
 
 /* a constant can be a builtin, a number or a string */
 %type constant { exo::ast::Expr* }
-constant(c) ::= S_FILE(f). {
-	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= S_FILE(F).";
-	POINTERCHECK( f );
+constant(c) ::= S_FILE. {
+	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= S_FILE.";
 	c = new exo::ast::ConstStr( ast->fileName );
 }
 constant(c) ::= S_LINE(l). {

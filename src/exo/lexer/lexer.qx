@@ -43,8 +43,8 @@ mode EXO:
 
 	"__HALT__"						=> QUEX_TKN_TERMINATION;
 	"__halt_compiler"				=> QUEX_TKN_TERMINATION;
-	"__FILE__"						=> QUEX_TKN_S_FILE(Lexeme);
-	"__LINE__"						=> QUEX_TKN_S_LINE(Lexeme);
+	"__FILE__"						=> QUEX_TKN_S_FILE;
+	"__LINE__"						=> QUEX_TKN_S_LINE;
 	"bool"							=> QUEX_TKN_T_TBOOL;
 	"boolean"						=> QUEX_TKN_T_TBOOL;
 	"int"							=> QUEX_TKN_T_TINT;
@@ -76,16 +76,16 @@ mode EXO:
 	"{"								=> QUEX_TKN_S_LBRACKET;
 	"}"								=> QUEX_TKN_S_RBRACKET;
 	"="								=> QUEX_TKN_S_ASSIGN;
-	"=="							=> QUEX_TKN_S_EQ(Lexeme);
-	"!="							=> QUEX_TKN_S_NE(Lexeme);
-	"<"								=> QUEX_TKN_S_LT(Lexeme);
-	"<="							=> QUEX_TKN_S_LE(Lexeme);
-	">"								=> QUEX_TKN_S_GT(Lexeme);
-	">="							=> QUEX_TKN_S_GE(Lexeme);
-	"+"								=> QUEX_TKN_S_PLUS(Lexeme);
-	"-"								=> QUEX_TKN_S_MINUS(Lexeme);
-	"*"								=> QUEX_TKN_S_MUL(Lexeme);
-	"/"								=> QUEX_TKN_S_DIV(Lexeme);
+	"=="							=> QUEX_TKN_S_EQ;
+	"!="							=> QUEX_TKN_S_NE;
+	"<"								=> QUEX_TKN_S_LT;
+	"<="							=> QUEX_TKN_S_LE;
+	">"								=> QUEX_TKN_S_GT;
+	">="							=> QUEX_TKN_S_GE;
+	"+"								=> QUEX_TKN_S_PLUS;
+	"-"								=> QUEX_TKN_S_MINUS;
+	"*"								=> QUEX_TKN_S_MUL;
+	"/"								=> QUEX_TKN_S_DIV;
 
 	"\""							{
 		self_send(QUEX_TKN_T_QUOTE);
