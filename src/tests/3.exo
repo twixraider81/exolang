@@ -1,8 +1,1 @@
-int $a = 3;
-int $b = 2;
-bool $e = true;
-/*
-int $c = null;
-float $d = 2.5;
-bool $f = false;
-*/
+int function printf( string $str ... );

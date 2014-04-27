@@ -41,6 +41,14 @@ namespace exo
 		{
 		};
 
+		class ExprList : public virtual Expr
+		{
+			public:
+				std::vector<Expr*> list;
+
+				ExprList();
+		};
+
 		class StmtList : public virtual Expr
 		{
 			public:
@@ -70,21 +78,6 @@ namespace exo
 				Type( std::string tName );
 		};
 
-		class DecVar : public virtual Stmt
-		{
-			public:
-				std::string name;
-				Type* type;
-				// there exists a codegen method, which takes ownership and frees the expr
-				Expr* expression;
-
-				DecVar( std::string vName, Type* vType, Expr* expr );
-				DecVar( std::string vName, Type* vType );
-				virtual ~DecVar();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
 		class AssignVar : public virtual Expr
 		{
 			public:
@@ -105,6 +98,21 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class DecVar : public virtual Stmt
+		{
+			public:
+				std::string name;
+				Type* type;
+				// there exists a codegen method, which takes ownership and frees the expr
+				Expr* expression;
+
+				DecVar( std::string vName, Type* vType, Expr* expr );
+				DecVar( std::string vName, Type* vType );
+				virtual ~DecVar();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
 		class DecList : public virtual Stmt
 		{
 			public:
@@ -113,22 +121,15 @@ namespace exo
 				DecList();
 		};
 
-		class ExprList : public virtual Expr
-		{
-			public:
-				std::vector<Expr*> list;
-
-				ExprList();
-		};
-
 		class DecFunProto : public virtual Stmt
 		{
 			public:
 				std::string	name;
 				Type*		returnType;
 				DecList*	arguments;
+				bool		hasVaArg;
 
-				DecFunProto( std::string n, Type* rType, DecList* vArgs );
+				DecFunProto( std::string n, Type* rType, DecList* vArgs, bool va = false );
 				virtual ~DecFunProto();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -138,9 +139,9 @@ namespace exo
 		{
 			public:
 				// there exists a codegen method, which takes ownership and frees the stmts
-				StmtList*		stmts;
+				StmtList*	stmts;
 
-				DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock );
+				DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock, bool va = false );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

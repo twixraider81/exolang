@@ -301,7 +301,7 @@ namespace exo
 				fArgs.push_back( getType( (**it).type, module->getContext() ) );
 			}
 
-			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, false );
+			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, decl->hasVaArg );
 			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::InternalLinkage, decl->name, module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->name, function, 0 );
 
@@ -386,7 +386,7 @@ namespace exo
 				fArgs.push_back( getType( (**it).type, module->getContext() ) );
 			}
 
-			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, false );
+			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, decl->hasVaArg );
 			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, decl->name, module );
 
 			// free
@@ -429,7 +429,7 @@ namespace exo
 					mArgs.push_back( getType( (**it).type, module->getContext() ) );
 				}
 
-				llvm::FunctionType* mType = llvm::FunctionType::get( getType( (**mit).method->returnType, module->getContext() ), mArgs, false );
+				llvm::FunctionType* mType = llvm::FunctionType::get( getType( (**mit).method->returnType, module->getContext() ), mArgs, (**mit).method->hasVaArg );
 				llvm::Function* method = llvm::Function::Create( mType, llvm::GlobalValue::InternalLinkage, mName, module );
 				llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), mName, method, 0 );
 

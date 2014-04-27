@@ -45,9 +45,8 @@ mode EXO:
 	}
 
 	"__HALT__"						=> QUEX_TKN_TERMINATION;
-	"__halt_compiler"				=> QUEX_TKN_TERMINATION;
-	"__FILE__"						=> QUEX_TKN_S_FILE;
-	"__LINE__"						=> QUEX_TKN_S_LINE;
+	"__FILE__"						=> QUEX_TKN_T_FILE;
+	"__LINE__"						=> QUEX_TKN_T_LINE;
 	"bool"							=> QUEX_TKN_T_TBOOL;
 	"boolean"						=> QUEX_TKN_T_TBOOL;
 	"int"							=> QUEX_TKN_T_TINT;
@@ -56,8 +55,8 @@ mode EXO:
 	"string"						=> QUEX_TKN_T_TSTRING;
 	"auto"							=> QUEX_TKN_T_TAUTO;
 	"callable"						=> QUEX_TKN_T_TCALLABLE;
-	"function"						=> QUEX_TKN_S_FUNCTION;
-	"return"						=> QUEX_TKN_S_RETURN;
+	"function"						=> QUEX_TKN_T_FUNCTION;
+	"return"						=> QUEX_TKN_T_RETURN;
 
 	"class"							=> QUEX_TKN_T_CLASS;
 	"extends"						=> QUEX_TKN_T_EXTENDS;
@@ -65,33 +64,34 @@ mode EXO:
 	"private"						=> QUEX_TKN_T_PRIVATE;
 	"protected"						=> QUEX_TKN_T_PROTECTED;
 
-	";"								=> QUEX_TKN_S_SEMICOLON;
-	","								=> QUEX_TKN_S_COMMA;
+	";"								=> QUEX_TKN_T_SEMICOLON;
+	","								=> QUEX_TKN_T_COMMA;
+	"..."							=> QUEX_TKN_T_VARG;
 
 	"null"							=> QUEX_TKN_T_VNULL;
 	"true"							=> QUEX_TKN_T_VTRUE;
 	"false"							=> QUEX_TKN_T_VFALSE;
-	[0-9]+							=> QUEX_TKN_T_VINT(Lexeme);
-	([0-9]+[.,][0-9]*)				=> QUEX_TKN_T_VFLOAT(Lexeme);
+	[0-9]+							=> QUEX_TKN_S_INT(Lexeme);
+	([0-9]+[.,][0-9]*)				=> QUEX_TKN_S_FLOAT(Lexeme);
 
-	"$"([_a-zA-Z\\]+[_a-zA-Z\\0-9]*) => QUEX_TKN_T_VAR(LexemeBegin+1,LexemeEnd);
-	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_T_ID(Lexeme);
+	"$"([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_S_VAR(LexemeBegin+1,LexemeEnd);
+	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_S_ID(Lexeme);
 
-	"("								=> QUEX_TKN_S_LANGLE;
-	")"								=> QUEX_TKN_S_RANGLE;
-	"{"								=> QUEX_TKN_S_LBRACKET;
-	"}"								=> QUEX_TKN_S_RBRACKET;
-	"="								=> QUEX_TKN_S_ASSIGN;
-	"=="							=> QUEX_TKN_S_EQ;
-	"!="							=> QUEX_TKN_S_NE;
-	"<"								=> QUEX_TKN_S_LT;
-	"<="							=> QUEX_TKN_S_LE;
-	">"								=> QUEX_TKN_S_GT;
-	">="							=> QUEX_TKN_S_GE;
-	"+"								=> QUEX_TKN_S_PLUS;
-	"-"								=> QUEX_TKN_S_MINUS;
-	"*"								=> QUEX_TKN_S_MUL;
-	"/"								=> QUEX_TKN_S_DIV;
+	"("								=> QUEX_TKN_T_LANGLE;
+	")"								=> QUEX_TKN_T_RANGLE;
+	"{"								=> QUEX_TKN_T_LBRACKET;
+	"}"								=> QUEX_TKN_T_RBRACKET;
+	"="								=> QUEX_TKN_T_ASSIGN;
+	"=="							=> QUEX_TKN_T_EQ;
+	"!="							=> QUEX_TKN_T_NE;
+	"<"								=> QUEX_TKN_T_LT;
+	"<="							=> QUEX_TKN_T_LE;
+	">"								=> QUEX_TKN_T_GT;
+	">="							=> QUEX_TKN_T_GE;
+	"+"								=> QUEX_TKN_T_PLUS;
+	"-"								=> QUEX_TKN_T_MINUS;
+	"*"								=> QUEX_TKN_T_MUL;
+	"/"								=> QUEX_TKN_T_DIV;
 
 	"\""							{
 		self_send(QUEX_TKN_T_QUOTE);
@@ -115,7 +115,7 @@ mode DOUBLE_STRING:
 	}
 
 	on_exit							{ 
-		self_accumulator_flush(QUEX_TKN_T_VSTRING); 
+		self_accumulator_flush(QUEX_TKN_S_STRING); 
 		self_send(QUEX_TKN_T_QUOTE);
 	}
 

@@ -52,11 +52,11 @@ namespace exo
 				BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> in " << fileName << " on " << currentToken->line_number() << ":" << currentToken->column_number();
 
 				switch( currentToken->type_id() ) {
-					case QUEX_TKN_T_VINT:
-					case QUEX_TKN_T_VFLOAT:
-					case QUEX_TKN_T_VAR:
-					case QUEX_TKN_T_ID:
-					case QUEX_TKN_T_VSTRING:
+					case QUEX_TKN_S_INT:
+					case QUEX_TKN_S_FLOAT:
+					case QUEX_TKN_S_VAR:
+					case QUEX_TKN_S_ID:
+					case QUEX_TKN_S_STRING:
 						safeToken = new quex::Token( *currentToken );
 						::Parse( parser, safeToken->type_id(), safeToken, this );
 					break;
@@ -98,11 +98,11 @@ namespace exo
 					BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> on " << currentToken->line_number() << ":" << currentToken->column_number();
 
 					switch( currentToken->type_id() ) {
-						case QUEX_TKN_T_VINT:
-						case QUEX_TKN_T_VFLOAT:
-						case QUEX_TKN_T_VAR:
-						case QUEX_TKN_T_ID:
-						case QUEX_TKN_T_VSTRING:
+						case QUEX_TKN_S_INT:
+						case QUEX_TKN_S_FLOAT:
+						case QUEX_TKN_S_VAR:
+						case QUEX_TKN_S_ID:
+						case QUEX_TKN_S_STRING:
 							safeToken = new quex::Token( *currentToken );
 							::Parse( parser, safeToken->type_id(), safeToken, this );
 						break;
