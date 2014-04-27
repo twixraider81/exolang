@@ -392,49 +392,52 @@ namespace exo
 			return( function );
 		}
 
+		/*
+		 * TODO: ugly, redo
+		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> properties;
-			std::vector<exo::ast::DecVar*>::iterator pit;
+			std::vector<exo::ast::DecProp*>::iterator pit;
 			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).name << " (" << decl->name << ")";
-				properties.push_back( getType( (**pit).type, module->getContext() ) );
+				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).property->name << " (" << decl->name << ")";
+				properties.push_back( getType( (**pit).property->type, module->getContext() ) );
 			}
 
 			llvm::StructType* structClass = llvm::StructType::create( module->getContext(), properties, decl->name );
 
 
 			std::vector<llvm::Type*> methods;
-			std::vector<exo::ast::DecFun*>::iterator mit;
+			std::vector<exo::ast::DecMethod*>::iterator mit;
 			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
-				// think about how to construct sane names
-				std::string mName = "__" + decl->name + "_" + (**mit).name;
+				// TODO: think about how to construct proper names
+				std::string mName = "__" + decl->name + "_" + (**mit).method->name;
 
-				BOOST_LOG_TRIVIAL(trace) << "Generating method \"" << (**mit).name << "\" (" << decl->name << " - " << mName << ")";
+				BOOST_LOG_TRIVIAL(trace) << "Generating method \"" << (**mit).method->name << "\" (" << decl->name << " - " << mName << ")";
 
 				std::vector<llvm::Type*> mArgs;
 				std::vector<exo::ast::DecVar*>::iterator it;
 
 				// pointer to a class struct as 1.st param
 				mArgs.push_back( llvm::PointerType::getUnqual( structClass ) );
-				for( it = (**mit).arguments->list.begin(); it != (**mit).arguments->list.end(); it++ ) {
+				for( it = (**mit).method->arguments->list.begin(); it != (**mit).method->arguments->list.end(); it++ ) {
 					BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
 					mArgs.push_back( getType( (**it).type, module->getContext() ) );
 				}
 
-				llvm::FunctionType* mType = llvm::FunctionType::get( getType( (**mit).returnType, module->getContext() ), mArgs, false );
+				llvm::FunctionType* mType = llvm::FunctionType::get( getType( (**mit).method->returnType, module->getContext() ), mArgs, false );
 				llvm::Function* method = llvm::Function::Create( mType, llvm::GlobalValue::InternalLinkage, mName, module );
 				llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), mName, method, 0 );
 
-				pushBlock( block, (**mit).name );
+				pushBlock( block, (**mit).method->name );
 
-				for( it = (**mit).arguments->list.begin(); it != (**mit).arguments->list.end(); it++ ) {
+				for( it = (**mit).method->arguments->list.begin(); it != (**mit).method->arguments->list.end(); it++ ) {
 					(**it).Generate( this );
 				}
 
-				Generate( (**mit).stmts );
+				Generate( (**mit).method->stmts );
 
 				popBlock();
 			}

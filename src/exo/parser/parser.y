@@ -203,25 +203,48 @@ vardecllist(e) ::= vardecllist(l) S_COMMA vardecl(d). {
 }
 
 
-/* a function declaration is a type identifier followed by the keyword function a functionname, optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype */
+/*
+ * a function declaration is a type identifier followed by the keyword function a functionname
+ * optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype
+ */
 %type fundeclproto { exo::ast::DecFunProto* }
-fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
-	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE.";
+fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(l) S_RANGLE. {
+	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(L) S_RANGLE.";
 	POINTERCHECK(t);
 	POINTERCHECK(i);
-	POINTERCHECK(a);
-	f = new exo::ast::DecFunProto( TOKENSTR(i), t, a );
+	POINTERCHECK(l);
+	f = new exo::ast::DecFunProto( TOKENSTR(i), t, l );
 	delete i;
 }
 %type fundecl { exo::ast::DecFun* }
-fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
-	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE block(B).";
+fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(l) S_RANGLE block(b). {
+	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(L) S_RANGLE block(B).";
 	POINTERCHECK(t);
 	POINTERCHECK(i);
-	POINTERCHECK(a);
+	POINTERCHECK(l);
 	POINTERCHECK(b);
-	f = new exo::ast::DecFun( TOKENSTR(i), t, a, b );
+	f = new exo::ast::DecFun( TOKENSTR(i), t, l, b );
 	delete i;
+}
+
+
+/* a method declaration is an access modifier followed by a function declaration */
+%type methoddecl { exo::ast::DecMethod* }
+methoddecl(m) ::= access(a) fundecl(f). {
+	BOOST_LOG_TRIVIAL(trace) << "methoddecl(M) ::= access(A) fundecl(F).";
+	POINTERCHECK(a);
+	POINTERCHECK(f);
+	m = new exo::ast::DecMethod( f, a );
+}
+
+
+/* a property declaration is an access modifier followed by a variable declaration */
+%type propdecl { exo::ast::DecProp* }
+propdecl(p) ::= access(a) vardecl(v). {
+	BOOST_LOG_TRIVIAL(trace) << "propdecl(P) ::= access(A) vardecl(V).";
+	POINTERCHECK(a);
+	POINTERCHECK(v);
+	p = new exo::ast::DecProp( v, a );
 }
 
 
@@ -257,37 +280,38 @@ classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET S_RBRACKET. {
 	c = new exo::ast::DecClass( TOKENSTR(i), new exo::ast::ClassBlock );
 	delete i;
 }
+
 /* a class block contains the declarations of a class. that is properties and methods. */
 %type classblock { exo::ast::ClassBlock* }
-classblock(b) ::= vardecl(d) S_SEMICOLON. {
-	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= vardecl(D) S_SEMICOLON.";
+classblock(b) ::= propdecl(d) S_SEMICOLON. {
+	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= propdecl(D) S_SEMICOLON.";
 	POINTERCHECK(d);
 	b = new exo::ast::ClassBlock;
 	b->properties.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->name << "\"; properties: " << b->properties.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->property->name << "\"; properties: " << b->properties.size();
 }
-classblock(b) ::= fundecl(d) S_SEMICOLON. {
-	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= fundecl(D) S_SEMICOLON.";
+classblock(b) ::= methoddecl(d) S_SEMICOLON. {
+	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= methoddecl(D) S_SEMICOLON.";
 	POINTERCHECK(d);
 	b = new exo::ast::ClassBlock;
 	b->methods.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->name << "\"; methods: " << b->methods.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->method->name << "\"; methods: " << b->methods.size();
 }
-classblock(b) ::= classblock(l) vardecl(d) S_SEMICOLON. {
-	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) vardecl(D) S_SEMICOLON.";
+classblock(b) ::= classblock(l) propdecl(d) S_SEMICOLON. {
+	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) propdecl(D) S_SEMICOLON.";
 	POINTERCHECK(l);
 	POINTERCHECK(d);
 	l->properties.push_back( d );
 	b = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->name << "\"; properties: " << l->properties.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->property->name << "\"; properties: " << l->properties.size();
 }
-classblock(b) ::= classblock(l) fundecl(d) S_SEMICOLON. {
-	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) fundecl(D) S_SEMICOLON.";
+classblock(b) ::= classblock(l) methoddecl(d) S_SEMICOLON. {
+	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) methoddecl(D) S_SEMICOLON.";
 	POINTERCHECK(l);
 	POINTERCHECK(d);
 	l->methods.push_back( d );
 	b = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->name << "\"; methods: " << l->methods.size();
+	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->method->name << "\"; methods: " << l->methods.size();
 }
 
 
@@ -438,6 +462,7 @@ constant(c) ::= string(s). {
 	c = s;
 }
 
+
 /* a number may be an integer or a float */
 %type number { exo::ast::Expr* }
 number(n) ::= T_VINT(i). {
@@ -452,6 +477,8 @@ number(n) ::= T_VFLOAT(f). {
 	n = new exo::ast::ConstFloat( boost::lexical_cast<double>( TOKENSTR(f) ) );
 	delete f;
 }
+
+
 /* a string is delimited by double quotes */
 %type string { exo::ast::Expr* }
 string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE. {
@@ -459,4 +486,20 @@ string(s) ::= T_QUOTE T_VSTRING(q) T_QUOTE. {
 	POINTERCHECK(q);
 	s = new exo::ast::ConstStr( TOKENSTR(q) );
 	delete q;
+}
+
+
+/* an access modifier is either public, private or protected */
+%type access { exo::ast::ModAccess* }
+access(a) ::= T_PUBLIC. {
+	BOOST_LOG_TRIVIAL(trace) << "access(A) ::= T_PUBLIC.";
+	a = new exo::ast::ModAccess();
+}
+access(a) ::= T_PRIVATE. {
+	BOOST_LOG_TRIVIAL(trace) << "access(A) ::= T_PRIVATE.";
+	a = new exo::ast::ModAccess();
+}
+access(a) ::= T_PROTECTED. {
+	BOOST_LOG_TRIVIAL(trace) << "access(A) ::= T_PROTECTED.";
+	a = new exo::ast::ModAccess();
 }

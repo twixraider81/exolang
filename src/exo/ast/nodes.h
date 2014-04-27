@@ -97,6 +97,14 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
+		class ModAccess : public virtual Node
+		{
+			public:
+				ModAccess();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
 		class DecList : public virtual Stmt
 		{
 			public:
@@ -169,11 +177,35 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class DecProp : public virtual Stmt
+		{
+			public:
+				ModAccess*	access;
+				DecVar*		property;
+
+				DecProp( DecVar* d, ModAccess* a );
+				~DecProp();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class DecMethod : public virtual Stmt
+		{
+			public:
+				ModAccess*	access;
+				DecFun*		method;
+
+				DecMethod( DecFun* m, ModAccess* a );
+				~DecMethod();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
 		class ClassBlock : public virtual Stmt
 		{
 			public:
-				std::vector<DecVar*>	properties;
-				std::vector<DecFun*>	methods;
+				std::vector<DecProp*>	properties;
+				std::vector<DecMethod*>	methods;
 
 				ClassBlock();
 		};

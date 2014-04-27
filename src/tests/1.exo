@@ -28,15 +28,16 @@ cos( 0.3 );
 
 class testClass
 {
-	int $intVal;
-	float $floatVal;
+	protected	int		$intVal;
+	public		float	$floatVal;
+	private		boolean	$bVal;
 
-	int function getOne()
+	public int function getOne()
 	{
 		return 1;
 	};
 
-	int function getTwo()
+	public int function getTwo()
 	{
 		return 2;
 	};

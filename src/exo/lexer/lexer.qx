@@ -58,6 +58,9 @@ mode EXO:
 
 	"class"							=> QUEX_TKN_T_CLASS;
 	"extends"						=> QUEX_TKN_T_EXTENDS;
+	"public"						=> QUEX_TKN_T_PUBLIC;
+	"private"						=> QUEX_TKN_T_PRIVATE;
+	"protected"						=> QUEX_TKN_T_PROTECTED;
 
 	";"								=> QUEX_TKN_S_SEMICOLON;
 	","								=> QUEX_TKN_S_COMMA;

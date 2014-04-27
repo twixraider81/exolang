@@ -1,5 +1,89 @@
-int $a = 1;
-float $b = 1.5;
-bool $c = true;
-bool $d = false;
-int $e = __LINE__;
+/*
+class Object
+{
+	/**
+	 * Performs a addition with the operand and returns the result
+	 */
+	Object operator<+>( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a subtraction with the operand and returns the result
+	 */
+	Object <->( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a multiplication with the operand and returns the result
+	 */
+	Object <*>( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a division with the operand and returns the result
+	 */
+	Object </>( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs a concatenation with the operand and returns the result
+	 */
+	Object <.>( Object rhs )
+	{
+	}
+}
+*/
+
+class Object
+{
+	public	string	$typeName;
+
+	public string function getTypeName()
+	{
+		return "Object";
+	};
+
+	/*
+	public int function getOne()
+	{
+		return 1;
+	};
+	*/
+};
+
+class Boolean extends Object
+{
+	public	boolean $value;
+
+	public boolean function getValue()
+	{
+		//return $value;
+		return true;
+	};
+
+	public boolean function setValue( Boolean $newValue )
+	{
+		//$value = $newValue;
+		//return $newValue;
+		return true;
+	};
+};
+
+class Integer extends Boolean
+{
+	public	integer $value;
+};
+
+class Float extends Boolean
+{
+	public	integer $value;
+};
+
+Object $o;
+Boolean $b;
+Integer $i;
+Float $f;
