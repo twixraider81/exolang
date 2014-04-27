@@ -20,10 +20,12 @@
 }
 
 %syntax_error {
-	BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedToken( TOKEN->type_id_name(), TOKEN->line_number(), TOKEN->column_number() ) );
+	std::stringstream m;
+	m << "Unexpected \"" << TOKEN->type_id_name() << "\" on " << TOKEN->line_number() << ":" << TOKEN->column_number();
+	EXO_THROW_EXCEPTION( UnexpectedToken, m.str() );
 }
 %stack_overflow {
-	BOOST_THROW_EXCEPTION( exo::exceptions::StackOverflow() );
+	EXO_THROW_EXCEPTION( StackOverflow, "Stack overflow." );
 }
 
 

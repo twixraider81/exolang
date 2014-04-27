@@ -51,7 +51,7 @@ namespace exo
 			engine = builder.create();
 
 			if( !engine ) {
-				BOOST_THROW_EXCEPTION( exo::exceptions::LLVM( errorMsg ) );
+				EXO_THROW_EXCEPTION( LLVM, errorMsg );
 			}
 
 			/*

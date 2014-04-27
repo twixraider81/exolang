@@ -114,7 +114,7 @@ namespace exo
 			std::string nName = typeid(*node).name();
 			delete node;
 
-			BOOST_THROW_EXCEPTION( exo::exceptions::UnexpectedNode( nName ) );
+			EXO_THROW_EXCEPTION( UnexpectedNode, "Unknown AST node, can't directly generate \"" + nName + "\"" );
 			return( NULL );
 		}
 
@@ -180,7 +180,7 @@ namespace exo
 			if( getCurrentBlockVars().find( vName ) == getCurrentBlockVars().end() ) {
 				// free
 				delete assign;
-				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( vName ) );
+				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + vName );
 			}
 
 			llvm::Value* vVal = assign->expression->Generate( this );
@@ -266,7 +266,7 @@ namespace exo
 				result = builder.CreateSDiv( lhs, rhs, "div" );
 			} else {
 				delete op;
-				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownBinaryOp() );
+				EXO_THROW_EXCEPTION( UnknownBinaryOp, "Unknown binary operation." );
 				return( NULL );
 			}
 
@@ -278,11 +278,11 @@ namespace exo
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating variable expression $" << expr->variable << " in (" << getCurrentBlockName() << ")";
 
-			if( getCurrentBlockVars().find( expr->variable ) == getCurrentBlockVars().end() ) {
-				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownVar( expr->variable ) );
-			}
-
 			std::string vName = expr->variable;
+
+			if( getCurrentBlockVars().find( vName ) == getCurrentBlockVars().end() ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + vName );
+			}
 
 			// free
 			delete expr;
@@ -342,11 +342,13 @@ namespace exo
 			llvm::Function* callee = module->getFunction( call->name );
 
 			if( callee == 0 ) {
-				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownFunction( call->name ) );
+				delete call;
+				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function: " + call->name );
 			}
 
 			if( callee->arg_size() != call->arguments->list.size() ) {
-				BOOST_THROW_EXCEPTION( exo::exceptions::InvalidCall( call->name, "expected arguments mismatch" ) );
+				delete call;
+				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + call->name );
 			}
 
 			std::vector<exo::ast::Expr*>::iterator it;

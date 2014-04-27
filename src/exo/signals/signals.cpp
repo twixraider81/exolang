@@ -37,7 +37,7 @@ namespace exo
 					BOOST_LOG_TRIVIAL(debug) << "(" << i << ") " << array[i];
 				}
 #endif
-				BOOST_THROW_EXCEPTION( exo::exceptions::Segfault() );
+				EXO_THROW_EXCEPTION( Segfault, "Segmentation fault!" );
 			}
 		}
 

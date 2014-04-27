@@ -24,7 +24,7 @@ namespace exo
 			parser = ParseAlloc( GC_malloc );
 
 			if( parser == NULL ) {
-				BOOST_THROW_EXCEPTION( exo::exceptions::OutOfMemory() );
+				EXO_THROW_EXCEPTION( OutOfMemory, "Out of memory." );
 			}
 
 			stmts = NULL;

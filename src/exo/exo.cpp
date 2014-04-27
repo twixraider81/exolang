@@ -102,15 +102,12 @@ int main( int argc, char **argv )
 			jit->Emit( commandLine["emit"].as<std::string>() );
 		}
 
-	} catch( exo::exceptions::Exception& e ) {
-		BOOST_LOG_TRIVIAL(fatal) << e.what();
-		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
 	} catch( boost::exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
 	}  catch( std::exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << e.what();
 	} catch( ... ) {
-		BOOST_LOG_TRIVIAL(fatal) << "unknown exception";
+		BOOST_LOG_TRIVIAL(fatal) << "Unknown exception caught.";
 	}
 
 	exo::init::Init::Shutdown();

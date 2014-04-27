@@ -16,130 +16,79 @@
 #ifndef EXCEPTIONS_H_
 #define EXCEPTIONS_H_
 
+/**
+ * A macro to enable easy throwing of boost::exceptions with a customized exception message
+ */
+#define EXO_THROW_EXCEPTION(e,m) BOOST_THROW_EXCEPTION( exo::exceptions::e() << exo::exceptions::ExceptionString( m ) )
+
 namespace exo
 {
 	namespace exceptions
 	{
 		/**
-		 * Base exception that will be thrown, holds what
+		 * Structure to hold the customized exception message
 		 */
-		class Exception : public virtual std::exception, public virtual boost::exception
-		{
-			public:
-				virtual ~Exception() {};
-		};
+		typedef boost::error_info<struct tag_error_description, std::string> ExceptionString;
 
 		/**
-		 * Exception that will be thrown via our sigseg handler
+		 * Base exception that will be thrown, holds what
+		 */
+		class Exception : public virtual boost::exception, public virtual std::exception {};
+
+		/**
+		 * Exception that will be thrown via our segmentation fault handler
 		 */
 		class Segfault : public virtual Exception {};
 
 		/**
-		 * Exception that will be thrown from quex/lexer
+		 * Exception that will be thrown from lemon/parse in case the stack was overblown
 		 */
-		class UnknownToken : public virtual Exception
-		{
-			public:
-				std::string token;
-				UnknownToken( std::string t );
-				virtual const char* what() const throw();
-		};
+		class StackOverflow : public virtual Exception {};
 
 		/**
-		 * Exception that will be thrown from lemon/parse incase it received something unexpected. a.k.a. syntax error
+		 * Exception that will be thrown from quex/lexer
 		 */
-		class UnexpectedToken : public virtual Exception
-		{
-			public:
-				std::string tokenName;
-				int lineNr;
-				int columnNr;
-				UnexpectedToken( std::string tName, int l, int c );
-				virtual const char* what() const throw();
-		};
+		class UnknownToken : public virtual Exception {};
+
+		/**
+		 * Exception that will be thrown from lemon/parse in case it received something unexpected. a.k.a. syntax error
+		 */
+		class UnexpectedToken : public virtual Exception {};
 
 		/**
 		 * Exception that will be thrown if we try to build an unknown/unsupported AST node
 		 */
-		class UnexpectedNode : public virtual Exception
-		{
-			public:
-				std::string name;
-				UnexpectedNode( std::string n);
-				virtual const char* what() const throw();
-		};
-
-		/**
-		 * Exception that will be thrown from lemon/parse incase the stack was overflown
-		 */
-		class StackOverflow : public virtual Exception
-		{
-			public:
-				virtual const char* what() const throw();
-		};
+		class UnexpectedNode : public virtual Exception {};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an undefined variable.
 		 */
-		class UnknownVar : public virtual Exception
-		{
-			public:
-				std::string varName;
-				UnknownVar( std::string vName );
-				virtual const char* what() const throw();
-		};
+		class UnknownVar : public virtual Exception {};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an unknown operator.
 		 */
-		class UnknownBinaryOp : public virtual Exception
-		{
-			public:
-				virtual const char* what() const throw();
-		};
+		class UnknownBinaryOp : public virtual Exception {};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an undefined function.
 		 */
-		class UnknownFunction : public virtual Exception
-		{
-			public:
-				std::string fName;
-				UnknownFunction( std::string name );
-				virtual const char* what() const throw();
-		};
+		class UnknownFunction : public virtual Exception {};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
 		 */
-		class InvalidCall : public virtual Exception
-		{
-			public:
-				std::string fName;
-				std::string reason;
-				InvalidCall( std::string name, std::string r );
-				virtual const char* what() const throw();
-		};
+		class InvalidCall : public virtual Exception {};
 
 		/**
-		 * Exception that will be thrown in case we ran out of mem
+		 * Exception that will be thrown in case we ran out of memory
 		 */
-		class OutOfMemory : public virtual Exception
-		{
-			public:
-				virtual const char* what() const throw();
-		};
+		class OutOfMemory : public virtual Exception {};
 
 		/**
 		 * Exception reporting a generic LLVM error message
 		 */
-		class LLVM: public virtual Exception
-		{
-			public:
-				std::string message;
-				LLVM( std::string m );
-				virtual const char* what() const throw();
-		};
+		class LLVM: public virtual Exception {};
 	}
 }
 

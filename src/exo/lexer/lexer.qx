@@ -37,7 +37,7 @@ mode EXO:
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{
-		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken( LEXEMESTR(Lexeme) ) );
+		EXO_THROW_EXCEPTION( UnknownToken, "Unknown token \"" + LEXEMESTR(Lexeme) + "\"" );
 	}
 
 	on_skip_range_open				{
@@ -107,7 +107,7 @@ mode DOUBLE_STRING:
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{
-		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken( LEXEMESTR(Lexeme) ) );
+		EXO_THROW_EXCEPTION( UnknownToken, "Unknown token \"" + LEXEMESTR(Lexeme) + "\"" );
 	}
 
 	on_entry						{
