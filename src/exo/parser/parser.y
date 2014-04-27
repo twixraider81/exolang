@@ -176,16 +176,16 @@ vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
 
 
 /* a variable declaration lists are variable declarations seperated by a colon or empty */
-%type vardecllist { exo::ast::VarDeclList* }
+%type vardecllist { exo::ast::DecList* }
 vardecllist(l)::= . {
 	BOOST_LOG_TRIVIAL(trace) << "vardecllist(L)::= .";
-	l = new exo::ast::VarDeclList;
+	l = new exo::ast::DecList;
 	BOOST_LOG_TRIVIAL(trace) << "Pushing variable declaration; size:" << l->list.size();
 }
 vardecllist(l) ::= vardecl(d). {
 	BOOST_LOG_TRIVIAL(trace) << "vardecllist(L) ::= vardecl(D).";
 	POINTERCHECK(d);
-	l = new exo::ast::VarDeclList;
+	l = new exo::ast::DecList;
 	l->list.push_back( d );
 	BOOST_LOG_TRIVIAL(trace) << "Pushing variable declaration; size:" << l->list.size();
 }

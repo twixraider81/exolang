@@ -97,12 +97,12 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
-		class VarDeclList : public virtual Stmt
+		class DecList : public virtual Stmt
 		{
 			public:
 				std::vector<VarDecl*> list;
 
-				VarDeclList();
+				DecList();
 		};
 
 		class ExprList : public virtual Expr
@@ -116,11 +116,11 @@ namespace exo
 		class DecFunProto : public virtual Stmt
 		{
 			public:
-				std::string		name;
-				Type*			returnType;
-				VarDeclList*	arguments;
+				std::string	name;
+				Type*		returnType;
+				DecList*	arguments;
 
-				DecFunProto( std::string n, Type* rType, VarDeclList* vArgs );
+				DecFunProto( std::string n, Type* rType, DecList* vArgs );
 				virtual ~DecFunProto();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -132,7 +132,7 @@ namespace exo
 				// there exists a codegen method, which takes ownership and frees the stmts
 				StmtList*		stmts;
 
-				DecFun( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
+				DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

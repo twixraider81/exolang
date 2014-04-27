@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFun::DecFun( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock ) : DecFunProto( n, rType, vArgs )
+		DecFun::DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock ) : DecFunProto( n, rType, vArgs )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Creating function \"" << n << "\"";
 			stmts = cBlock;

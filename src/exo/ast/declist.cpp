@@ -19,24 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		DecClass::DecClass( std::string n, ClassBlock* b )
+		DecList::DecList()
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\"";
-			name = n;
-			block = b;
-			parent = "";
-		}
-
-		DecClass::DecClass( std::string n, std::string p, ClassBlock* b ) : DecClass( n, b )
-		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\" parent \"" << p << "\"";
-			parent = p;
-		}
-
-		DecClass::~DecClass()
-		{
-			// there is no codegen method for the block, thus free it ourself
-			delete block;
+			BOOST_LOG_TRIVIAL(debug) << "Creating variable declaration list";
 		}
 	}
 }

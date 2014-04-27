@@ -32,7 +32,7 @@ namespace exo
 		class Type;
 		class VarDecl;
 		class VarAssign;
-		class VarDeclList;
+		class DecList;
 		class ExprList;
 		class DecFunProto;
 		class DecFun;

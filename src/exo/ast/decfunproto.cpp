@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFunProto::DecFunProto( std::string n, Type* rType, VarDeclList* vArgs )
+		DecFunProto::DecFunProto( std::string n, Type* rType, DecList* vArgs )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Creating function prototype/extern \"" << n << "\"";
 			name = n;
