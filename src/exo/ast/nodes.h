@@ -85,14 +85,14 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class VarAssign : public virtual Expr
+		class AssignVar : public virtual Expr
 		{
 			public:
 				std::string name;
 				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
-				VarAssign( std::string vName, Expr* expr );
+				AssignVar( std::string vName, Expr* expr );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};

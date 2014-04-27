@@ -317,7 +317,7 @@ expression(a) ::= T_VAR(v) S_ASSIGN expression(e). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= T_VAR(V) S_ASSIGN expression(E).";
 	POINTERCHECK(v);
 	POINTERCHECK(e);
-	a = new exo::ast::VarAssign( TOKENSTR(v), e );
+	a = new exo::ast::AssignVar( TOKENSTR(v), e );
 	delete v;
 }
 expression(e) ::= T_ID(i) S_LANGLE exprlist(a) S_RANGLE. {

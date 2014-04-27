@@ -163,7 +163,7 @@ namespace exo
 
 			if( decl->expression ) {
 				BOOST_LOG_TRIVIAL(trace) << "Creating compound assignment";
-				exo::ast::VarAssign* a = new exo::ast::VarAssign( decl->name, decl->expression );
+				exo::ast::AssignVar* a = new exo::ast::AssignVar( decl->name, decl->expression );
 				a->Generate( this );
 			}
 
@@ -172,7 +172,7 @@ namespace exo
 			return( getCurrentBlockVars()[ dName ] );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::VarAssign* assign )
+		llvm::Value* Codegen::Generate( exo::ast::AssignVar* assign )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Assigning variable $" << assign->name << " in (" << getCurrentBlockName() << ")";
 			std::string vName = assign->name;

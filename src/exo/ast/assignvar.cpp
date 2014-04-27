@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		VarAssign::VarAssign( std::string vName, Expr* expr )
+		AssignVar::AssignVar( std::string vName, Expr* expr )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Assigning $" << vName;
 			name = vName;
