@@ -47,7 +47,7 @@ namespace exo
 		class VarExpr;
 		class StmtReturn;
 		class ClassBlock;
-		class ClassDecl;
+		class DecClass;
 	}
 
 	namespace jit
@@ -95,7 +95,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::FunCall* fName );
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 			    llvm::Value* Generate( exo::ast::FunDeclProto* decl );
-			    llvm::Value* Generate( exo::ast::ClassDecl* decl );
+			    llvm::Value* Generate( exo::ast::DecClass* decl );
 		};
 	}
 }

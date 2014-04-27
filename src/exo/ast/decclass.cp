@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		ClassDecl::ClassDecl( std::string n, ClassBlock* b )
+		DecClass::DecClass( std::string n, ClassBlock* b )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\"";
 			name = n;
@@ -27,13 +27,13 @@ namespace exo
 			parent = "";
 		}
 
-		ClassDecl::ClassDecl( std::string n, std::string p, ClassBlock* b ) : ClassDecl( n, b )
+		DecClass::DecClass( std::string n, std::string p, ClassBlock* b ) : DecClass( n, b )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\" parent \"" << p << "\"";
 			parent = p;
 		}
 
-		ClassDecl::~ClassDecl()
+		DecClass::~DecClass()
 		{
 			// there is no codegen method for the block, thus free it ourself
 			delete block;

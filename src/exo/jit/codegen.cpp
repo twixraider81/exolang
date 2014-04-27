@@ -402,7 +402,7 @@ namespace exo
 			return( function );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::ClassDecl* decl )
+		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
 

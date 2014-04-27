@@ -202,16 +202,16 @@ namespace exo
 				ClassBlock();
 		};
 
-		class ClassDecl : public virtual Stmt
+		class DecClass : public virtual Stmt
 		{
 			public:
 				std::string	name;
 				std::string	parent;
 				ClassBlock*	block;
 
-				ClassDecl( std::string n, ClassBlock* b );
-				ClassDecl( std::string n, std::string p, ClassBlock* b );
-				virtual ~ClassDecl();
+				DecClass( std::string n, ClassBlock* b );
+				DecClass( std::string n, std::string p, ClassBlock* b );
+				virtual ~DecClass();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

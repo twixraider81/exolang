@@ -222,13 +222,13 @@ fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block
 
 
 /* a class declaration is a class keyword, followed by an identifier optionally and extend with a classname, and and associated class block */
-%type classdecl { exo::ast::ClassDecl* }
+%type classdecl { exo::ast::DecClass* }
 classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET classblock(b) S_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) T_EXTENDS T_ID(P) S_LBRACKET classblock(B) S_RBRACKET.";
 	POINTERCHECK(i);
 	POINTERCHECK(p);
 	POINTERCHECK(b);
-	c = new exo::ast::ClassDecl( TOKENSTR(i), TOKENSTR(p), b );
+	c = new exo::ast::DecClass( TOKENSTR(i), TOKENSTR(p), b );
 	delete i;
 	delete p;
 }
@@ -236,7 +236,7 @@ classdecl(c) ::= T_CLASS T_ID(i) T_EXTENDS T_ID(p) S_LBRACKET S_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) T_EXTENDS T_ID(P) S_LBRACKET S_RBRACKET.";
 	POINTERCHECK(i);
 	POINTERCHECK(p);
-	c = new exo::ast::ClassDecl( TOKENSTR(i), TOKENSTR(p), new exo::ast::ClassBlock );
+	c = new exo::ast::DecClass( TOKENSTR(i), TOKENSTR(p), new exo::ast::ClassBlock );
 	delete i;
 	delete p;
 }
@@ -244,13 +244,13 @@ classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET classblock(b) S_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) S_LBRACKET classblock(B) S_RBRACKET.";
 	POINTERCHECK(i);
 	POINTERCHECK(b);
-	c = new exo::ast::ClassDecl( TOKENSTR(i), b );
+	c = new exo::ast::DecClass( TOKENSTR(i), b );
 	delete i;
 }
 classdecl(c) ::= T_CLASS T_ID(i) S_LBRACKET S_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "classdecl(C) ::= T_CLASS T_ID(I) S_LBRACKET S_RBRACKET.";
 	POINTERCHECK(i);
-	c = new exo::ast::ClassDecl( TOKENSTR(i), new exo::ast::ClassBlock );
+	c = new exo::ast::DecClass( TOKENSTR(i), new exo::ast::ClassBlock );
 	delete i;
 }
 /* a class block contains the declarations of a class. that is properties and methods. */
