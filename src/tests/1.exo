@@ -19,12 +19,15 @@ test( 3 );
 float function sin( float $x );
 float function cos( float $x );
 int function puts( string $str );
+int function printf( string $str, ... );
 puts( $s );
 
 float $g = 31.5;
 float $h = sin( $g );
 sin( 32.3 );
 cos( 0.3 );
+
+
 
 class testClass
 {
