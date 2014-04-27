@@ -345,7 +345,7 @@ namespace exo
 			return( builder.CreateRet( value ) );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::FunCall* call )
+		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating function call to \"" << call->name << "\" in (" << getCurrentBlockName() << ")";
 

@@ -19,14 +19,14 @@ namespace exo
 {
 	namespace ast
 	{
-		FunCall::FunCall( std::string n, ExprList* a )
+		CallFun::CallFun( std::string n, ExprList* a )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Calling function \"" << n << "\"";
 			name = n;
 			arguments = a;
 		}
 
-		FunCall::~FunCall()
+		CallFun::~CallFun()
 		{
 			// there is no codegen method for the block, thus free it ourself
 			delete arguments;

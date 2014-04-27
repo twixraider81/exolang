@@ -137,14 +137,14 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class FunCall : public virtual Expr
+		class CallFun : public virtual Expr
 		{
 			public:
 				std::string name;
 				ExprList* arguments;
 
-				FunCall( std::string n, ExprList* a );
-				virtual ~FunCall();
+				CallFun( std::string n, ExprList* a );
+				virtual ~CallFun();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
