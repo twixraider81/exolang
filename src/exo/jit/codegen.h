@@ -37,8 +37,7 @@ namespace exo
 		class DecFunProto;
 		class DecFun;
 		class CallFun;
-		class BinaryOp;
-		class CmpOp;
+		class OpBinary;
 		class ConstNull;
 		class ConstBool;
 		class ConstInt;
@@ -80,22 +79,25 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );
 			    llvm::Value* Generate( exo::ast::StmtList* list );
-			    llvm::Value* Generate( exo::ast::DecVar* decl );
+			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
+			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
+
 			    llvm::Value* Generate( exo::ast::AssignVar* assign );
+			    llvm::Value* Generate( exo::ast::CallFun* fName );
+			    llvm::Value* Generate( exo::ast::ExprVar* expr );
+
+			    llvm::Value* Generate( exo::ast::DecVar* decl );
+			    llvm::Value* Generate( exo::ast::DecFunProto* decl );
+			    llvm::Value* Generate( exo::ast::DecFun* decl );
+			    llvm::Value* Generate( exo::ast::DecClass* decl );
+
 			    llvm::Value* Generate( exo::ast::ConstNull* val );
 			    llvm::Value* Generate( exo::ast::ConstBool* val );
 			    llvm::Value* Generate( exo::ast::ConstInt* val );
 			    llvm::Value* Generate( exo::ast::ConstFloat* val );
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
-			    llvm::Value* Generate( exo::ast::BinaryOp* op );
-			    llvm::Value* Generate( exo::ast::ExprVar* expr );
-			    llvm::Value* Generate( exo::ast::CmpOp* op );
-			    llvm::Value* Generate( exo::ast::DecFun* decl );
-			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
-			    llvm::Value* Generate( exo::ast::CallFun* fName );
-			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
-			    llvm::Value* Generate( exo::ast::DecFunProto* decl );
-			    llvm::Value* Generate( exo::ast::DecClass* decl );
+
+			    llvm::Value* Generate( exo::ast::OpBinary* op );
 		};
 	}
 }

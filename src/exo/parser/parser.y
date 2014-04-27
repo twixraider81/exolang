@@ -49,6 +49,7 @@
 %left		S_MUL S_DIV.
 %left		S_SEMICOLON.
 
+
 /* a program is build out of statements. */
 program ::= statements(s). {
 	BOOST_LOG_TRIVIAL(trace) << "program ::= statements(S).";
@@ -75,7 +76,10 @@ statements(s) ::= statements(a) statement(b). {
 }
 
 
-/* statement can be a variable declaration, function (proto) declaration, class declaration, a return statement or an expression. statements are terminated by a semicolon */
+/*
+ * statement can be a variable declaration, function (proto) declaration, class declaration, a return statement or an expression.
+ * statements are terminated by a semicolon
+ */
 %type statement { exo::ast::Stmt* }
 statement(s) ::= vardecl(v) S_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "statement(S) ::= vardecl(V) S_SEMICOLON.";
@@ -342,61 +346,61 @@ expression(e) ::= expression(a) S_PLUS expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_PLUS expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::BinaryOp( a, "+", b );
+	e = new exo::ast::OpBinaryAdd( a, b );
 }
 expression(e) ::= expression(a) S_MINUS expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MINUS expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::BinaryOp( a, "-", b );
+	e = new exo::ast::OpBinarySub( a, b );
 }
 expression(e) ::= expression(a) S_MUL expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_MUL expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::BinaryOp( a, "*", b );
+	e = new exo::ast::OpBinaryMul( a, b );
 }
 expression(e) ::= expression(a) S_DIV expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_DIV expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::BinaryOp( a, "/", b );
+	e = new exo::ast::OpBinaryDiv( a, b );
 }
 expression(e) ::= expression(a) S_EQ expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_EQ expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::CmpOp( a, "==", b );
+	e = new exo::ast::OpBinaryEq( a, b );
 }
 expression(e) ::= expression(a) S_NE expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_NE expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::CmpOp( a, "!=", b );
+	e = new exo::ast::OpBinaryNeq( a, b );
 }
 expression(e) ::= expression(a) S_LT expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LT expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::CmpOp( a, "<", b );
+	e = new exo::ast::OpBinaryLt( a, b );
 }
 expression(e) ::= expression(a) S_LE expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_LE expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::CmpOp( a, "<=", b );
+	e = new exo::ast::OpBinaryLe( a, b );
 }
 expression(e) ::= expression(a) S_GT expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GT expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::CmpOp( a, ">", b );
+	e = new exo::ast::OpBinaryGt( a, b );
 }
 expression(e) ::= expression(a) S_GE expression(b). {
 	BOOST_LOG_TRIVIAL(trace) << "expression(E) ::= expression(A) S_GE expression(B).";
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	e = new exo::ast::CmpOp( a, ">=", b );
+	e = new exo::ast::OpBinaryGe( a, b );
 }
 
 

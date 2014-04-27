@@ -95,8 +95,6 @@ namespace exo
 		class UnknownBinaryOp : public virtual Exception
 		{
 			public:
-				std::string op;
-				UnknownBinaryOp( std::string bOp );
 				virtual const char* what() const throw();
 		};
 

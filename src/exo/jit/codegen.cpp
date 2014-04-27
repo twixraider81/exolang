@@ -246,30 +246,32 @@ namespace exo
 			return( builder.CreateBitCast( stringVar, llvm::Type::getInt8PtrTy( module->getContext() ) ) );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::BinaryOp* op )
+		llvm::Value* Codegen::Generate( exo::ast::OpBinary* op )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating binary operation \"" << op->op << "\" in (" << getCurrentBlockName() << ")";
-
 			llvm::Value* lhs = op->lhs->Generate( this );
 			llvm::Value* rhs = op->rhs->Generate( this );
+			llvm::Value* result;
 
-			std::string o = op->op;
-
-			// free
-			delete op;
-
-			if( o == "+" ) {
-				return( builder.CreateAdd( lhs, rhs, "" ) );
-			} else if( o == "-" ) {
-				return( builder.CreateSub( lhs, rhs, "" ) );
-			} else if( o == "*" ) {
-				return( builder.CreateMul( lhs, rhs, "" ) );
-			} else if( o == "/" ) {
-				return( builder.CreateSDiv( lhs, rhs, "" ) );
+			if( typeid(*op) == typeid( exo::ast::OpBinaryAdd ) ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating addition in (" << getCurrentBlockName() << ")";
+				result = builder.CreateAdd( lhs, rhs, "add" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinarySub ) ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating substraction in (" << getCurrentBlockName() << ")";
+				result = builder.CreateSub( lhs, rhs, "sub" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryMul ) ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating multiplication in (" << getCurrentBlockName() << ")";
+				result = builder.CreateMul( lhs, rhs, "mul" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryDiv ) ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating division in (" << getCurrentBlockName() << ")";
+				result = builder.CreateSDiv( lhs, rhs, "div" );
 			} else {
-				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownBinaryOp( op->op ) );
+				delete op;
+				BOOST_THROW_EXCEPTION( exo::exceptions::UnknownBinaryOp() );
 				return( NULL );
 			}
+
+			delete op;
+			return( result );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
@@ -285,18 +287,6 @@ namespace exo
 			// free
 			delete expr;
 			return( builder.CreateLoad( getCurrentBlockVars()[ vName ],vName ) );
-		}
-
-		llvm::Value* Codegen::Generate( exo::ast::CmpOp* op )
-		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating comparison " << op->op << " in (" << getCurrentBlockName() << ")";
-
-			llvm::Value* lhs = op->lhs->Generate( this );
-			llvm::Value* rhs = op->rhs->Generate( this );
-
-			// free
-			delete op;
-			return( lhs );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
@@ -324,7 +314,7 @@ namespace exo
 			Generate( decl->stmts );
 
 			/*
-			 * TODO: Generate null, auto returns or else fail if we got no return statement
+			 * TODO: Generate null return or else fail if we got no return statement
 			 */
 			//llvm::ReturnInst::Create( module->getContext(), block );
 			//llvm::verifyFunction( *function );

@@ -19,12 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		CmpOp::CmpOp( Expr* a, std::string o, Expr* b )
+		OpBinaryNeq::OpBinaryNeq( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Comparison " << o;
-			lhs = a;
-			op = o;
-			rhs = b;
+			BOOST_LOG_TRIVIAL(debug) << "Not equal";
 		}
 	}
 }

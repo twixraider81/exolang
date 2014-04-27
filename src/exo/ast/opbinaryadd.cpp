@@ -13,17 +13,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/exo.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
-	namespace exceptions
+	namespace ast
 	{
-		const char* UnknownBinaryOp::what() const throw()
+		OpBinaryAdd::OpBinaryAdd( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			std::stringstream msg;
-			msg << "Unknown binary operation.";
-			return( msg.str().c_str() );
+			BOOST_LOG_TRIVIAL(debug) << "Addition";
 		}
 	}
 }

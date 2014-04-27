@@ -149,30 +149,6 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class BinaryOp : public virtual Expr
-		{
-			public:
-				Expr* lhs;
-				std::string op;
-				Expr* rhs;
-
-				BinaryOp( Expr* a, std::string o, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class CmpOp : public virtual Expr
-		{
-			public:
-				Expr* lhs;
-				std::string op;
-				Expr* rhs;
-
-				CmpOp( Expr* a, std::string o, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
 		class ExprVar : public virtual Expr
 		{
 			public:
@@ -260,6 +236,125 @@ namespace exo
 				double value;
 
 				ConstFloat( double value );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinary : public virtual Expr
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinary( Expr* a, Expr* b );
+		};
+
+		class OpBinaryAdd : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryAdd( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinarySub : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinarySub( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryMul : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryMul( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryDiv : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryDiv( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryEq : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryEq( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryNeq : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryNeq( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryLt : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryLt( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryLe : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryLe( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryGt : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryGt( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryGe : public virtual OpBinary
+		{
+			public:
+				Expr* lhs;
+				Expr* rhs;
+
+				OpBinaryGe( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
