@@ -272,7 +272,7 @@ namespace exo
 			}
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::VarExpr* expr )
+		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating variable expression $" << expr->variable << " in (" << getCurrentBlockName() << ")";
 

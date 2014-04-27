@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		VarExpr::VarExpr( std::string vName )
+		ExprVar::ExprVar( std::string vName )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Accessing $" << vName;
 			variable = vName;

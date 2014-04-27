@@ -173,12 +173,12 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class VarExpr : public virtual Expr
+		class ExprVar : public virtual Expr
 		{
 			public:
 				std::string variable;
 
-				VarExpr( std::string vName );
+				ExprVar( std::string vName );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

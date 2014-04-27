@@ -44,7 +44,7 @@ namespace exo
 		class ConstInt;
 		class ConstFloat;
 		class ConstStr;
-		class VarExpr;
+		class ExprVar;
 		class StmtReturn;
 		class ClassBlock;
 		class DecClass;
@@ -88,7 +88,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ConstFloat* val );
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
 			    llvm::Value* Generate( exo::ast::BinaryOp* op );
-			    llvm::Value* Generate( exo::ast::VarExpr* expr );
+			    llvm::Value* Generate( exo::ast::ExprVar* expr );
 			    llvm::Value* Generate( exo::ast::CmpOp* op );
 			    llvm::Value* Generate( exo::ast::DecFun* decl );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
