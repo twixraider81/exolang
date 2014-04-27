@@ -4,6 +4,7 @@ exolang
 Goal
 ----
 The aim is to develop a jiting/compiling rapid prototyping "script" language.
+It will be jit-compiled via LLVM.
 
 Prerequisites
 -------------
@@ -54,7 +55,9 @@ waf has a few extra commands at your disposal. Check:
 Thanks & 3rd Party licenses
 ---------------------------
 Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>
+
 Quex lexer generator	- <http://quex.sourceforge.net/>
+
 waf			- <https://code.google.com/p/waf/>
-Boehm GC		- <https://github.com/ivmai/bdwgc>
+
 Loren Segal		- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>
