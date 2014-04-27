@@ -299,7 +299,7 @@ namespace exo
 			return( lhs );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::FunDecl* decl )
+		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
 
@@ -417,7 +417,7 @@ namespace exo
 
 
 			std::vector<llvm::Type*> methods;
-			std::vector<exo::ast::FunDecl*>::iterator mit;
+			std::vector<exo::ast::DecFun*>::iterator mit;
 			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
 				// think about how to construct sane names
 				std::string mName = "__" + decl->name + "_" + (**mit).name;

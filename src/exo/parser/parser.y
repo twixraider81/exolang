@@ -209,14 +209,14 @@ fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE.
 	f = new exo::ast::DecFunProto( TOKENSTR(i), t, a );
 	delete i;
 }
-%type fundecl { exo::ast::FunDecl* }
+%type fundecl { exo::ast::DecFun* }
 fundecl(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE block(b). {
 	BOOST_LOG_TRIVIAL(trace) << "fundecl(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE block(B).";
 	POINTERCHECK(t);
 	POINTERCHECK(i);
 	POINTERCHECK(a);
 	POINTERCHECK(b);
-	f = new exo::ast::FunDecl( TOKENSTR(i), t, a, b );
+	f = new exo::ast::DecFun( TOKENSTR(i), t, a, b );
 	delete i;
 }
 

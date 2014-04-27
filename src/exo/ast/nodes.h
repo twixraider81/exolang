@@ -126,13 +126,13 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class FunDecl : public virtual DecFunProto
+		class DecFun : public virtual DecFunProto
 		{
 			public:
 				// there exists a codegen method, which takes ownership and frees the stmts
 				StmtList*		stmts;
 
-				FunDecl( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
+				DecFun( std::string n, Type* rType, VarDeclList* vArgs, StmtList* cBlock );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -197,7 +197,7 @@ namespace exo
 		{
 			public:
 				std::vector<VarDecl*>	properties;
-				std::vector<FunDecl*>	methods;
+				std::vector<DecFun*>	methods;
 
 				ClassBlock();
 		};
