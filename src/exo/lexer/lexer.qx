@@ -72,7 +72,7 @@ mode EXO:
 	"true"							=> QUEX_TKN_T_VTRUE;
 	"false"							=> QUEX_TKN_T_VFALSE;
 	[0-9]+							=> QUEX_TKN_S_INT(Lexeme);
-	([0-9]+[.,][0-9]*)				=> QUEX_TKN_S_FLOAT(Lexeme);
+	([0-9]+[.][0-9]*)				=> QUEX_TKN_S_FLOAT(Lexeme);
 
 	"$"([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_S_VAR(LexemeBegin+1,LexemeEnd);
 	([_a-zA-Z\\]+[_a-zA-Z\\0-9]*)	=> QUEX_TKN_S_ID(Lexeme);
