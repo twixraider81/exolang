@@ -152,7 +152,7 @@ namespace exo
 			return( last );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::VarDecl* decl )
+		llvm::Value* Codegen::Generate( exo::ast::DecVar* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Creating variable $" << decl->name << " " << decl->type->name << " in (" << getCurrentBlockName() << ")";
 			std::string dName = decl->name;
@@ -304,7 +304,7 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Generating function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> fArgs;
-			std::vector<exo::ast::VarDecl*>::iterator it;
+			std::vector<exo::ast::DecVar*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
 				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
@@ -387,7 +387,7 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Generating prototype function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> fArgs;
-			std::vector<exo::ast::VarDecl*>::iterator it;
+			std::vector<exo::ast::DecVar*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
 				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
@@ -407,7 +407,7 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> properties;
-			std::vector<exo::ast::VarDecl*>::iterator pit;
+			std::vector<exo::ast::DecVar*>::iterator pit;
 			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
 				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).name << " (" << decl->name << ")";
 				properties.push_back( getType( (**pit).type, module->getContext() ) );
@@ -425,7 +425,7 @@ namespace exo
 				BOOST_LOG_TRIVIAL(trace) << "Generating method \"" << (**mit).name << "\" (" << decl->name << " - " << mName << ")";
 
 				std::vector<llvm::Type*> mArgs;
-				std::vector<exo::ast::VarDecl*>::iterator it;
+				std::vector<exo::ast::DecVar*>::iterator it;
 
 				// pointer to a class struct as 1.st param
 				mArgs.push_back( llvm::PointerType::getUnqual( structClass ) );

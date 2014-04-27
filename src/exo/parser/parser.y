@@ -157,12 +157,12 @@ type(t) ::= T_ID(i). {
 
 
 /* a variable declaration is a type identifier followed by a variable name optionally followed by an assignment to an expression */
-%type vardecl { exo::ast::VarDecl* }
+%type vardecl { exo::ast::DecVar* }
 vardecl(d) ::= type(t) T_VAR(v). {
 	BOOST_LOG_TRIVIAL(trace) << "vardecl(D) ::= type(T) T_VAR(V).";
 	POINTERCHECK(t);
 	POINTERCHECK(v);
-	d = new exo::ast::VarDecl( TOKENSTR(v), t );
+	d = new exo::ast::DecVar( TOKENSTR(v), t );
 	delete v;
 }
 vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
@@ -170,7 +170,7 @@ vardecl(d) ::= type(t) T_VAR(v) S_ASSIGN expression(e). {
 	POINTERCHECK(t);
 	POINTERCHECK(v);
 	POINTERCHECK(e);
-	d = new exo::ast::VarDecl( TOKENSTR(v), t, e );
+	d = new exo::ast::DecVar( TOKENSTR(v), t, e );
 	delete v;
 }
 

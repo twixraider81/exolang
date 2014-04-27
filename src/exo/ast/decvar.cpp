@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		VarDecl::VarDecl( std::string vName, Type* vType )
+		DecVar::DecVar( std::string vName, Type* vType )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Declaring $" << vName;
 			name = vName;
@@ -27,7 +27,7 @@ namespace exo
 			expression = NULL;
 		}
 
-		VarDecl::VarDecl( std::string vName, Type* vType, Expr* expr )
+		DecVar::DecVar( std::string vName, Type* vType, Expr* expr )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Declaring/assigning $" << vName;
 			name = vName;
@@ -35,7 +35,7 @@ namespace exo
 			expression = expr;
 		}
 
-		VarDecl::~VarDecl()
+		DecVar::~DecVar()
 		{
 			// there is no codegen method for the type, thus free it ourself
 			delete type;

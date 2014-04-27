@@ -70,7 +70,7 @@ namespace exo
 				Type( std::string tName );
 		};
 
-		class VarDecl : public virtual Stmt
+		class DecVar : public virtual Stmt
 		{
 			public:
 				std::string name;
@@ -78,9 +78,9 @@ namespace exo
 				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
-				VarDecl( std::string vName, Type* vType, Expr* expr );
-				VarDecl( std::string vName, Type* vType );
-				virtual ~VarDecl();
+				DecVar( std::string vName, Type* vType, Expr* expr );
+				DecVar( std::string vName, Type* vType );
+				virtual ~DecVar();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -100,7 +100,7 @@ namespace exo
 		class DecList : public virtual Stmt
 		{
 			public:
-				std::vector<VarDecl*> list;
+				std::vector<DecVar*> list;
 
 				DecList();
 		};
@@ -196,7 +196,7 @@ namespace exo
 		class ClassBlock : public virtual Stmt
 		{
 			public:
-				std::vector<VarDecl*>	properties;
+				std::vector<DecVar*>	properties;
 				std::vector<DecFun*>	methods;
 
 				ClassBlock();

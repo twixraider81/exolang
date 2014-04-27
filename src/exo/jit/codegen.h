@@ -30,7 +30,7 @@ namespace exo
 		class StmtList;
 		class StmtExpr;
 		class Type;
-		class VarDecl;
+		class DecVar;
 		class VarAssign;
 		class DecList;
 		class ExprList;
@@ -80,7 +80,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );
 			    llvm::Value* Generate( exo::ast::StmtList* list );
-			    llvm::Value* Generate( exo::ast::VarDecl* decl );
+			    llvm::Value* Generate( exo::ast::DecVar* decl );
 			    llvm::Value* Generate( exo::ast::VarAssign* assign );
 			    llvm::Value* Generate( exo::ast::ConstNull* val );
 			    llvm::Value* Generate( exo::ast::ConstBool* val );
