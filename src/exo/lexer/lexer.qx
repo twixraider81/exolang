@@ -15,6 +15,9 @@
 
 header {
 	#include "exo/exo.h"
+
+	#define LEXEMESTR(s) std::string( reinterpret_cast<const char*>( s ) )
+	#define TOKENSTR(s) LEXEMESTR( s->get_text().c_str() )
 }
 
 /**
@@ -34,7 +37,7 @@ mode EXO:
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{
-		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) );
+		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken( LEXEMESTR(Lexeme) ) );
 	}
 
 	on_skip_range_open				{
@@ -104,7 +107,7 @@ mode DOUBLE_STRING:
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{
-		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken(reinterpret_cast<const char*>(Lexeme)) );
+		BOOST_THROW_EXCEPTION( exo::exceptions::UnknownToken( LEXEMESTR(Lexeme) ) );
 	}
 
 	on_entry						{

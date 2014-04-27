@@ -18,8 +18,6 @@
 
 #include "exo/lexer/lexer"
 
-#define TOKENSTR(s) std::string( reinterpret_cast<const char*>( s->get_text().c_str() ) )
-
 namespace exo
 {
 	namespace ast
