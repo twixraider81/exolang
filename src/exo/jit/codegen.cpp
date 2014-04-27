@@ -120,7 +120,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
 		{
-			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false);
+			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false );
 			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, name, module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), "entry", entry, 0 );
 
@@ -346,7 +346,7 @@ namespace exo
 				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function: " + call->name );
 			}
 
-			if( callee->arg_size() != call->arguments->list.size() ) {
+			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
 				delete call;
 				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + call->name );
 			}
