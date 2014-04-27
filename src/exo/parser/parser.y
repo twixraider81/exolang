@@ -200,13 +200,13 @@ vardecllist(e) ::= vardecllist(l) S_COMMA vardecl(d). {
 
 
 /* a function declaration is a type identifier followed by the keyword function a functionname, optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype */
-%type fundeclproto { exo::ast::FunDeclProto* }
+%type fundeclproto { exo::ast::DecFunProto* }
 fundeclproto(f) ::= type(t) S_FUNCTION T_ID(i) S_LANGLE vardecllist(a) S_RANGLE. {
 	BOOST_LOG_TRIVIAL(trace) << "fundeclproto(F) ::= type(T) S_FUNCTION T_ID(I) S_LANGLE vardecllist(A) S_RANGLE.";
 	POINTERCHECK(t);
 	POINTERCHECK(i);
 	POINTERCHECK(a);
-	f = new exo::ast::FunDeclProto( TOKENSTR(i), t, a );
+	f = new exo::ast::DecFunProto( TOKENSTR(i), t, a );
 	delete i;
 }
 %type fundecl { exo::ast::FunDecl* }

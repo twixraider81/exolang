@@ -34,7 +34,7 @@ namespace exo
 		class VarAssign;
 		class VarDeclList;
 		class ExprList;
-		class FunDeclProto;
+		class DecFunProto;
 		class FunDecl;
 		class FunCall;
 		class BinaryOp;
@@ -94,7 +94,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
 			    llvm::Value* Generate( exo::ast::FunCall* fName );
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
-			    llvm::Value* Generate( exo::ast::FunDeclProto* decl );
+			    llvm::Value* Generate( exo::ast::DecFunProto* decl );
 			    llvm::Value* Generate( exo::ast::DecClass* decl );
 		};
 	}

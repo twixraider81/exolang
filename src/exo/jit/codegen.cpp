@@ -382,7 +382,7 @@ namespace exo
 			return( value );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::FunDeclProto* decl )
+		llvm::Value* Codegen::Generate( exo::ast::DecFunProto* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating prototype function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
 

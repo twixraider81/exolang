@@ -113,20 +113,20 @@ namespace exo
 				ExprList();
 		};
 
-		class FunDeclProto : public virtual Stmt
+		class DecFunProto : public virtual Stmt
 		{
 			public:
 				std::string		name;
 				Type*			returnType;
 				VarDeclList*	arguments;
 
-				FunDeclProto( std::string n, Type* rType, VarDeclList* vArgs );
-				virtual ~FunDeclProto();
+				DecFunProto( std::string n, Type* rType, VarDeclList* vArgs );
+				virtual ~DecFunProto();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class FunDecl : public virtual FunDeclProto
+		class FunDecl : public virtual DecFunProto
 		{
 			public:
 				// there exists a codegen method, which takes ownership and frees the stmts
