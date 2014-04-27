@@ -27,6 +27,7 @@
  * TODO: 1. implement type system
  * TODO: 2. document ast and jit
  * TODO: 3. use boost unit tests!
+ * TODO: 4. fix leaks
  */
 int main( int argc, char **argv )
 {

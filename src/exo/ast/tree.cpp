@@ -41,15 +41,30 @@ namespace exo
 			fileName = fName;
 			BOOST_LOG_TRIVIAL(trace) <<  "Opening <" << fileName << ">";
 
-			// pointer to buffer, no need to alloc
+			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = 0x0;
+			// safe token will be needed for tokens with text, as previous pointer will be bent. parser will free them
+			quex::Token* safeToken;
+
 			quex::lexer lexer( fileName );
 			lexer.receive( &currentToken );
-
 			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
 				BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> in " << fileName << " on " << currentToken->line_number() << ":" << currentToken->column_number();
 
-				::Parse( parser, currentToken->type_id(), currentToken, this );
+				switch( currentToken->type_id() ) {
+					case QUEX_TKN_T_VINT:
+					case QUEX_TKN_T_VFLOAT:
+					case QUEX_TKN_T_VAR:
+					case QUEX_TKN_T_ID:
+					case QUEX_TKN_T_VSTRING:
+						safeToken = new quex::Token( *currentToken );
+						::Parse( parser, safeToken->type_id(), safeToken, this );
+					break;
+
+					default:
+						::Parse( parser, currentToken->type_id(), currentToken, this );
+				}
+
 				lexer.receive( &currentToken );
 			}
 
@@ -61,10 +76,12 @@ namespace exo
 			fileName = "<stdin>";
 			BOOST_LOG_TRIVIAL(trace) << "Opening <stdin>";
 
-			// pointer to buffer, no need to alloc
+			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = 0x0;
-			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
+			// safe token will be needed for tokens with text, as previous pointer will be bent. parser will free them
+			quex::Token* safeToken;
 
+			quex::lexer lexer( (QUEX_TYPE_CHARACTER*)0x0, 0 );
 			while( stream ) {
 				lexer.buffer_fill_region_prepare();
 
@@ -80,8 +97,19 @@ namespace exo
 				while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
 					BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> on " << currentToken->line_number() << ":" << currentToken->column_number();
 
-					::Parse( parser, currentToken->type_id(), currentToken, this );
-					lexer.receive( &currentToken );
+					switch( currentToken->type_id() ) {
+						case QUEX_TKN_T_VINT:
+						case QUEX_TKN_T_VFLOAT:
+						case QUEX_TKN_T_VAR:
+						case QUEX_TKN_T_ID:
+						case QUEX_TKN_T_VSTRING:
+							safeToken = new quex::Token( *currentToken );
+							::Parse( parser, safeToken->type_id(), safeToken, this );
+						break;
+
+						default:
+							::Parse( parser, currentToken->type_id(), currentToken, this );
+					}
 				}
 
 				::Parse( parser, 0, currentToken, this );
