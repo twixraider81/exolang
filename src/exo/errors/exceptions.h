@@ -76,6 +76,11 @@ namespace exo
 		class UnknownFunction : public virtual Exception {};
 
 		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an undefined struct.
+		 */
+		class UnknownClass : public virtual Exception {};
+
+		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
 		 */
 		class InvalidCall : public virtual Exception {};
