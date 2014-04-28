@@ -31,7 +31,7 @@
  */
 int main( int argc, char **argv )
 {
-	int severity, optimize;
+	int severity, optimize, retval;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -97,18 +97,23 @@ int main( int argc, char **argv )
 		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get(), optimize ) );
 
 		if( !commandLine.count( "emit" ) ) {
-			jit->Execute();
+			retval = jit->Execute();
 		} else {
-			jit->Emit( commandLine["emit"].as<std::string>() );
+			retval = jit->Emit( commandLine["emit"].as<std::string>() );
 		}
 
 	} catch( boost::exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
+		retval = -1;
 	}  catch( std::exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << e.what();
+		retval = -1;
 	} catch( ... ) {
 		BOOST_LOG_TRIVIAL(fatal) << "Unknown exception caught.";
+		retval = -1;
 	}
 
 	exo::init::Init::Shutdown();
+
+	return( retval );
 }

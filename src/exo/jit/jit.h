@@ -37,8 +37,8 @@ namespace exo
 				JIT( exo::jit::Codegen* c, int optimize );
 				~JIT();
 
-				void Execute();
-				void Emit( std::string fileName );
+				int Execute();
+				int Emit( std::string fileName );
 		};
 	}
 }

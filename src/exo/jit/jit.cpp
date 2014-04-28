@@ -25,7 +25,8 @@ namespace exo
 		JIT::JIT( exo::jit::Codegen* g, int optimize )
 		{
 			generator = g;
-			std::string errorMsg;
+			std::string buffer;
+			llvm::raw_string_ostream ostream( buffer );
 
 			// takes ownership of module, thus we can't delete it ourself
 			llvm::EngineBuilder builder( generator->module );
@@ -46,12 +47,13 @@ namespace exo
 				}
 			}
 
-			builder.setErrorStr( &errorMsg );
+			buffer = "";
+			builder.setErrorStr( &buffer );
 			builder.setUseMCJIT( true );
 			engine = builder.create();
 
 			if( !engine ) {
-				EXO_THROW_EXCEPTION( LLVM, errorMsg );
+				EXO_THROW_EXCEPTION( LLVM, buffer );
 			}
 
 			/*
@@ -81,8 +83,7 @@ namespace exo
 
 			fpm->add( llvm::createCFGSimplificationPass() );
 
-			std::string buffer;
-			llvm::raw_string_ostream ostream( buffer );
+			buffer = "";
 			generator->module->print( ostream, NULL );
 			BOOST_LOG_TRIVIAL(trace) << "Intermediate LLVM IR" << buffer;
 
@@ -102,16 +103,17 @@ namespace exo
 			delete fpm;
 		}
 
-		void JIT::Execute()
+		int JIT::Execute()
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Running main.";
-			void( *jitMain )() = (void(*)())engine->getFunctionAddress( "main" );
-			jitMain();
+			int( *jitMain )() = (int(*)())engine->getFunctionAddress( "main" );
+			int retval = jitMain();
 			BOOST_LOG_TRIVIAL(trace) << "Finished.";
+			return( retval );
 		}
 
 
-		void JIT::Emit( std::string fileName )
+		int JIT::Emit( std::string fileName )
 		{
 			boost::filesystem::path path( fileName );
 			path.replace_extension( ".ll" );
@@ -123,10 +125,11 @@ namespace exo
 
 			if( fstream.has_error() ) {
 				BOOST_LOG_TRIVIAL(error) << errorMsg;
-				return;
+				return( -1 );
 			}
 
 			generator->module->print( fstream, NULL );
+			return( 1 );
 		}
 	}
 }
