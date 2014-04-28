@@ -38,7 +38,7 @@ namespace exo
 
 		Codegen::~Codegen()
 		{
-			// do not delete module, llvm will take ownershit
+			// do not delete module, llvm will take ownership
 		}
 
 		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name )
@@ -95,19 +95,13 @@ namespace exo
 				return( llvm::Type::getInt8PtrTy( context ) );
 			}
 
-			llvm::Type* ltype = module->getTypeByName( type->name );
+			llvm::Type* ltype = module->getTypeByName( EXO_CLASS_STRUCT(type->name) );
 			if( ltype != NULL ) {
 				return( ltype );
 			}
 
 			return( llvm::Type::getVoidTy( context ) );
 		}
-
-		llvm::Type* Codegen::getType( exo::ast::Node* node, llvm::LLVMContext& context )
-		{
-			return( llvm::Type::getVoidTy( context ) );
-		}
-
 
 		llvm::Value* Codegen::Generate( exo::ast::Node* node )
 		{
@@ -120,7 +114,10 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
 		{
-			llvm::FunctionType *ftype = llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), false );
+			// FIXME: should probably switch the return type
+			llvm::Type* retType = llvm::Type::getInt64Ty( module->getContext() );
+			llvm::Value* retVal;
+			llvm::FunctionType *ftype = llvm::FunctionType::get( retType, false );
 			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, name, module );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), "entry", entry, 0 );
 
@@ -128,12 +125,16 @@ namespace exo
 
 			Generate( tree->stmts );
 
-			llvm::Value* retval = llvm::ReturnInst::Create( module->getContext(), block );
+			retVal = block->getTerminator();
+			if( retVal == NULL ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getCurrentBlockName() << ")";
+				retVal = builder.CreateRet( llvm::Constant::getNullValue( retType ) );
+			}
 
 			popBlock();
 
 			// no freeing here, we get a pointer. should probably change that.
-			return( retval );
+			return( retVal );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
@@ -264,10 +265,12 @@ namespace exo
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryDiv ) ) {
 				BOOST_LOG_TRIVIAL(trace) << "Generating division in (" << getCurrentBlockName() << ")";
 				result = builder.CreateSDiv( lhs, rhs, "div" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLt ) ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating lower than comparison in (" << getCurrentBlockName() << ")";
+				result = builder.CreateICmpSLT( lhs, rhs, "cmp" );
 			} else {
 				delete op;
 				EXO_THROW_EXCEPTION( UnknownBinaryOp, "Unknown binary operation." );
-				return( NULL );
 			}
 
 			delete op;
@@ -313,11 +316,20 @@ namespace exo
 
 			Generate( decl->stmts );
 
-			/*
-			 * TODO: Generate null return or else fail if we got no return statement
-			 */
-			//llvm::ReturnInst::Create( module->getContext(), block );
-			//llvm::verifyFunction( *function );
+			if( block->getTerminator() == NULL ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getCurrentBlockName() << ")";
+				builder.CreateRet( llvm::Constant::getNullValue( getType( decl->returnType, module->getContext() ) ) );
+			}
+
+			/* only in llvm 3.5
+			std::string buffer;
+			llvm::raw_string_ostream ostream( buffer );
+			if( !llvm::verifyFunction( *function, ostream ) ) {
+				EXO_THROW_EXCEPTION( LLVM, buffer );
+				delete decl;
+			}
+			*/
+
 			popBlock();
 
 			// free
@@ -394,26 +406,41 @@ namespace exo
 			return( function );
 		}
 
-		/*
-		 * TODO: ugly, redo
-		 */
-		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
+		llvm::StructType* Codegen::createClassStruct( exo::ast::DecClass* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
-
 			std::vector<llvm::Type*> properties;
+
+			// parent properties first, so it can be casted?
+			if( decl->parent != "" ) {
+				llvm::StructType* parent = module->getTypeByName( EXO_CLASS_STRUCT(decl->parent) );
+
+				if( !parent ) {
+					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + decl->parent );
+				}
+
+				for( llvm::StructType::element_iterator it = parent->element_begin(); it != parent->element_end(); it++ ) {
+					properties.push_back( *it );
+				}
+			}
+
+			// now our own
 			std::vector<exo::ast::DecProp*>::iterator pit;
 			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).property->name << " (" << decl->name << ")";
+				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).property->name;
 				properties.push_back( getType( (**pit).property->type, module->getContext() ) );
 			}
 
-			llvm::StructType* structClass = llvm::StructType::create( module->getContext(), properties, decl->name );
+			return( llvm::StructType::create( module->getContext(), properties, EXO_CLASS_STRUCT(decl->name) ) );
+		}
 
+		std::vector<llvm::Type*> Codegen::createClassMethods( exo::ast::DecClass* decl )
+		{
+			llvm::StructType* structClass = module->getTypeByName( EXO_CLASS_STRUCT(decl->name) );
 
 			std::vector<llvm::Type*> methods;
 			std::vector<exo::ast::DecMethod*>::iterator mit;
 			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
+
 				// TODO: think about how to construct proper names
 				std::string mName = "__" + decl->name + "_" + (**mit).method->name;
 
@@ -422,7 +449,7 @@ namespace exo
 				std::vector<llvm::Type*> mArgs;
 				std::vector<exo::ast::DecVar*>::iterator it;
 
-				// pointer to a class struct as 1.st param
+				// pointer to class structure as 1.st param
 				mArgs.push_back( llvm::PointerType::getUnqual( structClass ) );
 				for( it = (**mit).method->arguments->list.begin(); it != (**mit).method->arguments->list.end(); it++ ) {
 					BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
@@ -441,16 +468,83 @@ namespace exo
 
 				Generate( (**mit).method->stmts );
 
+				if( block->getTerminator() == NULL ) {
+					BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getCurrentBlockName() << ")";
+					builder.CreateRet( llvm::Constant::getNullValue( getType( (**mit).method->returnType, module->getContext() ) ) );
+				}
+
 				popBlock();
 			}
 
-			// free
-			delete decl;
+			return( methods );
+		}
+
+		llvm::StructType* Codegen::createClassVirtualTable( exo::ast::DecClass* decl )
+		{
+			std::vector<llvm::Type*> properties;
+			return( llvm::StructType::create( module->getContext(), properties, EXO_CLASS_VTABLE(decl->name) ) );
+		}
+
+		/*
+		 * a class structure is CURRENTLY declared as follows:
+		 * %__className_struct { all own + inherited properties }
+		 * %__className_vtable { a virtual table containing own + inherited methods }
+		 */
+		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
+		{
+			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
+
+			// generate properties
+			createClassStruct( decl );
+
+			// create own methods
+			createClassMethods( decl );
+
+			// setup vtable
+			createClassVirtualTable( decl );
 
 			/*
 			 * FIXME: should probably return nothing
 			 */
+			delete decl;
 			return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
+		{
+			BOOST_LOG_TRIVIAL(trace) << "Generating if statement in (" << getCurrentBlockName() << ")";
+
+			llvm::Value* condition = llvm::ConstantInt::getTrue( module->getContext() );
+
+			llvm::Function* entry = builder.GetInsertBlock()->getParent();
+
+			llvm::BasicBlock* blockTrue = llvm::BasicBlock::Create( module->getContext(), "true", entry );
+			llvm::BasicBlock* blockFalse = llvm::BasicBlock::Create( module->getContext(), "false" );
+			llvm::BasicBlock* blockMerge = llvm::BasicBlock::Create( module->getContext(), "merge" );
+
+			pushBlock( blockTrue, "true" );
+			llvm::Value* ifV = Generate( stmt->onTrue );
+			builder.CreateBr( blockMerge );
+			blockTrue = builder.GetInsertBlock();
+
+			pushBlock( blockFalse, "false" );
+			entry->getBasicBlockList().push_back( blockFalse );
+			llvm::Value* elseV = Generate( stmt->onFalse );
+			builder.CreateBr( blockMerge );
+
+			blockFalse = builder.GetInsertBlock();
+
+			entry->getBasicBlockList().push_back( blockMerge );
+			builder.SetInsertPoint( blockMerge );
+			llvm::PHINode* phi = builder.CreatePHI( llvm::Type::getInt64Ty( module->getContext() ), 2, "iftmp" );
+			phi->addIncoming( ifV, blockTrue );
+			phi->addIncoming( elseV, blockFalse );
+
+			popBlock();
+			popBlock();
+
+			//delete stmt;
+			return( phi );
 		}
 	}
 }

@@ -10,6 +10,9 @@ if( $a < $b ) {
 	puts( "$a => $b" );
 }
 
+
+return 1;
+
 /*
 auto $c = auto $d;
 auto $e = 1 + $c;
