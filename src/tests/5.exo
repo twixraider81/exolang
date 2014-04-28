@@ -4,35 +4,42 @@ class Object
 	/**
 	 * Performs a addition with the operand and returns the result
 	 */
-	Object operator<+>( Object rhs )
+	Object @+ ( Object rhs )
 	{
 	}
 
 	/**
 	 * Performs a subtraction with the operand and returns the result
 	 */
-	Object <->( Object rhs )
+	Object @- ( Object rhs )
 	{
 	}
 
 	/**
 	 * Performs a multiplication with the operand and returns the result
 	 */
-	Object <*>( Object rhs )
+	Object @* ( Object rhs )
 	{
 	}
 
 	/**
 	 * Performs a division with the operand and returns the result
 	 */
-	Object </>( Object rhs )
+	Object @/ ( Object rhs )
 	{
 	}
 
 	/**
 	 * Performs a concatenation with the operand and returns the result
 	 */
-	Object <.>( Object rhs )
+	Object @. ( Object rhs )
+	{
+	}
+
+	/**
+	 * Performs an assign
+	 */
+	Object @= ( Object rhs )
 	{
 	}
 }
@@ -57,19 +64,14 @@ class Object
 
 class Boolean extends Object
 {
-	public	boolean $value;
+	public boolean $value;
 
-	public boolean function getValue()
+	public Boolean function getValue()
 	{
-		//return $value;
-		return true;
 	};
 
-	public boolean function setValue( Boolean $newValue )
+	public Boolean function setValue( Boolean $newValue )
 	{
-		//$value = $newValue;
-		//return $newValue;
-		return true;
 	};
 };
 
@@ -78,7 +80,7 @@ class Integer extends Boolean
 	public	integer $value;
 };
 
-class Float extends Boolean
+class Float extends Integer
 {
 	public	integer $value;
 };
