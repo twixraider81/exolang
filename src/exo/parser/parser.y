@@ -79,7 +79,7 @@ statements(s) ::= statements(a) statement(b). {
 
 
 /*
- * statement can be a variable declaration, function (proto) declaration, class declaration, a return statement or an expression.
+ * statement can be a variable declaration, function (proto) declaration, class declaration, a return statement, if flow or an expression.
  * statements are terminated by a semicolon
  */
 %type statement { exo::ast::Stmt* }
@@ -113,6 +113,11 @@ statement(s) ::= expression(e) T_SEMICOLON. {
 	POINTERCHECK(e);
 	s = new exo::ast::StmtExpr( e );
 }
+statement(s) ::= flowif(i). {
+	BOOST_LOG_TRIVIAL(trace) << "statement(S) ::= flowif(I).";
+	POINTERCHECK(i);
+	s = i;
+}
 
 
 /* a block is empty (i.e. protofunctions) or a collection of statements delimited by brackets */
@@ -128,6 +133,22 @@ block(b) ::= T_LBRACKET statements(s) T_RBRACKET. {
 }
 
 
+/* an if block */
+flowif(i) ::= T_IF T_LANGLE expression(e) T_RANGLE block(t). {
+	BOOST_LOG_TRIVIAL(trace) << "flowif(I) ::= T_IF T_LANGLE expression(E) T_RANGLE block(T).";
+	POINTERCHECK(e);
+	POINTERCHECK(t);
+	i = new exo::ast::StmtIf( e, t, new exo::ast::StmtList() );
+}
+flowif(i) ::= T_IF T_LANGLE expression(e) T_RANGLE block(t) T_ELSE block(f). {
+	BOOST_LOG_TRIVIAL(trace) << "flowif(I) ::= T_IF T_LANGLE expression(E) T_RANGLE block(T) T_ELSE block(F).";
+	POINTERCHECK(e);
+	POINTERCHECK(t);
+	POINTERCHECK(f);
+	i = new exo::ast::StmtIf( e, b, f );
+}
+
+	
 /* a type may be a null, bool, integer, float, string or auto */
 %type type { exo::ast::Type* }
 type(t) ::= T_TBOOL. {

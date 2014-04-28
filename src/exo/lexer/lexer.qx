@@ -58,6 +58,9 @@ mode EXO:
 	"function"						=> QUEX_TKN_T_FUNCTION;
 	"return"						=> QUEX_TKN_T_RETURN;
 
+	"if"							=> QUEX_TKN_T_IF;
+	"else"							=> QUEX_TKN_T_ELSE;
+
 	"class"							=> QUEX_TKN_T_CLASS;
 	"extends"						=> QUEX_TKN_T_EXTENDS;
 	"public"						=> QUEX_TKN_T_PUBLIC;

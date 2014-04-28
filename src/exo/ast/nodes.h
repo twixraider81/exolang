@@ -391,6 +391,18 @@ namespace exo
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
+
+		class StmtIf : public virtual StmtExpr
+		{
+			public:
+				Expr* expression;
+				StmtList* onTrue;
+				StmtList* onFalse;
+
+				StmtIf( Expr* expr, StmtList* t, StmtList* f );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
 	}
 }
 
