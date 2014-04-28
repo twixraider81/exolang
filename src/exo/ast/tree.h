@@ -29,6 +29,7 @@ namespace exo
 			public:
 				void*			parser;
 				std::string		fileName;
+				std::string		targetMachine;
 				StmtList*		stmts;
 
 				Tree();

@@ -32,6 +32,7 @@
 int main( int argc, char **argv )
 {
 	int severity, optimize, retval;
+	std::string target = llvm::sys::getProcessTriple();
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -62,7 +63,7 @@ int main( int argc, char **argv )
 	if( commandLine.count( "version" ) ) {
 		std::cout << "version: " << EXO_VERSION << std::endl;
 		std::cout << "host cpu: " << llvm::sys::getHostCPUName() << std::endl;
-		std::cout << "jit target: " << llvm::sys::getProcessTriple() << std::endl;
+		std::cout << "jit target: " << target << std::endl;
 
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
@@ -82,6 +83,7 @@ int main( int argc, char **argv )
 
 	try {
 		boost::scoped_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
+		ast->targetMachine = target;
 
 		// we build the ast from a file given via -i / --input or stdin
 		if( commandLine.count( "input" ) ) {

@@ -47,6 +47,8 @@ mode EXO:
 	"__HALT__"						=> QUEX_TKN_TERMINATION;
 	"__FILE__"						=> QUEX_TKN_T_FILE;
 	"__LINE__"						=> QUEX_TKN_T_LINE;
+	"__TARGET__"					=> QUEX_TKN_T_TARGET;
+	"__VERSION__"					=> QUEX_TKN_T_VERSION;
 	"bool"							=> QUEX_TKN_T_TBOOL;
 	"boolean"						=> QUEX_TKN_T_TBOOL;
 	"int"							=> QUEX_TKN_T_TINT;

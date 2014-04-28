@@ -5,6 +5,8 @@ int $d = $b - $a;
 bool $j = true;
 bool $k = false;
 string $s = __FILE__;
+string $v = __VERSION__;
+string $t = __TARGET__;
 
 int function test( int $e )
 {
@@ -20,6 +22,8 @@ float function sin( float $x );
 float function cos( float $x );
 int function puts( string $str );
 puts( $s );
+puts( $v );
+puts( $t );
 
 float $g = 31.5;
 float $h = sin( $g );

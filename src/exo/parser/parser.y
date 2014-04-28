@@ -479,6 +479,14 @@ constant(c) ::= T_LINE(l). {
 	POINTERCHECK(l);
 	c = new exo::ast::ConstInt( l->line_number() );
 }
+constant(c) ::= T_TARGET. {
+	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_TARGET.";
+	c = new exo::ast::ConstStr( ast->targetMachine );
+}
+constant(c) ::= T_VERSION. {
+	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_VERSION.";
+	c = new exo::ast::ConstStr( EXO_VERSION );
+}
 constant(c) ::= T_VNULL. {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_VNULL.";
 	c = new exo::ast::ConstNull();
