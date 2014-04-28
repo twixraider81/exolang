@@ -1,6 +1,16 @@
-$a = 1;
-float $b = 2.5;
+int $a = 1;
+int $b = 2;
+float $c = 2.5;
 
+int function puts( string $str );
+
+if( $a < $b ) {
+	puts( "$a < $b" );
+} else {
+	puts( "$a => $b" );
+}
+
+/*
 auto $c = auto $d;
 auto $e = 1 + $c;
 auto $f = 3 - 2;
@@ -13,3 +23,4 @@ $k = 9;
 
 // nested expressions
 auto $k = 5 * ( 2 + 2 );
+*/
