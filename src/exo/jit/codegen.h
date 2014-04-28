@@ -29,6 +29,7 @@ namespace exo
 		class Stmt;
 		class StmtList;
 		class StmtExpr;
+		class StmtIf;
 		class Type;
 		class DecVar;
 		class AssignVar;
@@ -74,13 +75,13 @@ namespace exo
 			    std::map<std::string, llvm::Value*>&	getCurrentBlockVars();
 
 			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
-			    llvm::Type* getType( exo::ast::Node* node, llvm::LLVMContext& context );
 
 			    llvm::Value* Generate( exo::ast::Node* node );
 			    llvm::Value* Generate( exo::ast::Tree* tree );
 			    llvm::Value* Generate( exo::ast::StmtList* list );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
+			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
 
 			    llvm::Value* Generate( exo::ast::AssignVar* assign );
 			    llvm::Value* Generate( exo::ast::CallFun* fName );
@@ -98,8 +99,15 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
+
+			    llvm::StructType* createClassStruct( exo::ast::DecClass* decl );
+			    std::vector<llvm::Type*> createClassMethods( exo::ast::DecClass* decl );
+			    llvm::StructType* createClassVirtualTable( exo::ast::DecClass* decl );
 		};
 	}
 }
+
+#define EXO_CLASS_STRUCT(n)	"__" + n + "_struct"
+#define EXO_CLASS_VTABLE(n)	"__" + n + "_vtable"
 
 #endif /* CONTEXT_H_ */

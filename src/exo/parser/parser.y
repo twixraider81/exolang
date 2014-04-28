@@ -134,6 +134,7 @@ block(b) ::= T_LBRACKET statements(s) T_RBRACKET. {
 
 
 /* an if block */
+%type flowif { exo::ast::StmtIf* }
 flowif(i) ::= T_IF T_LANGLE expression(e) T_RANGLE block(t). {
 	BOOST_LOG_TRIVIAL(trace) << "flowif(I) ::= T_IF T_LANGLE expression(E) T_RANGLE block(T).";
 	POINTERCHECK(e);
@@ -145,7 +146,7 @@ flowif(i) ::= T_IF T_LANGLE expression(e) T_RANGLE block(t) T_ELSE block(f). {
 	POINTERCHECK(e);
 	POINTERCHECK(t);
 	POINTERCHECK(f);
-	i = new exo::ast::StmtIf( e, b, f );
+	i = new exo::ast::StmtIf( e, t, f );
 }
 
 	
