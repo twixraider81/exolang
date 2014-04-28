@@ -52,6 +52,10 @@ build/exolang -s 1 examples/helloworld.exo
 waf has a few extra commands at your disposal. Check:
 ./waf --help
 
+Examples
+--------
+Take a look at the examples directory. It contains pointers on synatx and constructs while i am working on a proper documentation.
+
 Thanks & 3rd Party licenses
 ---------------------------
 Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>
@@ -61,3 +65,5 @@ Quex lexer generator	- <http://quex.sourceforge.net/>
 waf			- <https://code.google.com/p/waf/>
 
 Loren Segal		- <http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/>
+
+Mikael Lyngvig		- <http://llvm.lyngvig.org/Articles/Mapping-High-Level-Constructs-to-LLVM-IR>
