@@ -107,7 +107,8 @@ def configure( conf ):
 	conf.check_cxx( header_name = "vector" )
 	conf.check_cxx( header_name = "memory" )
 	conf.check_cxx( header_name = "stack" )
-	conf.check_cxx( header_name = "locale" )
+	conf.check_cxx( header_name = "iterator" )
+	conf.check_cxx( header_name = "algorithm" )
 
 	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
@@ -119,6 +120,7 @@ def configure( conf ):
 	#conf.check_cxx( header_name = "boost/filesystem.hpp" )
 	conf.check_cxx( header_name = "boost/lexical_cast.hpp" )
 	conf.check_cxx( header_name = "boost/algorithm/string.hpp" )
+	#conf.check_cxx( header_name = "boost/locale.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
@@ -144,6 +146,7 @@ def configure( conf ):
 	conf.check_cxx( lib = "boost_log_setup" )
 	conf.check_cxx( lib = "boost_system" )
 	conf.check_cxx( lib = "boost_filesystem" )
+	#conf.check_cxx( lib = "boost_locale" )
 	conf.check_cxx( lib = "pthread" )
 	conf.check_cxx( lib = "ffi" )
 	conf.check_cxx( lib = "curses" )

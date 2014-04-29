@@ -1,3 +1,3 @@
-set args -s 1 -i src/tests/2.exo
+set args -s 1 -i src/tests/5.exo
 b main
 r
