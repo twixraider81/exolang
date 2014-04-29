@@ -109,6 +109,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "stack" )
 	conf.check_cxx( header_name = "iterator" )
 	conf.check_cxx( header_name = "algorithm" )
+	conf.check_cxx( header_name = "libunwind.h" )
 
 	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
@@ -121,6 +122,8 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/lexical_cast.hpp" )
 	conf.check_cxx( header_name = "boost/algorithm/string.hpp" )
 	#conf.check_cxx( header_name = "boost/locale.hpp" )
+	conf.check_cxx( header_name = "boost/format.hpp" )
+	conf.check_cxx( header_name = "boost/units/detail/utility.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
@@ -152,11 +155,13 @@ def configure( conf ):
 	conf.check_cxx( lib = "curses" )
 	conf.check_cxx( lib = "dl" )
 	conf.check_cxx( lib = "m" )
+	conf.check_cxx( lib = "unwind" )
+	conf.check_cxx( lib = "unwind-generic" )
 
 # build
 def build( bld ):
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'boost_filesystem', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
+	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'boost_filesystem', 'unwind', 'unwind-generic', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 

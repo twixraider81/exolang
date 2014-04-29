@@ -20,6 +20,9 @@
 #include <execinfo.h>
 #include <unistd.h>
 
+#include <libunwind.h>
+#include <boost/units/detail/utility.hpp>
+
 namespace exo
 {
 	namespace signals

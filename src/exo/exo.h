@@ -60,6 +60,7 @@ class gc {};
 #include <boost/log/expressions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
 #include "exo/errors/error.h"
 #include "exo/errors/exceptions.h"

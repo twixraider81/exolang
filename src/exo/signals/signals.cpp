@@ -24,19 +24,31 @@ namespace exo
 		void sigsegHandler( int signal, siginfo_t *si, void *arg )
 		{
 			if( signal == SIGSEGV ) {
-#ifdef EXO_DEBUG
-				void *array[10];
-				size_t size;
+				char name[256];
+				unw_cursor_t cursor; unw_context_t uc;
+				unw_word_t ip, sp, offp;
 
-				size = backtrace( array, 10 );
+				unw_getcontext (&uc);
+				unw_init_local (&cursor, &uc );
 
-				BOOST_LOG_TRIVIAL(debug) << "Ooops, segementation fault:";
-				/* skip first stack frame (points here) */
-				for( int i = 1; i < size && array != NULL; ++i )
-				{
-					BOOST_LOG_TRIVIAL(debug) << "(" << i << ") " << array[i];
+				while( unw_step( &cursor ) > 0 ) {
+					char file[256];
+					int line = 0;
+
+					name[0] = '\0';
+					unw_get_proc_name( &cursor, name, 256, &offp);
+					unw_get_reg( &cursor, UNW_REG_IP, &ip );
+					unw_get_reg( &cursor, UNW_REG_SP, &sp);
+
+					std::string demangled =  boost::units::detail::demangle( name );
+
+					if( demangled == "demangle :: error - unable to demangle specified symbol" ) {
+						demangled = name;
+					}
+
+					BOOST_LOG_TRIVIAL(debug) << "(" << demangled << "), ip:" << boost::format( "%lx" ) % ip << ", sp:" << boost::format( "%lx" ) % sp;
 				}
-#endif
+
 				EXO_THROW_EXCEPTION( Segfault, "Segmentation fault!" );
 			}
 		}

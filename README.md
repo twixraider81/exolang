@@ -10,7 +10,7 @@ Prerequisites
 -------------
 I develop on a Debian system. In order to install the prerequisites there, it's suffice to do:
 
-apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind
+apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind libunwind8-dev
 
 You will need atleast boost 1.54. Next call the bootstrap script:
 
