@@ -95,7 +95,7 @@ namespace exo
 				return( llvm::Type::getInt8PtrTy( context ) );
 			}
 
-			llvm::Type* ltype = module->getTypeByName( EXO_CLASS_STRUCT(type->name) );
+			llvm::Type* ltype = module->getTypeByName( EXO_CLASS(type->name) );
 			if( ltype != NULL ) {
 				return( ltype );
 			}
@@ -406,13 +406,21 @@ namespace exo
 			return( function );
 		}
 
-		llvm::StructType* Codegen::createClassStruct( exo::ast::DecClass* decl )
+		/*
+		 * a class structure is CURRENTLY declared as follows:
+		 * %className { all own + inherited properties }
+		 * %className_vtable { a virtual table containing own + inherited methods }
+		 */
+		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
+			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
+
+			// generate properties
 			std::vector<llvm::Type*> properties;
 
 			// parent properties first, so it can be casted?
 			if( decl->parent != "" ) {
-				llvm::StructType* parent = module->getTypeByName( EXO_CLASS_STRUCT(decl->parent) );
+				llvm::StructType* parent = module->getTypeByName( EXO_CLASS( decl->parent ) );
 
 				if( !parent ) {
 					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + decl->parent );
@@ -424,84 +432,37 @@ namespace exo
 			}
 
 			// now our own
+			// FIXME: should overwrite properties, not just append
 			std::vector<exo::ast::DecProp*>::iterator pit;
 			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
 				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).property->name;
 				properties.push_back( getType( (**pit).property->type, module->getContext() ) );
 			}
 
-			return( llvm::StructType::create( module->getContext(), properties, EXO_CLASS_STRUCT(decl->name) ) );
-		}
+			llvm::StructType* classStruct = llvm::StructType::create( module->getContext(), properties, EXO_CLASS( decl->name ) );
 
-		std::vector<llvm::Type*> Codegen::createClassMethods( exo::ast::DecClass* decl )
-		{
-			llvm::StructType* structClass = module->getTypeByName( EXO_CLASS_STRUCT(decl->name) );
-
-			std::vector<llvm::Type*> methods;
+			// generate methods
 			std::vector<exo::ast::DecMethod*>::iterator mit;
 			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
-
-				// TODO: think about how to construct proper names
-				std::string mName = "__" + decl->name + "_" + (**mit).method->name;
-
-				BOOST_LOG_TRIVIAL(trace) << "Generating method \"" << (**mit).method->name << "\" (" << decl->name << " - " << mName << ")";
-
-				std::vector<llvm::Type*> mArgs;
-				std::vector<exo::ast::DecVar*>::iterator it;
+				// rename as a class method
+				(**mit).method->name = EXO_METHOD( decl->name, (**mit).method->name );
 
 				// pointer to class structure as 1.st param
-				mArgs.push_back( llvm::PointerType::getUnqual( structClass ) );
-				for( it = (**mit).method->arguments->list.begin(); it != (**mit).method->arguments->list.end(); it++ ) {
-					BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
-					mArgs.push_back( getType( (**it).type, module->getContext() ) );
-				}
+				// FIXME: results in an alloca which is wrong
+				(**mit).method->arguments->list.insert( (**mit).method->arguments->list.begin(), new exo::ast::DecVar( "this", new exo::ast::Type( decl->name ) ) );
 
-				llvm::FunctionType* mType = llvm::FunctionType::get( getType( (**mit).method->returnType, module->getContext() ), mArgs, (**mit).method->hasVaArg );
-				llvm::Function* method = llvm::Function::Create( mType, llvm::GlobalValue::InternalLinkage, mName, module );
-				llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), mName, method, 0 );
+				methods[ EXO_CLASS( decl->name ) ].push_back( (**mit).method->name );
 
-				pushBlock( block, (**mit).method->name );
-
-				for( it = (**mit).method->arguments->list.begin(); it != (**mit).method->arguments->list.end(); it++ ) {
-					(**it).Generate( this );
-				}
-
-				Generate( (**mit).method->stmts );
-
-				if( block->getTerminator() == NULL ) {
-					BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getCurrentBlockName() << ")";
-					builder.CreateRet( llvm::Constant::getNullValue( getType( (**mit).method->returnType, module->getContext() ) ) );
-				}
-
-				popBlock();
+				Generate( (**mit).method );
 			}
 
-			return( methods );
-		}
-
-		llvm::StructType* Codegen::createClassVirtualTable( exo::ast::DecClass* decl )
-		{
-			std::vector<llvm::Type*> properties;
-			return( llvm::StructType::create( module->getContext(), properties, EXO_CLASS_VTABLE(decl->name) ) );
-		}
-
-		/*
-		 * a class structure is CURRENTLY declared as follows:
-		 * %__className_struct { all own + inherited properties }
-		 * %__className_vtable { a virtual table containing own + inherited methods }
-		 */
-		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
-		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
-
-			// generate properties
-			createClassStruct( decl );
-
-			// create own methods
-			createClassMethods( decl );
-
-			// setup vtable
-			createClassVirtualTable( decl );
+			// generate vtbl
+			llvm::StructType* classVtbl = llvm::StructType::create( module->getContext(), properties, EXO_VTABLE( decl->name ) );
+			BOOST_LOG_TRIVIAL(trace) << "Generating vtbl \"" << EXO_VTABLE( decl->name ) << "\"";
+			std::vector<std::string>::iterator vit;
+			for( vit = methods[ EXO_CLASS( decl->name ) ].begin(); vit != methods[ EXO_CLASS( decl->name ) ].end(); vit++ ) {
+				BOOST_LOG_TRIVIAL(trace) << "Generating vtbl address \"" << (*vit) << "\"";
+			}
 
 			/*
 			 * FIXME: should probably return nothing

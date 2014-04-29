@@ -59,6 +59,8 @@ namespace exo
 			public:
 				std::string			name;
 				std::stack<Block*>	blocks;
+				std::map< std::string, std::vector<std::string> >	properties;
+				std::map< std::string, std::vector<std::string> >	methods;
 
 				llvm::Function*		entry;
 				llvm::Module*		module;
@@ -99,15 +101,17 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
-
-			    llvm::StructType* createClassStruct( exo::ast::DecClass* decl );
-			    std::vector<llvm::Type*> createClassMethods( exo::ast::DecClass* decl );
-			    llvm::StructType* createClassVirtualTable( exo::ast::DecClass* decl );
 		};
 	}
 }
 
-#define EXO_CLASS_STRUCT(n)	"__" + n + "_struct"
-#define EXO_CLASS_VTABLE(n)	"__" + n + "_vtable"
+#define EXO_CLASS(n) (n)
+#define EXO_VTABLE(n) EXO_CLASS(n) + "_vtbl"
+#define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
+
+/*
+ * FIXME: not safe, will return 0 even if not found...
+ */
+#define EXO_METHOD_AT(c,m)	std::distance( methods[ EXO_CLASS( c ) ].begin(), std::find( methods[ EXO_CLASS( c ) ].begin(), methods[ EXO_CLASS( c ) ].end(), EXO_METHOD( c, m ) ) )
 
 #endif /* CONTEXT_H_ */
