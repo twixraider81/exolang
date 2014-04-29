@@ -49,6 +49,7 @@ class gc {};
 #include <vector>
 #include <stack>
 #include <memory>
+#include <locale>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/exception/all.hpp>
@@ -58,6 +59,7 @@ class gc {};
 #include <boost/log/expressions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "exo/errors/error.h"
 #include "exo/errors/exceptions.h"
