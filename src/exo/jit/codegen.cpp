@@ -420,9 +420,11 @@ namespace exo
 
 			// parent properties first, so it can be casted?
 			if( decl->parent != "" ) {
-				llvm::StructType* parent = module->getTypeByName( EXO_CLASS( decl->parent ) );
+				std::string pName = EXO_CLASS( decl->parent );
+				llvm::StructType* parent = module->getTypeByName( pName );
 
 				if( !parent ) {
+					delete decl;
 					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + decl->parent );
 				}
 
