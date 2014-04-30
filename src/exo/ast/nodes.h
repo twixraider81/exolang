@@ -78,18 +78,6 @@ namespace exo
 				Type( std::string tName );
 		};
 
-		class AssignVar : public virtual Expr
-		{
-			public:
-				std::string name;
-				// there exists a codegen method, which takes ownership and frees the expr
-				Expr* expression;
-
-				AssignVar( std::string vName, Expr* expr );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
-		};
-
 		class ModAccess : public virtual Node
 		{
 			public:
@@ -285,9 +273,6 @@ namespace exo
 		class OpBinaryAdd : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryAdd( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -296,9 +281,6 @@ namespace exo
 		class OpBinarySub : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinarySub( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -307,9 +289,6 @@ namespace exo
 		class OpBinaryMul : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryMul( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -318,9 +297,6 @@ namespace exo
 		class OpBinaryDiv : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryDiv( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -329,9 +305,6 @@ namespace exo
 		class OpBinaryEq : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryEq( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -340,9 +313,6 @@ namespace exo
 		class OpBinaryNeq : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryNeq( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -351,9 +321,6 @@ namespace exo
 		class OpBinaryLt : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryLt( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -362,9 +329,6 @@ namespace exo
 		class OpBinaryLe : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryLe( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -373,9 +337,6 @@ namespace exo
 		class OpBinaryGt : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryGt( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -384,12 +345,17 @@ namespace exo
 		class OpBinaryGe : public virtual OpBinary
 		{
 			public:
-				Expr* lhs;
-				Expr* rhs;
-
 				OpBinaryGe( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpBinaryAssign : public virtual OpBinary
+		{
+			public:
+				OpBinaryAssign( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
 		class StmtIf : public virtual StmtExpr
@@ -400,6 +366,16 @@ namespace exo
 				StmtList* onFalse;
 
 				StmtIf( Expr* expr, StmtList* t, StmtList* f );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class CallMethod : public virtual CallFun
+		{
+			public:
+				std::string object;
+
+				CallMethod( std::string o, std::string n, ExprList* a );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

@@ -19,11 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		AssignVar::AssignVar( std::string vName, Expr* expr )
+		OpBinaryAssign::OpBinaryAssign( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Assigning $" << vName;
-			name = vName;
-			expression = expr;
+			BOOST_LOG_TRIVIAL(debug) << "Assignment";
 		}
 	}
 }
