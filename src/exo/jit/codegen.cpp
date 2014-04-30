@@ -292,6 +292,9 @@ namespace exo
 			return( builder.CreateLoad( getCurrentBlockVars()[ vName ],vName ) );
 		}
 
+		/*
+		 * TODO: merge with DecFunProto
+		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating function \"" << decl->name << "\" in (" << getCurrentBlockName() << ")";
@@ -300,8 +303,16 @@ namespace exo
 			std::vector<exo::ast::DecVar*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
-				fArgs.push_back( getType( (**it).type, module->getContext() ) );
+				llvm::Type* arg = getType( (**it).type, module->getContext() );
+
+				// only structs by ptr for now
+				if( arg->isStructTy() ) {
+					BOOST_LOG_TRIVIAL(trace) << "Generating argument by pointer $" << (**it).name;
+					fArgs.push_back( llvm::PointerType::getUnqual( arg ) );
+				} else {
+					BOOST_LOG_TRIVIAL(trace) << "Generating argument by value $" << (**it).name;
+					fArgs.push_back( arg );
+				}
 			}
 
 			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, decl->hasVaArg );
@@ -394,8 +405,16 @@ namespace exo
 			std::vector<exo::ast::DecVar*>::iterator it;
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << (**it).name;
-				fArgs.push_back( getType( (**it).type, module->getContext() ) );
+				llvm::Type* arg = getType( (**it).type, module->getContext() );
+
+				// only structs by ptr for now
+				if( arg->isStructTy() ) {
+					BOOST_LOG_TRIVIAL(trace) << "Generating argument by pointer $" << (**it).name;
+					fArgs.push_back( llvm::PointerType::getUnqual( arg ) );
+				} else {
+					BOOST_LOG_TRIVIAL(trace) << "Generating argument by value $" << (**it).name;
+					fArgs.push_back( arg );
+				}
 			}
 
 			llvm::FunctionType* fType = llvm::FunctionType::get( getType( decl->returnType, module->getContext() ), fArgs, decl->hasVaArg );
@@ -443,11 +462,13 @@ namespace exo
 
 			llvm::StructType* classStruct = llvm::StructType::create( module->getContext(), properties, EXO_CLASS( decl->name ) );
 
-			// generate methods
+			// generate methods & vtbl
 			std::vector<exo::ast::DecMethod*>::iterator mit;
+			std::vector<llvm::Type*> vtblMethods;
 			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
 				// rename as a class method
-				(**mit).method->name = EXO_METHOD( decl->name, (**mit).method->name );
+				std::string mName = EXO_METHOD( decl->name, (**mit).method->name );
+				(**mit).method->name = mName;
 
 				// pointer to class structure as 1.st param
 				// FIXME: results in an alloca which is wrong
@@ -455,16 +476,14 @@ namespace exo
 
 				methods[ EXO_CLASS( decl->name ) ].push_back( (**mit).method->name );
 
-				Generate( (**mit).method );
+				llvm::Value* methodSignature = Generate( (**mit).method );
+				vtblMethods.push_back( llvm::PointerType::getUnqual( module->getFunction( mName )->getFunctionType() ) );
 			}
 
 			// generate vtbl
-			llvm::StructType* classVtbl = llvm::StructType::create( module->getContext(), properties, EXO_VTABLE( decl->name ) );
 			BOOST_LOG_TRIVIAL(trace) << "Generating vtbl \"" << EXO_VTABLE( decl->name ) << "\"";
-			std::vector<std::string>::iterator vit;
-			for( vit = methods[ EXO_CLASS( decl->name ) ].begin(); vit != methods[ EXO_CLASS( decl->name ) ].end(); vit++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating vtbl address \"" << (*vit) << "\"";
-			}
+			llvm::StructType* classVtbl = llvm::StructType::create( module->getContext(), vtblMethods, EXO_VTABLE( decl->name ) );
+			//llvm::GlobalVariable* vtbl = new llvm::GlobalVariable( *module, classVtbl, true, llvm::GlobalValue::CommonLinkage, llvm::Constant::getNullValue( classVtbl ), EXO_VTABLE( decl->name ) + "_tbl" );
 
 			/*
 			 * FIXME: should probably return nothing

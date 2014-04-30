@@ -54,12 +54,10 @@ class Object
 		return "Object";
 	};
 
-	/*
-	public int function getOne()
+	public int function getInt( int $int )
 	{
-		return 1;
+		return $int;
 	};
-	*/
 };
 
 class Boolean extends Object
@@ -89,3 +87,5 @@ Object $o;
 Boolean $b;
 Integer $i;
 Float $f;
+Boolean_vtbl $vtbl1;
+Object_vtbl $vtbl2;
