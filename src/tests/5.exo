@@ -87,5 +87,7 @@ Object $o;
 Boolean $b;
 Integer $i;
 Float $f;
-Boolean_vtbl $vtbl1;
-Object_vtbl $vtbl2;
+
+$i = $o->getInt( 1 );
+int function printf( string $str ... );
+printf( "$o->getInt()=%i", $i );

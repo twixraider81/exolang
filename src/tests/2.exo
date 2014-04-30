@@ -8,7 +8,7 @@ if( $a < $b ) {
 	puts( "$a < $b" );
 } else {
 	puts( "$a => $b" );
-}
+};
 
 
 return 1;
