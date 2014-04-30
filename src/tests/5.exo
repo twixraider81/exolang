@@ -64,12 +64,14 @@ class Boolean extends Object
 {
 	public boolean $value;
 
-	public Boolean function getValue()
+	public boolean function getValue()
 	{
+		return true;
 	};
 
-	public Boolean function setValue( Boolean $newValue )
+	public boolean function setValue( Boolean $newValue )
 	{
+		return true;
 	};
 };
 
