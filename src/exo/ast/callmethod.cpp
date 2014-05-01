@@ -19,10 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		CallMethod::CallMethod( std::string o, std::string n, ExprList* a ) : CallFun( n, a )
+		CallMethod::CallMethod( Expr* e, std::string n, ExprList* a ) : CallFun( n, a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Calling method \"" << n << "\" on \"" << o << "\"";
-			object = o;
+			BOOST_LOG_TRIVIAL(debug) << "Calling method \"" << n << "\"";
+			expression = e;
 		}
 	}
 }

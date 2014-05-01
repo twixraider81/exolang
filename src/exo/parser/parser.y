@@ -208,14 +208,12 @@ vardec(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
 vardeclist(l)::= . {
 	BOOST_LOG_TRIVIAL(trace) << "vardeclist(L)::= .";
 	l = new exo::ast::DecList;
-	BOOST_LOG_TRIVIAL(trace) << "Empty variable declaration list.";
 }
 vardeclist(l) ::= vardec(d). {
 	BOOST_LOG_TRIVIAL(trace) << "vardeclist(L) ::= vardec(D).";
 	POINTERCHECK(d);
 	l = new exo::ast::DecList;
 	l->list.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing variable $" << d->name << "; size:" << l->list.size();
 }
 vardeclist(e) ::= vardeclist(l) T_COMMA vardec(d). {
 	BOOST_LOG_TRIVIAL(trace) << "vardeclist(E) ::= vardeclist(L) T_COMMA vardec(D).";
@@ -223,7 +221,6 @@ vardeclist(e) ::= vardeclist(l) T_COMMA vardec(d). {
 	POINTERCHECK(d);
 	l->list.push_back( d );
 	e = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing variable $" << d->name << "; size:" << l->list.size();
 }
 
 /*
@@ -329,14 +326,12 @@ classblock(b) ::= propertydec(d). {
 	POINTERCHECK(d);
 	b = new exo::ast::ClassBlock;
 	b->properties.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->property->name << "\"; properties: " << b->properties.size();
 }
 classblock(b) ::= methoddec(d). {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= methoddec(D).";
 	POINTERCHECK(d);
 	b = new exo::ast::ClassBlock;
 	b->methods.push_back( d );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->method->name << "\"; methods: " << b->methods.size();
 }
 classblock(b) ::= classblock(l) propertydec(d). {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) propertydec(D).";
@@ -344,7 +339,6 @@ classblock(b) ::= classblock(l) propertydec(d). {
 	POINTERCHECK(d);
 	l->properties.push_back( d );
 	b = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing property \"" << d->property->name << "\"; properties: " << l->properties.size();
 }
 classblock(b) ::= classblock(l) methoddec(d). {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= classblock(L) methoddec(D).";
@@ -352,7 +346,6 @@ classblock(b) ::= classblock(l) methoddec(d). {
 	POINTERCHECK(d);
 	l->methods.push_back( d );
 	b = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing method \"" << d->method->name << "\"; methods: " << l->methods.size();
 }
 
 
@@ -361,14 +354,12 @@ classblock(b) ::= classblock(l) methoddec(d). {
 exprlist(l) ::= . {
 	BOOST_LOG_TRIVIAL(trace) << "exprlist(L) ::= .";
 	l = new exo::ast::ExprList;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing expression; expressions:" << l->list.size();
 }
 exprlist(l) ::= expr(e). {
 	BOOST_LOG_TRIVIAL(trace) << "exprlist(L) ::= expr(E).";
 	POINTERCHECK(e);
 	l = new exo::ast::ExprList;
 	l->list.push_back( e );
-	BOOST_LOG_TRIVIAL(trace) << "Pushing expression; expressions:" << l->list.size();
 }
 exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 	BOOST_LOG_TRIVIAL(trace) << "exprlist(F) ::= exprlist(L) T_COMMA expr(E).";
@@ -376,7 +367,6 @@ exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 	POINTERCHECK(e);
 	l->list.push_back( e );
 	f = l;
-	BOOST_LOG_TRIVIAL(trace) << "Pushing declaration; expressions:" << l->list.size();
 }
 
 
@@ -389,15 +379,13 @@ expr(e) ::= S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
 	e = new exo::ast::CallFun( TOKENSTR(i), a );
 	delete i;
 }
-/* FIXME: too static, S_VAR should be an expr */
-expr(e) ::= S_VAR(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
-	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= S_VAR(V) T_PTR S_ID(I) T_LANGLE exprlist(A) T_RANGLE.";
+expr(e) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
+	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= expr(V) T_PTR S_ID(I) T_LANGLE exprlist(A) T_RANGLE.";
 	POINTERCHECK(v);
 	POINTERCHECK(i);
 	POINTERCHECK(a);
-	e = new exo::ast::CallMethod( TOKENSTR(v), TOKENSTR(i), a );
+	e = new exo::ast::CallMethod( v, TOKENSTR(i), a );
 	delete i;
-	delete v;
 }
 expr(e) ::= S_VAR(v). {
 	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= S_VAR(V).";

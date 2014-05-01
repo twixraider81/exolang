@@ -373,9 +373,9 @@ namespace exo
 		class CallMethod : public virtual CallFun
 		{
 			public:
-				std::string object;
+				Expr* expression;
 
-				CallMethod( std::string o, std::string n, ExprList* a );
+				CallMethod( Expr* e, std::string n, ExprList* a );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
