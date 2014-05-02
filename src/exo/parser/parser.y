@@ -61,6 +61,7 @@ program ::= stmts(s). {
 
 /* statements are a single statement followed by ; and other statements */
 %type stmts { exo::ast::StmtList* }
+%destructor stmts { delete $$; }
 stmts(a) ::= stmt(b). {
 	BOOST_LOG_TRIVIAL(trace) << "stmts(A) ::= stmt(B).";
 	POINTERCHECK(b);
@@ -83,6 +84,7 @@ stmts(s) ::= stmts(a) stmt(b). {
  * statements are terminated by a semicolon
  */
 %type stmt { exo::ast::Stmt* }
+%destructor stmt { delete $$; }
 stmt(s) ::= vardec(v) T_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "stmt(S) ::= vardec(V) T_SEMICOLON.";
 	POINTERCHECK(v);
@@ -122,6 +124,7 @@ stmt(s) ::= stmtif(i) T_SEMICOLON. {
 
 /* a block is empty (i.e. protofunctions, class blocks ) or a collection of statements delimited by brackets */
 %type block { exo::ast::StmtList* }
+%destructor block { delete $$; }
 block(b) ::= T_LBRACKET T_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "block(B) ::= T_LBRACKET T_RBRACKET.";
 	b = new exo::ast::StmtList;
@@ -135,6 +138,7 @@ block(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
 
 /* an if block */
 %type stmtif { exo::ast::StmtIf* }
+%destructor stmtif { delete $$; }
 stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t). {
 	BOOST_LOG_TRIVIAL(trace) << "stmtif(I) ::= T_IF T_LANGLE expr(E) T_RANGLE block(T).";
 	POINTERCHECK(e);
@@ -152,6 +156,7 @@ stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t) T_ELSE block(f). {
 	
 /* a type may be a null, bool, integer, float, string or auto or a classname */
 %type type { exo::ast::Type* }
+%destructor type { delete $$; }
 type(t) ::= T_TBOOL. {
 	BOOST_LOG_TRIVIAL(trace) << "type(T) ::= T_TBOOL.";
 	t = new exo::ast::Type( "bool" );
@@ -186,6 +191,7 @@ type(t) ::= S_ID(i). {
 
 /* a variable declaration is a type identifier followed by a variable name optionally followed by an assignment to an expression */
 %type vardec { exo::ast::DecVar* }
+%destructor vardec { delete $$; }
 vardec(d) ::= type(t) S_VAR(v). {
 	BOOST_LOG_TRIVIAL(trace) << "vardec(D) ::= type(T) S_VAR(V).";
 	POINTERCHECK(t);
@@ -205,6 +211,7 @@ vardec(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
 
 /* a variable declaration lists are variable declarations seperated by a colon optionally or empty */
 %type vardeclist { exo::ast::DecList* }
+%destructor vardeclist { delete $$; }
 vardeclist(l)::= . {
 	BOOST_LOG_TRIVIAL(trace) << "vardeclist(L)::= .";
 	l = new exo::ast::DecList;
@@ -228,6 +235,7 @@ vardeclist(e) ::= vardeclist(l) T_COMMA vardec(d). {
  * optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype
  */
 %type funproto { exo::ast::DecFunProto* }
+%destructor funproto { delete $$; }
 funproto(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_RANGLE. {
 	BOOST_LOG_TRIVIAL(trace) << "funproto(F) ::= type(T) T_FUNCTION S_ID(I) T_LANGLE vardeclist(L) T_RANGLE.";
 	POINTERCHECK(t);
@@ -245,6 +253,7 @@ funproto(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_VARG T_RANGL
 	delete i;
 }
 %type fundec { exo::ast::DecFun* }
+%destructor fundec { delete $$; }
 fundec(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_RANGLE block(b). {
 	BOOST_LOG_TRIVIAL(trace) << "fundec(F) ::= type(T) T_FUNCTION S_ID(I) T_LANGLE vardeclist(L) T_RANGLE block(B).";
 	POINTERCHECK(t);
@@ -267,6 +276,7 @@ fundec(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE 
 
 /* a method declaration is an access modifier followed by a function declaration */
 %type methoddec { exo::ast::DecMethod* }
+%destructor methoddec { delete $$; }
 methoddec(m) ::= access(a) fundec(f) T_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "methoddec(M) ::= access(A) fundec(F) T_SEMICOLON.";
 	POINTERCHECK(a);
@@ -277,6 +287,7 @@ methoddec(m) ::= access(a) fundec(f) T_SEMICOLON. {
 
 /* a property declaration is an access modifier followed by a variable declaration */
 %type propertydec { exo::ast::DecProp* }
+%destructor propertydec { delete $$; }
 propertydec(p) ::= access(a) vardec(v) T_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "propertydec(P) ::= access(A) vardec(V) T_SEMICOLON.";
 	POINTERCHECK(a);
@@ -287,6 +298,7 @@ propertydec(p) ::= access(a) vardec(v) T_SEMICOLON. {
 
 /* a class declaration is a class keyword, followed by an identifier, optionally an extend with a classname, and and associated class block */
 %type classdec { exo::ast::DecClass* }
+%destructor classdec { delete $$; }
 classdec(c) ::= T_CLASS S_ID(i) T_EXTENDS S_ID(p) T_LBRACKET classblock(b) T_RBRACKET. {
 	BOOST_LOG_TRIVIAL(trace) << "classdec(C) ::= T_CLASS S_ID(I) T_EXTENDS S_ID(P) T_LBRACKET classblock(B) T_RBRACKET.";
 	POINTERCHECK(i);
@@ -321,6 +333,7 @@ classdec(c) ::= T_CLASS S_ID(i) T_LBRACKET T_RBRACKET. {
 
 /* a class block contains the declarations of a class. that is properties and methods. */
 %type classblock { exo::ast::ClassBlock* }
+%destructor classblock { delete $$; }
 classblock(b) ::= propertydec(d). {
 	BOOST_LOG_TRIVIAL(trace) << "classblock(B) ::= propertydec(D).";
 	POINTERCHECK(d);
@@ -351,6 +364,7 @@ classblock(b) ::= classblock(l) methoddec(d). {
 
 /* an expression list are expression delimited by a colon */
 %type exprlist { exo::ast::ExprList* }
+%destructor exprlist { delete $$; }
 exprlist(l) ::= . {
 	BOOST_LOG_TRIVIAL(trace) << "exprlist(L) ::= .";
 	l = new exo::ast::ExprList;
@@ -372,6 +386,7 @@ exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 
 /* an expression may be an function call, method call, variable (expression), constant, binary (add, ... assignment) operation */
 %type expr { exo::ast::Expr* }
+%destructor expr { delete $$; }
 expr(e) ::= S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
 	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= S_ID(I) T_LANGLE exprlist(A) T_RANGLE.";
 	POINTERCHECK(i);
@@ -469,6 +484,7 @@ expr(e) ::= expr(n) T_ASSIGN expr(v). {
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */
 %type constant { exo::ast::Expr* }
+%destructor constant { delete $$; }
 constant(c) ::= T_FILE. {
 	BOOST_LOG_TRIVIAL(trace) << "constant(C) ::= T_FILE.";
 	c = new exo::ast::ConstStr( ast->fileName );
@@ -512,6 +528,7 @@ constant(c) ::= string(s). {
 
 /* a number can be an integer or a float */
 %type number { exo::ast::Expr* }
+%destructor number { delete $$; }
 number(n) ::= S_INT(i). {
 	BOOST_LOG_TRIVIAL(trace) << "number(N) ::= S_INT(I).";
 	POINTERCHECK(i);
@@ -528,6 +545,7 @@ number(n) ::= S_FLOAT(f). {
 
 /* a string is delimited by quotes */
 %type string { exo::ast::Expr* }
+%destructor string { delete $$; }
 string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 	BOOST_LOG_TRIVIAL(trace) << "string(S) ::= T_QUOTE S_STRING(Q) T_QUOTE.";
 	POINTERCHECK(q);
@@ -538,6 +556,7 @@ string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 
 /* an access modifier is either public, private or protected */
 %type access { exo::ast::ModAccess* }
+%destructor access { delete $$; }
 access(a) ::= T_PUBLIC. {
 	BOOST_LOG_TRIVIAL(trace) << "access(A) ::= T_PUBLIC.";
 	a = new exo::ast::ModAccess();

@@ -106,7 +106,7 @@ namespace exo
 		llvm::Value* Codegen::Generate( exo::ast::Node* node )
 		{
 			std::string nName = typeid(*node).name();
-			delete node;
+			//delete node;
 
 			EXO_THROW_EXCEPTION( UnexpectedNode, "Unknown AST node, can't directly generate \"" + nName + "\"" );
 			return( NULL );
@@ -147,8 +147,6 @@ namespace exo
 				last = (**it).Generate( this );
 			}
 
-			// free
-			delete stmts;
 			return( last );
 		}
 
@@ -168,8 +166,6 @@ namespace exo
 				a->Generate( this );
 			}
 
-			// free
-			delete decl;
 			return( getCurrentBlockVars()[ dName ] );
 		}
 
@@ -178,7 +174,7 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Generating null in (" << getCurrentBlockName() << ")";
 
 			// free
-			delete val;
+			//delete val;
 			return( llvm::Constant::getNullValue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 
@@ -187,7 +183,7 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 
 			// free
-			delete val;
+			//delete val;
 
 			if( val->value ) {
 				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
@@ -202,7 +198,7 @@ namespace exo
 			long long i = val->value;
 
 			// free
-			delete val;
+			//delete val;
 			return( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, i ) ) );
 		}
 
@@ -212,7 +208,7 @@ namespace exo
 			double d = val->value;
 
 			// free
-			delete val;
+			//delete val;
 			return( llvm::ConstantFP::get( module->getContext(), llvm::APFloat( d ) ) );
 		}
 
@@ -225,7 +221,7 @@ namespace exo
 			builder.CreateStore( stringConst, stringVar );
 
 			// free
-			delete val;
+			//delete val;
 			return( builder.CreateBitCast( stringVar, llvm::Type::getInt8PtrTy( module->getContext() ) ) );
 		}
 
@@ -251,11 +247,11 @@ namespace exo
 				BOOST_LOG_TRIVIAL(trace) << "Generating lower than comparison in (" << getCurrentBlockName() << ")";
 				result = builder.CreateICmpSLT( lhs, rhs, "cmp" );
 			} else {
-				delete op;
+				//delete op;
 				EXO_THROW_EXCEPTION( UnknownBinaryOp, "Unknown binary operation." );
 			}
 
-			delete op;
+			//delete op;
 			return( result );
 		}
 
@@ -268,7 +264,7 @@ namespace exo
 			}
 
 			std::string vName = var->variable;
-			delete assign->lhs;
+			//delete assign->lhs;
 			// these calls do free our stuff. somehow...
 			llvm::Value* rhs = assign->rhs->Generate( this );
 
@@ -287,7 +283,7 @@ namespace exo
 			}
 
 			// free
-			delete expr;
+			//delete expr;
 
 			//if( !getCurrentBlockVars()[ vName ]->getAllocatedType()->isPointerTy() ) {
 				return( builder.CreateLoad( getCurrentBlockVars()[ vName ] ) );
@@ -348,7 +344,7 @@ namespace exo
 			popBlock();
 
 			// free
-			delete decl;
+			//delete decl;
 			return( function );
 		}
 
@@ -358,7 +354,7 @@ namespace exo
 			llvm::Value* value = stmt->expression->Generate( this );
 
 			// free
-			delete stmt;
+			//delete stmt;
 			return( builder.CreateRet( value ) );
 		}
 
@@ -370,12 +366,12 @@ namespace exo
 			llvm::Function* callee = module->getFunction( name );
 
 			if( callee == 0 ) {
-				delete call;
+				//delete call;
 				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function: " + name );
 			}
 
 			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
-				delete call;
+				//delete call;
 				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + name );
 			}
 
@@ -387,7 +383,7 @@ namespace exo
 			}
 
 			// free
-			delete call;
+			//delete call;
 			return( builder.CreateCall( callee, arguments, "call" ) );
 		}
 
@@ -397,7 +393,7 @@ namespace exo
 			llvm::Value* value = stmt->expression->Generate( this );
 
 			// free
-			delete stmt;
+			//delete stmt;
 			return( value );
 		}
 
@@ -425,7 +421,7 @@ namespace exo
 			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, decl->name, module );
 
 			// free
-			delete decl;
+			//delete decl;
 			return( function );
 		}
 
@@ -447,7 +443,7 @@ namespace exo
 				llvm::StructType* parent = module->getTypeByName( pName );
 
 				if( !parent ) {
-					delete decl;
+					//delete decl;
 					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + decl->parent );
 				}
 
@@ -492,7 +488,7 @@ namespace exo
 			/*
 			 * FIXME: should probably return nothing
 			 */
-			delete decl;
+			//delete decl;
 			return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 
