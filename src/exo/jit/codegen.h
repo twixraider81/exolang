@@ -32,7 +32,7 @@ namespace exo
 		class StmtIf;
 		class Type;
 		class DecVar;
-		class AssignVar;
+		class OpBinaryAssign;
 		class DecList;
 		class ExprList;
 		class DecFunProto;
@@ -48,6 +48,7 @@ namespace exo
 		class StmtReturn;
 		class ClassBlock;
 		class DecClass;
+		class CallMethod;
 	}
 
 	namespace jit
@@ -70,11 +71,11 @@ namespace exo
 			    Codegen( std::string cname, std::string target );
 			    ~Codegen();
 
-			    void 									pushBlock( llvm::BasicBlock* block, std::string name );
-			    void 									popBlock();
-			    llvm::BasicBlock*						getCurrentBasicBlock();
-			    std::string								getCurrentBlockName();
-			    std::map<std::string, llvm::Value*>&	getCurrentBlockVars();
+			    void pushBlock( llvm::BasicBlock* block, std::string name );
+			    void popBlock();
+			    llvm::BasicBlock*							getCurrentBasicBlock();
+			    std::string									getCurrentBlockName();
+			    std::map<std::string,llvm::AllocaInst*>&	getCurrentBlockVars();
 
 			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
 
@@ -85,8 +86,8 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
 
-			    llvm::Value* Generate( exo::ast::AssignVar* assign );
 			    llvm::Value* Generate( exo::ast::CallFun* fName );
+			    llvm::Value* Generate( exo::ast::CallMethod* call );
 			    llvm::Value* Generate( exo::ast::ExprVar* expr );
 
 			    llvm::Value* Generate( exo::ast::DecVar* decl );
@@ -101,6 +102,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
+			    llvm::Value* Generate( exo::ast::OpBinaryAssign* assign );
 		};
 	}
 }
@@ -110,7 +112,7 @@ namespace exo
 #define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
 
 /*
- * FIXME: not safe, will return 0 even if not found...
+ * FIXME: not safe
  */
 #define EXO_METHOD_AT(c,m)	std::distance( methods[ EXO_CLASS( c ) ].begin(), std::find( methods[ EXO_CLASS( c ) ].begin(), methods[ EXO_CLASS( c ) ].end(), EXO_METHOD( c, m ) ) )
 

@@ -75,7 +75,7 @@ namespace exo
 			 return( blocks.top()->name );
 		}
 
-		std::map<std::string, llvm::Value*>& Codegen::getCurrentBlockVars()
+		std::map<std::string,llvm::AllocaInst*>& Codegen::getCurrentBlockVars()
 		{
 			return( blocks.top()->variables );
 		}
@@ -95,7 +95,7 @@ namespace exo
 				return( llvm::Type::getInt8PtrTy( context ) );
 			}
 
-			llvm::Type* ltype = module->getTypeByName( EXO_CLASS(type->name) );
+			llvm::Type* ltype = module->getTypeByName( EXO_CLASS( type->name ) );
 			if( ltype != NULL ) {
 				return( ltype );
 			}
@@ -155,40 +155,23 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::DecVar* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating variable $" << decl->name << " " << decl->type->name << " in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(trace) << "Creating " << decl->type->name << " $" << decl->name << " in (" << getCurrentBlockName() << ")";
 			std::string dName = decl->name;
 
-			getCurrentBlockVars()[ decl->name ] = new llvm::AllocaInst( getType( decl->type, module->getContext() ), decl->name.c_str(), getCurrentBasicBlock() );
+			llvm::Type* lType = getType( decl->type, module->getContext() );
+
+			getCurrentBlockVars()[ dName ] = builder.CreateAlloca( lType );
 
 			BOOST_LOG_TRIVIAL(trace) << "Amount of local variables: " << getCurrentBlockVars().size();
 
 			if( decl->expression ) {
-				BOOST_LOG_TRIVIAL(trace) << "Creating compound assignment";
-				exo::ast::AssignVar* a = new exo::ast::AssignVar( decl->name, decl->expression );
+				exo::ast::OpBinaryAssign* a = new exo::ast::OpBinaryAssign( new exo::ast::ExprVar( dName ), decl->expression );
 				a->Generate( this );
 			}
 
 			// free
 			delete decl;
 			return( getCurrentBlockVars()[ dName ] );
-		}
-
-		llvm::Value* Codegen::Generate( exo::ast::AssignVar* assign )
-		{
-			BOOST_LOG_TRIVIAL(trace) << "Assigning variable $" << assign->name << " in (" << getCurrentBlockName() << ")";
-			std::string vName = assign->name;
-
-			if( getCurrentBlockVars().find( vName ) == getCurrentBlockVars().end() ) {
-				// free
-				delete assign;
-				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + vName );
-			}
-
-			llvm::Value* vVal = assign->expression->Generate( this );
-
-			// free
-			delete assign;
-			return( new llvm::StoreInst( vVal, getCurrentBlockVars()[ vName ], false, getCurrentBasicBlock() ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
@@ -277,6 +260,23 @@ namespace exo
 			return( result );
 		}
 
+		llvm::Value* Codegen::Generate( exo::ast::OpBinaryAssign* assign )
+		{
+			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>(assign->lhs);
+
+			if( !var ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Can only assign to a variable!" );
+			}
+
+			std::string vName = var->variable;
+			delete assign->lhs;
+			// these calls do free our stuff. somehow...
+			llvm::Value* rhs = assign->rhs->Generate( this );
+
+			BOOST_LOG_TRIVIAL(trace) << "Assigning variable $" << vName << " in (" << getCurrentBlockName() << ")";
+			return( builder.CreateStore( rhs, getCurrentBlockVars()[ vName ] ) );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating variable expression $" << expr->variable << " in (" << getCurrentBlockName() << ")";
@@ -289,7 +289,12 @@ namespace exo
 
 			// free
 			delete expr;
-			return( builder.CreateLoad( getCurrentBlockVars()[ vName ],vName ) );
+
+			//if( !getCurrentBlockVars()[ vName ]->getAllocatedType()->isPointerTy() ) {
+				return( builder.CreateLoad( getCurrentBlockVars()[ vName ] ) );
+			//} else {
+			//	return( getCurrentBlockVars()[ vName ] );
+			//}
 		}
 
 		/*
@@ -362,26 +367,27 @@ namespace exo
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating function call to \"" << call->name << "\" in (" << getCurrentBlockName() << ")";
 
-			llvm::Function* callee = module->getFunction( call->name );
+			std::string name = call->name;
+			llvm::Function* callee = module->getFunction( name );
 
 			if( callee == 0 ) {
 				delete call;
-				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function: " + call->name );
+				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function: " + name );
 			}
 
 			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
 				delete call;
-				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + call->name );
+				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + name );
 			}
 
 			std::vector<exo::ast::Expr*>::iterator it;
 			std::vector<llvm::Value*> arguments;
 
 			for( it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating argument $" << typeid(**it).name();
 				arguments.push_back( (**it).Generate( this ) );
 			}
-
+			module->dump();
+			callee->dump();
 			// free
 			delete call;
 			return( builder.CreateCall( callee, arguments, "call" ) );
@@ -527,6 +533,27 @@ namespace exo
 
 			//delete stmt;
 			return( phi );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::CallMethod* call )
+		{
+			llvm::Value* object = call->expression->Generate( this );
+			BOOST_LOG_TRIVIAL(trace) << "Generating method call to " << call->name << " in (" << getCurrentBlockName() << ")";
+
+			if( !object->getType()->isPointerTy() ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Can not invoke method of non class/pointer type." );
+			}
+/*
+			std::string cName = object->getType()->getPointerElementType()->getStructName();
+			std::string mName = EXO_METHOD( cName, call->name );
+
+			call->arguments->list.insert( call->arguments->list.begin(), new exo::ast::ExprVar( object ) );
+			exo::ast::CallFun* fun = new exo::ast::CallFun( mName, call->arguments );
+			// leaks
+			// delete call;
+			return( fun->Generate( this ) );
+*/
+			return( NULL );
 		}
 	}
 }
