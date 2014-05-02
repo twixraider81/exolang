@@ -82,10 +82,10 @@ int main( int argc, char **argv )
 	}
 
 	try {
-		boost::scoped_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
+		boost::shared_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
+		// needed for internal constant __TARGET__
 		ast->targetMachine = target;
 
-		// we build the ast from a file given via -i / --input or stdin
 		if( commandLine.count( "input" ) ) {
 			ast->Parse( commandLine["input"].as<std::string>() );
 		} else {
@@ -93,10 +93,10 @@ int main( int argc, char **argv )
 		}
 
 		// codegen takes ownership of the ast nodes, this will however leak horribly on unproper shutdown
-		boost::scoped_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main" ) );
-		generator->Generate( ast.get() );
+		boost::shared_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main" ) );
+		generator->Generate( ast );
 
-		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get(), optimize ) );
+		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator, optimize ) );
 
 		if( !commandLine.count( "emit" ) ) {
 			retval = jit->Execute();

@@ -79,8 +79,8 @@ namespace exo
 
 			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
 
+			    llvm::Value* Generate( boost::shared_ptr<exo::ast::Tree> tree );
 			    llvm::Value* Generate( exo::ast::Node* node );
-			    llvm::Value* Generate( exo::ast::Tree* tree );
 			    llvm::Value* Generate( exo::ast::StmtList* list );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );

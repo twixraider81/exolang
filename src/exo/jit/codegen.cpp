@@ -29,6 +29,7 @@ namespace exo
 			name = cname;
 			module = new llvm::Module( cname, llvm::getGlobalContext() );
 			module->setTargetTriple( target );
+			entry = NULL;
 		}
 
 		Codegen::Codegen( std::string cname ) : Codegen( cname, llvm::sys::getProcessTriple() )
@@ -38,7 +39,6 @@ namespace exo
 
 		Codegen::~Codegen()
 		{
-			// do not delete module, llvm will take ownership
 		}
 
 		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name )
@@ -112,7 +112,7 @@ namespace exo
 			return( NULL );
 		}
 
-		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
+		llvm::Value* Codegen::Generate( boost::shared_ptr<exo::ast::Tree> tree )
 		{
 			// FIXME: should probably switch the return type
 			llvm::Type* retType = llvm::Type::getInt64Ty( module->getContext() );
@@ -133,7 +133,6 @@ namespace exo
 
 			popBlock();
 
-			// no freeing here, we get a pointer. should probably change that.
 			return( retVal );
 		}
 

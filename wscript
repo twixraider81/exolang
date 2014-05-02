@@ -71,7 +71,7 @@ def configure( conf ):
 	cxxflags += exoflags
 
 	if conf.options.mode == 'release':
-		cxxflags += [ '-O3', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_DISABLED' ]
+		cxxflags += [ '-O3', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_DISABLED', '-DNDEBUG' ]
 	elif conf.options.mode == 'debug':
 		cxxflags += [ '-O0', '-g', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DEXO_DEBUG' ]
 
@@ -113,6 +113,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "libunwind.h" )
 
 	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
+	conf.check_cxx( header_name = "boost/shared_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
 	conf.check_cxx( header_name = "boost/exception/all.hpp" )
 	conf.check_cxx( header_name = "boost/throw_exception.hpp" )

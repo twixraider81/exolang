@@ -22,11 +22,13 @@ namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( exo::jit::Codegen* g, int optimize )
+		JIT::JIT( boost::shared_ptr<exo::jit::Codegen> g, int optimize )
 		{
 			generator = g;
+
 			std::string buffer;
 			llvm::raw_string_ostream ostream( buffer );
+			llvm::legacy::FunctionPassManager*	fpm;
 
 			// takes ownership of module, thus we can't delete it ourself
 			llvm::EngineBuilder builder( generator->module );
@@ -89,6 +91,7 @@ namespace exo
 
 			fpm->run( *generator->entry );
 			engine->finalizeObject();
+			delete fpm;
 
 			buffer = "";
 			generator->module->print( ostream, NULL );
@@ -100,7 +103,6 @@ namespace exo
 		JIT::~JIT()
 		{
 			delete engine;
-			delete fpm;
 		}
 
 		int JIT::Execute()
@@ -111,7 +113,6 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Finished.";
 			return( retval );
 		}
-
 
 		int JIT::Emit( std::string fileName )
 		{
