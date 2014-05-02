@@ -386,8 +386,7 @@ namespace exo
 			for( it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
 				arguments.push_back( (**it).Generate( this ) );
 			}
-			module->dump();
-			callee->dump();
+
 			// free
 			delete call;
 			return( builder.CreateCall( callee, arguments, "call" ) );
