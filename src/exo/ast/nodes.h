@@ -62,10 +62,10 @@ namespace exo
 		class StmtExpr : public virtual Stmt
 		{
 			public:
-				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
 				StmtExpr( Expr* expr );
+				~StmtExpr();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -91,7 +91,6 @@ namespace exo
 			public:
 				std::string name;
 				Type* type;
-				// there exists a codegen method, which takes ownership and frees the expr
 				Expr* expression;
 
 				DecVar( std::string vName, Type* vType, Expr* expr );
@@ -126,10 +125,10 @@ namespace exo
 		class DecFun : public virtual DecFunProto
 		{
 			public:
-				// there exists a codegen method, which takes ownership and frees the stmts
 				StmtList*	stmts;
 
 				DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock, bool va = false );
+				virtual ~DecFun();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -173,7 +172,7 @@ namespace exo
 				DecVar*		property;
 
 				DecProp( DecVar* d, ModAccess* a );
-				~DecProp();
+				virtual ~DecProp();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -185,7 +184,7 @@ namespace exo
 				DecFun*		method;
 
 				DecMethod( DecFun* m, ModAccess* a );
-				~DecMethod();
+				virtual ~DecMethod();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -268,6 +267,7 @@ namespace exo
 				Expr* rhs;
 
 				OpBinary( Expr* a, Expr* b );
+				virtual ~OpBinary();
 		};
 
 		class OpBinaryAdd : public virtual OpBinary
@@ -366,6 +366,7 @@ namespace exo
 				StmtList* onFalse;
 
 				StmtIf( Expr* expr, StmtList* t, StmtList* f );
+				virtual ~StmtIf();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -376,6 +377,7 @@ namespace exo
 				Expr* expression;
 
 				CallMethod( Expr* e, std::string n, ExprList* a );
+				virtual ~CallMethod();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

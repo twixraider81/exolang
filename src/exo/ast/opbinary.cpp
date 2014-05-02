@@ -25,5 +25,11 @@ namespace exo
 			lhs = a;
 			rhs = b;
 		}
+
+		OpBinary::~OpBinary()
+		{
+			delete lhs;
+			delete rhs;
+		}
 	}
 }

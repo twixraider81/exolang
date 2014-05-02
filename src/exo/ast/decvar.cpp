@@ -37,8 +37,11 @@ namespace exo
 
 		DecVar::~DecVar()
 		{
-			// there is no codegen method for the type, thus free it ourself
 			delete type;
+
+			if( expression != NULL ) {
+				delete expression;
+			}
 		}
 	}
 }

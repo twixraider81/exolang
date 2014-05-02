@@ -24,5 +24,10 @@ namespace exo
 			BOOST_LOG_TRIVIAL(debug) << "Creating expression statement";
 			expression = expr;
 		}
+
+		StmtExpr::~StmtExpr()
+		{
+			delete expression;
+		}
 	}
 }

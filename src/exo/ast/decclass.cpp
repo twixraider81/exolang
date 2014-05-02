@@ -35,7 +35,6 @@ namespace exo
 
 		DecClass::~DecClass()
 		{
-			// there is no codegen method for the block, thus free it ourself
 			delete block;
 		}
 	}

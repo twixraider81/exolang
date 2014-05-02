@@ -24,5 +24,11 @@ namespace exo
 			BOOST_LOG_TRIVIAL(debug) << "Calling method \"" << n << "\"";
 			expression = e;
 		}
+
+		CallMethod::~CallMethod()
+		{
+			delete expression;
+			delete arguments;
+		}
 	}
 }

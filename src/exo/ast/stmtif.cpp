@@ -25,5 +25,12 @@ namespace exo
 			onTrue = t;
 			onFalse = f;
 		}
+
+		StmtIf::~StmtIf()
+		{
+			delete expression;
+			delete onTrue;
+			delete onFalse;
+		}
 	}
 }

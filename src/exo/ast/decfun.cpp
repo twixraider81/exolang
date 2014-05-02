@@ -24,5 +24,12 @@ namespace exo
 			BOOST_LOG_TRIVIAL(debug) << "Creating function \"" << n << "\"";
 			stmts = cBlock;
 		}
+
+		DecFun::~DecFun()
+		{
+			delete stmts;
+			delete returnType;
+			delete arguments;
+		}
 	}
 }

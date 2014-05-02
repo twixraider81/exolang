@@ -28,7 +28,6 @@ namespace exo
 
 		CallFun::~CallFun()
 		{
-			// there is no codegen method for the block, thus free it ourself
 			delete arguments;
 		}
 	}

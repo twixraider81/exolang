@@ -29,8 +29,6 @@ namespace exo
 		DecMethod::~DecMethod()
 		{
 			delete method;
-
-			// there is no codegen method for the access, thus free it ourself
 			delete access;
 		}
 	}

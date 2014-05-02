@@ -29,8 +29,6 @@ namespace exo
 		DecProp::~DecProp()
 		{
 			delete property;
-
-			// there is no codegen method for the access, thus free it ourself
 			delete access;
 		}
 	}
