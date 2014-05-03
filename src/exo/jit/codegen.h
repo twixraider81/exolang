@@ -49,6 +49,8 @@ namespace exo
 		class ClassBlock;
 		class DecClass;
 		class CallMethod;
+		class OpUnaryNew;
+		class StmtDelete;
 	}
 
 	namespace jit
@@ -85,6 +87,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
+			    llvm::Value* Generate( exo::ast::StmtDelete* stmt );
 
 			    llvm::Value* Generate( exo::ast::CallFun* fName );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
@@ -102,7 +105,8 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
-			    llvm::Value* Generate( exo::ast::OpBinaryAssign* assign );
+			    llvm::Value* Generate( exo::ast::OpBinaryAssign* op );
+			    llvm::Value* Generate( exo::ast::OpUnaryNew* op );
 		};
 	}
 }

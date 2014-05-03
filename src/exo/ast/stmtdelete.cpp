@@ -19,9 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtList::StmtList()
+		StmtDelete::StmtDelete( Expr* expr ) : StmtExpr( expr )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "List of statements";
+			BOOST_LOG_TRIVIAL(debug) << "Delete statement";
 		}
 	}
 }

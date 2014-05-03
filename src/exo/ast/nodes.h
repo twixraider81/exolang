@@ -158,8 +158,6 @@ namespace exo
 		class StmtReturn : public virtual StmtExpr
 		{
 			public:
-				Expr* expression;
-
 				StmtReturn( Expr* expr );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -378,6 +376,31 @@ namespace exo
 
 				CallMethod( Expr* e, std::string n, ExprList* a );
 				virtual ~CallMethod();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class OpUnary : public virtual Expr
+		{
+			public:
+				Expr* rhs;
+
+				OpUnary( Expr* a );
+				virtual ~OpUnary();
+		};
+
+		class OpUnaryNew : public virtual OpUnary
+		{
+			public:
+				OpUnaryNew( Expr* a );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
+		};
+
+		class StmtDelete : public virtual StmtExpr
+		{
+			public:
+				StmtDelete( Expr* expr );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

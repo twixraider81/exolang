@@ -21,7 +21,7 @@ namespace exo
 	{
 		StmtIf::StmtIf( Expr* expr, StmtList* t, StmtList* f ) : StmtExpr( expr )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Creating if statement";
+			BOOST_LOG_TRIVIAL(debug) << "If statement";
 			onTrue = t;
 			onFalse = f;
 		}

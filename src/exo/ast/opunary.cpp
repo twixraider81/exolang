@@ -19,9 +19,15 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtList::StmtList()
+		OpUnary::OpUnary( Expr* a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "List of statements";
+			BOOST_LOG_TRIVIAL(debug) << "Unary operation";
+			rhs = a;
+		}
+
+		OpUnary::~OpUnary()
+		{
+			delete rhs;
 		}
 	}
 }

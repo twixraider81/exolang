@@ -21,7 +21,7 @@ namespace exo
 	{
 		CallFun::CallFun( std::string n, ExprList* a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Calling function \"" << n << "\"";
+			BOOST_LOG_TRIVIAL(debug) << "Function call \"" << n << "\"";
 			name = n;
 			arguments = a;
 		}

@@ -444,7 +444,7 @@ namespace exo
 
 				if( !parent ) {
 					//delete decl;
-					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + decl->parent );
+					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + pName );
 				}
 
 				for( llvm::StructType::element_iterator it = parent->element_begin(); it != parent->element_end(); it++ ) {
@@ -548,6 +548,61 @@ namespace exo
 			return( fun->Generate( this ) );
 */
 			return( NULL );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtDelete* stmt )
+		{
+			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>( stmt->expression );
+			llvm::Value* object = stmt->expression->Generate( this );
+
+			if( !var ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Can only assign to a variable!" );
+			}
+
+			std::string vName = var->variable;
+			BOOST_LOG_TRIVIAL(trace) << "Deleting $" << vName;
+
+			delete stmt;
+
+			std::map<std::string,llvm::AllocaInst*>::const_iterator it;
+			getCurrentBlockVars().find( vName );
+			if( it != getCurrentBlockVars().end() ) {
+				getCurrentBlockVars().erase( vName );
+			}
+
+			if( object->getType()->isPointerTy() ) {
+				/*
+				 * FIXME: call GC_free
+				 */
+				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
+			} else {
+				/*
+				 * FIXME: should probably return nothing
+				 */
+				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
+			}
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::OpUnaryNew* op )
+		{
+			exo::ast::CallFun* init = dynamic_cast<exo::ast::CallFun*>( op->rhs );
+
+			if( !init ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Invalid expression!" );
+			}
+
+			std::string vName = init->name;
+			BOOST_LOG_TRIVIAL(trace) << "Creating instance of " << vName;
+
+			llvm::Type* ltype = module->getTypeByName( EXO_CLASS( vName ) );
+			if( ltype == NULL ) {
+				EXO_THROW_EXCEPTION( UnknownClass, "Invalid class: " + vName );
+			}
+
+			/*
+			 * FIXME: call GC_alloc + bitcast
+			 */
+			return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 	}
 }

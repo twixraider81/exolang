@@ -54,6 +54,7 @@ mode EXO:
 	"int"							=> QUEX_TKN_T_TINT;
 	"integer"						=> QUEX_TKN_T_TINT;
 	"float"							=> QUEX_TKN_T_TFLOAT;
+	"double"						=> QUEX_TKN_T_TFLOAT;
 	"string"						=> QUEX_TKN_T_TSTRING;
 	"auto"							=> QUEX_TKN_T_TAUTO;
 	"callable"						=> QUEX_TKN_T_TCALLABLE;
@@ -69,6 +70,9 @@ mode EXO:
 	"private"						=> QUEX_TKN_T_PRIVATE;
 	"protected"						=> QUEX_TKN_T_PROTECTED;
 	"->"							=> QUEX_TKN_T_PTR;
+	"new"							=> QUEX_TKN_T_NEW;
+	"delete"						=> QUEX_TKN_T_DELETE;
+	/*"unset"							=> QUEX_TKN_T_DELETE;*/
 
 	";"								=> QUEX_TKN_T_SEMICOLON;
 	","								=> QUEX_TKN_T_COMMA;
