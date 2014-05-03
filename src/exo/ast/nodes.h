@@ -389,10 +389,10 @@ namespace exo
 				virtual ~OpUnary();
 		};
 
-		class OpUnaryNew : public virtual OpUnary
+		class OpBinaryNew : public virtual OpBinary
 		{
 			public:
-				OpUnaryNew( Expr* a );
+				OpBinaryNew( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};

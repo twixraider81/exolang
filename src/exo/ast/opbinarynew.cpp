@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		OpUnaryNew::OpUnaryNew( Expr* a ) : OpUnary( a )
+		OpBinaryNew::OpBinaryNew( Expr* a, Expr* b  ) : OpBinary( a, b )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "New";
 		}
