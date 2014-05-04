@@ -30,82 +30,125 @@ namespace exo
 				Node() { };
 				virtual ~Node() { };
 
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx )
+				{
+					std::string nName = typeid(this).name();
+					EXO_THROW_EXCEPTION( UnexpectedNode, "Unknown AST node, can't directly generate \"" + nName + "\"" );
+					return( NULL ); // satisfy IDE
+				};
+		};
+
+		class Expr : public virtual Node { };
+		class Stmt : public virtual Node { };
+
+		// forward declare
+		class DecProp;
+		class DecMethod;
+		class DecList;
+		class DecVar;
+		class ExprList;
+		class ModAccess;
+		class StmtExpr;
+		class StmtList;
+		class Type;
+
+
+		class CallFun : public virtual Expr
+		{
+			public:
+				std::string name;
+				ExprList* arguments;
+
+				CallFun( std::string n, ExprList* a );
+				virtual ~CallFun();
+
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class Expr : public virtual Node
-		{
-		};
-
-		class Stmt : public virtual Node
-		{
-		};
-
-		class ExprList : public virtual Expr
-		{
-			public:
-				std::vector<Expr*> list;
-
-				ExprList();
-		};
-
-		class StmtList : public virtual Expr
-		{
-			public:
-				std::vector<Stmt*> list;
-
-				StmtList();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class StmtExpr : public virtual Stmt
+		class CallMethod : public virtual CallFun
 		{
 			public:
 				Expr* expression;
 
-				StmtExpr( Expr* expr );
-				~StmtExpr();
+				CallMethod( Expr* e, std::string n, ExprList* a );
+				virtual ~CallMethod();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class Type : public virtual Node
+
+		class ClassBlock : public virtual Stmt
 		{
 			public:
-				std::string name;
+				std::vector<DecProp*>	properties;
+				std::vector<DecMethod*>	methods;
 
-				Type( std::string tName );
+				ClassBlock();
 		};
 
-		class ModAccess : public virtual Node
+
+
+		class ConstBool : public virtual Expr
 		{
 			public:
-				ModAccess();
+				bool value;
+
+				ConstBool( bool value );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class DecVar : public virtual Stmt
+		class ConstFloat : public virtual Expr
 		{
 			public:
-				std::string name;
-				Type* type;
-				Expr* expression;
+				double value;
 
-				DecVar( std::string vName, Type* vType, Expr* expr );
-				DecVar( std::string vName, Type* vType );
-				virtual ~DecVar();
+				ConstFloat( double value );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class DecList : public virtual Stmt
+		class ConstInt : public virtual Expr
 		{
 			public:
-				std::vector<DecVar*> list;
+				long long value;
 
-				DecList();
+				ConstInt( long long value );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstNull : public virtual Expr
+		{
+			public:
+				ConstNull();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ConstStr : public virtual Expr
+		{
+			public:
+				std::string value;
+
+				ConstStr( std::string v );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+
+		class DecClass : public virtual Stmt
+		{
+			public:
+				std::string	name;
+				std::string	parent;
+				ClassBlock*	block;
+
+				DecClass( std::string n, ClassBlock* b );
+				DecClass( std::string n, std::string p, ClassBlock* b );
+				virtual ~DecClass();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class DecFunProto : public virtual Stmt
@@ -133,16 +176,57 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class CallFun : public virtual Expr
+		class DecList : public virtual Stmt
+		{
+			public:
+				std::vector<DecVar*> list;
+
+				DecList();
+		};
+
+		class DecMethod : public virtual Stmt
+		{
+			public:
+				ModAccess*	access;
+				DecFun*		method;
+
+				DecMethod( DecFun* m, ModAccess* a );
+				virtual ~DecMethod();
+		};
+
+		class DecProp : public virtual Stmt
+		{
+			public:
+				ModAccess*	access;
+				DecVar*		property;
+
+				DecProp( DecVar* d, ModAccess* a );
+				virtual ~DecProp();
+		};
+
+		class DecVar : public virtual Stmt
 		{
 			public:
 				std::string name;
-				ExprList* arguments;
+				Type* type;
+				Expr* expression;
 
-				CallFun( std::string n, ExprList* a );
-				virtual ~CallFun();
+				DecVar( std::string vName, Type* vType, Expr* expr );
+				DecVar( std::string vName, Type* vType );
+				virtual ~DecVar();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+
+
+
+		class ExprList : public virtual Expr
+		{
+			public:
+				std::vector<Expr*> list;
+
+				ExprList();
 		};
 
 		class ExprVar : public virtual Expr
@@ -155,108 +239,14 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class StmtReturn : public virtual StmtExpr
+		class ModAccess : public virtual Node
 		{
 			public:
-				StmtReturn( Expr* expr );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+				ModAccess();
 		};
 
-		class DecProp : public virtual Stmt
-		{
-			public:
-				ModAccess*	access;
-				DecVar*		property;
 
-				DecProp( DecVar* d, ModAccess* a );
-				virtual ~DecProp();
 
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class DecMethod : public virtual Stmt
-		{
-			public:
-				ModAccess*	access;
-				DecFun*		method;
-
-				DecMethod( DecFun* m, ModAccess* a );
-				virtual ~DecMethod();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ClassBlock : public virtual Stmt
-		{
-			public:
-				std::vector<DecProp*>	properties;
-				std::vector<DecMethod*>	methods;
-
-				ClassBlock();
-		};
-
-		class DecClass : public virtual Stmt
-		{
-			public:
-				std::string	name;
-				std::string	parent;
-				ClassBlock*	block;
-
-				DecClass( std::string n, ClassBlock* b );
-				DecClass( std::string n, std::string p, ClassBlock* b );
-				virtual ~DecClass();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ConstStr : public virtual Expr
-		{
-			public:
-				std::string value;
-
-				ConstStr( std::string v );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ConstInt : public virtual Expr
-		{
-			public:
-				long long value;
-
-				ConstInt( long long value );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ConstNull : public virtual Expr
-		{
-			public:
-				ConstNull();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ConstBool : public virtual Expr
-		{
-			public:
-				bool value;
-
-				ConstBool( bool value );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class ConstFloat : public virtual Expr
-		{
-			public:
-				double value;
-
-				ConstFloat( double value );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
 
 		class OpBinary : public virtual Expr
 		{
@@ -266,86 +256,14 @@ namespace exo
 
 				OpBinary( Expr* a, Expr* b );
 				virtual ~OpBinary();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class OpBinaryAdd : public virtual OpBinary
 		{
 			public:
 				OpBinaryAdd( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinarySub : public virtual OpBinary
-		{
-			public:
-				OpBinarySub( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryMul : public virtual OpBinary
-		{
-			public:
-				OpBinaryMul( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryDiv : public virtual OpBinary
-		{
-			public:
-				OpBinaryDiv( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryEq : public virtual OpBinary
-		{
-			public:
-				OpBinaryEq( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryNeq : public virtual OpBinary
-		{
-			public:
-				OpBinaryNeq( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryLt : public virtual OpBinary
-		{
-			public:
-				OpBinaryLt( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryLe : public virtual OpBinary
-		{
-			public:
-				OpBinaryLe( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryGt : public virtual OpBinary
-		{
-			public:
-				OpBinaryGt( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class OpBinaryGe : public virtual OpBinary
-		{
-			public:
-				OpBinaryGe( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class OpBinaryAssign : public virtual OpBinary
@@ -354,6 +272,99 @@ namespace exo
 				OpBinaryAssign( Expr* a, Expr* b );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
+		};
+
+		class OpBinaryDiv : public virtual OpBinary
+		{
+			public:
+				OpBinaryDiv( Expr* a, Expr* b );
+		};
+
+		class OpBinaryEq : public virtual OpBinary
+		{
+			public:
+				OpBinaryEq( Expr* a, Expr* b );
+		};
+
+		class OpBinaryGe : public virtual OpBinary
+		{
+			public:
+				OpBinaryGe( Expr* a, Expr* b );
+		};
+
+		class OpBinaryGt : public virtual OpBinary
+		{
+			public:
+				OpBinaryGt( Expr* a, Expr* b );
+		};
+
+		class OpBinaryLe : public virtual OpBinary
+		{
+			public:
+				OpBinaryLe( Expr* a, Expr* b );
+		};
+
+		class OpBinaryLt : public virtual OpBinary
+		{
+			public:
+				OpBinaryLt( Expr* a, Expr* b );
+		};
+
+		class OpBinaryMul : public virtual OpBinary
+		{
+			public:
+				OpBinaryMul( Expr* a, Expr* b );
+		};
+
+		class OpBinaryNeq : public virtual OpBinary
+		{
+			public:
+				OpBinaryNeq( Expr* a, Expr* b );
+		};
+
+		class OpBinaryNew : public virtual OpBinary
+		{
+			public:
+				OpBinaryNew( Expr* a, Expr* b );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
+		};
+
+		class OpBinarySub : public virtual OpBinary
+		{
+			public:
+				OpBinarySub( Expr* a, Expr* b );
+		};
+
+
+
+		class OpUnary : public virtual Expr
+		{
+			public:
+				Expr* rhs;
+
+				OpUnary( Expr* a );
+				virtual ~OpUnary();
+		};
+
+
+		class StmtExpr : public virtual Stmt
+		{
+			public:
+				Expr* expression;
+
+				StmtExpr( Expr* expr );
+				~StmtExpr();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class StmtDelete : public virtual StmtExpr
+		{
+			public:
+				StmtDelete( Expr* expr );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class StmtIf : public virtual StmtExpr
@@ -369,40 +380,31 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class CallMethod : public virtual CallFun
+		class StmtList : public virtual Expr
 		{
 			public:
-				Expr* expression;
+				std::vector<Stmt*> list;
 
-				CallMethod( Expr* e, std::string n, ExprList* a );
-				virtual ~CallMethod();
+				StmtList();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class OpUnary : public virtual Expr
+		class StmtReturn : public virtual StmtExpr
 		{
 			public:
-				Expr* rhs;
-
-				OpUnary( Expr* a );
-				virtual ~OpUnary();
-		};
-
-		class OpBinaryNew : public virtual OpBinary
-		{
-			public:
-				OpBinaryNew( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
-		};
-
-		class StmtDelete : public virtual StmtExpr
-		{
-			public:
-				StmtDelete( Expr* expr );
+				StmtReturn( Expr* expr );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+
+		class Type : public virtual Node
+		{
+			public:
+				std::string name;
+
+				Type( std::string tName );
 		};
 	}
 }

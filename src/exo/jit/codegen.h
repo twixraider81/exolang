@@ -23,34 +23,34 @@ namespace exo
 {
 	namespace ast
 	{
-		class Tree;
-		class Node;
-		class Expr;
-		class Stmt;
-		class StmtList;
+		class CallFun;
+		class CallMethod;
+
+		class ConstBool;
+		class ConstFloat;
+		class ConstInt;
+		class ConstNull;
+		class ConstStr;
+
+		class DecClass;
+		class DecFun;
+		class DecFunProto;
+		class DecVar;
+
+		class ExprVar;
+
+		class OpBinary;
+		class OpBinaryAssign;
+		class OpBinaryNew;
+
+		class StmtDelete;
 		class StmtExpr;
 		class StmtIf;
-		class Type;
-		class DecVar;
-		class OpBinaryAssign;
-		class DecList;
-		class ExprList;
-		class DecFunProto;
-		class DecFun;
-		class CallFun;
-		class OpBinary;
-		class ConstNull;
-		class ConstBool;
-		class ConstInt;
-		class ConstFloat;
-		class ConstStr;
-		class ExprVar;
 		class StmtReturn;
-		class ClassBlock;
-		class DecClass;
-		class CallMethod;
-		class OpUnaryNew;
-		class StmtDelete;
+		class StmtList;
+
+		class Tree;
+		class Type;
 	}
 
 	namespace jit
@@ -69,44 +69,45 @@ namespace exo
 				llvm::Module*		module;
 			    llvm::IRBuilder<>	builder;
 
-			    Codegen( std::string cname );
 			    Codegen( std::string cname, std::string target );
+			    Codegen( std::string cname ) : Codegen( cname, llvm::sys::getProcessTriple() ) {};
 			    ~Codegen();
 
-			    void pushBlock( llvm::BasicBlock* block, std::string name );
 			    void popBlock();
-			    llvm::BasicBlock*							getCurrentBasicBlock();
-			    std::string									getCurrentBlockName();
-			    std::map<std::string,llvm::AllocaInst*>&	getCurrentBlockVars();
+			    void pushBlock( llvm::BasicBlock* block, std::string name );
+			    llvm::BasicBlock*					getCurrentBasicBlock();
+			    std::string							getCurrentBlockName();
+			    std::map<std::string,llvm::Value*>&	getCurrentBlockVars();
 
 			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
 
-			    llvm::Value* Generate( boost::shared_ptr<exo::ast::Tree> tree );
-			    llvm::Value* Generate( exo::ast::Node* node );
-			    llvm::Value* Generate( exo::ast::StmtList* list );
-			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
-			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
-			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
-			    llvm::Value* Generate( exo::ast::StmtDelete* stmt );
-
-			    llvm::Value* Generate( exo::ast::CallFun* fName );
+			    llvm::Value* Generate( exo::ast::CallFun* call );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
-			    llvm::Value* Generate( exo::ast::ExprVar* expr );
 
-			    llvm::Value* Generate( exo::ast::DecVar* decl );
-			    llvm::Value* Generate( exo::ast::DecFunProto* decl );
-			    llvm::Value* Generate( exo::ast::DecFun* decl );
-			    llvm::Value* Generate( exo::ast::DecClass* decl );
-
-			    llvm::Value* Generate( exo::ast::ConstNull* val );
 			    llvm::Value* Generate( exo::ast::ConstBool* val );
 			    llvm::Value* Generate( exo::ast::ConstInt* val );
 			    llvm::Value* Generate( exo::ast::ConstFloat* val );
+			    llvm::Value* Generate( exo::ast::ConstNull* val );
 			    llvm::Value* Generate( exo::ast::ConstStr* val );
+
+			    llvm::Value* Generate( exo::ast::DecClass* dec );
+			    llvm::Value* Generate( exo::ast::DecFun* dec );
+			    llvm::Value* Generate( exo::ast::DecFunProto* dec );
+			    llvm::Value* Generate( exo::ast::DecVar* dec );
+
+			    llvm::Value* Generate( exo::ast::ExprVar* expr );
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
 			    llvm::Value* Generate( exo::ast::OpBinaryAssign* op );
-			    llvm::Value* Generate( exo::ast::OpUnaryNew* op );
+			    llvm::Value* Generate( exo::ast::OpBinaryNew* op );
+
+			    llvm::Value* Generate( exo::ast::StmtDelete* stmt );
+			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
+			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
+			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
+			    llvm::Value* Generate( exo::ast::StmtList* list );
+
+			    llvm::Value* Generate( boost::shared_ptr<exo::ast::Tree> tree );
 		};
 	}
 }
