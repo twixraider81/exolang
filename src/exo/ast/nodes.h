@@ -322,20 +322,11 @@ namespace exo
 				OpBinaryNeq( Expr* a, Expr* b );
 		};
 
-		class OpBinaryNew : public virtual OpBinary
-		{
-			public:
-				OpBinaryNew( Expr* a, Expr* b );
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
-		};
-
 		class OpBinarySub : public virtual OpBinary
 		{
 			public:
 				OpBinarySub( Expr* a, Expr* b );
 		};
-
 
 
 		class OpUnary : public virtual Expr
@@ -345,6 +336,14 @@ namespace exo
 
 				OpUnary( Expr* a );
 				virtual ~OpUnary();
+		};
+
+		class OpUnaryNew : public virtual OpUnary
+		{
+			public:
+				OpUnaryNew( Expr* a );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
 		};
 
 
