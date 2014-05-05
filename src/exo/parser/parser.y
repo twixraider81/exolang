@@ -49,6 +49,7 @@
 %left		T_LT T_LE T_GT T_GE.
 %left		T_PLUS T_MINUS.
 %left		T_MUL T_DIV.
+%right		T_NEW.
 %left		T_SEMICOLON.
 
 
