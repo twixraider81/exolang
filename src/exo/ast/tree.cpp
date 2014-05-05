@@ -21,7 +21,11 @@ namespace exo
 	{
 		Tree::Tree()
 		{
-			parser = ParseAlloc( GC_malloc );
+#ifndef EXO_GC_DISABLE
+			parser = ::ParseAlloc( GC_malloc );
+#else
+			parser = ::ParseAlloc( malloc );
+#endif
 
 			if( parser == NULL ) {
 				EXO_THROW_EXCEPTION( OutOfMemory, "Out of memory." );
@@ -32,8 +36,11 @@ namespace exo
 
 		Tree::~Tree()
 		{
+#ifndef EXO_GC_DISABLE
 			::ParseFree( parser, GC_free );
-			// no freeing of stmts! codegen has ownership and will take care of that.
+#else
+			::ParseFree( parser, free );
+#endif
 		}
 
 		void Tree::Parse( std::string fName )

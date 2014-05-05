@@ -23,7 +23,7 @@ namespace exo
 {
 	namespace jit
 	{
-		class Block : public virtual gc
+		class Block
 		{
 			public:
 			    llvm::BasicBlock*	block;

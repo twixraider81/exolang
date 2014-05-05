@@ -24,7 +24,7 @@ namespace exo
 {
 	namespace ast
 	{
-		class Node : public virtual gc
+		class Node
 		{
 			public:
 				Node() { };

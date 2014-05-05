@@ -358,7 +358,7 @@ namespace exo
 
 			if( lType->isStructTy() ) {
 				BOOST_LOG_TRIVIAL(trace) << "Creating " << decl->type->name << " $" << decl->name << " on heap in (" << getCurrentBlockName() << ")";
-				EXO_GET_CALLEE( gcmalloc, "GC_malloc" );
+				EXO_GET_CALLEE( gcmalloc, EXO_ALLOC );
 
 				std::vector<llvm::Value*> arguments;
 				arguments.push_back( llvm::ConstantExpr::getSizeOf( lType ) );
@@ -468,7 +468,7 @@ namespace exo
 
 			if( getCurrentBlockVars()[ vName ]->getType()->getPointerElementType()->isStructTy() ) {
 				BOOST_LOG_TRIVIAL(trace) << "Deleting variable $" << vName << " from heap in (" << getCurrentBlockName() << ")";
-				EXO_GET_CALLEE( gcfree, "GC_free" );
+				EXO_GET_CALLEE( gcfree, EXO_DEALLOC );
 
 				std::vector<llvm::Value*> arguments;
 				arguments.push_back( builder.CreateBitCast( getCurrentBlockVars()[ vName ], this->ptrType ) );
@@ -574,14 +574,14 @@ namespace exo
 			std::vector<llvm::Type*> fArgs;
 
 			/*
-			 * register externals (GC_alloc, GC_free)
+			 * register essential externals
 			 */
 			fArgs.push_back( this->intType );
-			llvm::Function::Create( llvm::FunctionType::get( this->ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_malloc", this->module );
+			llvm::Function::Create( llvm::FunctionType::get( this->ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_ALLOC, this->module );
 
 			fArgs.clear();
 			fArgs.push_back( this->ptrType );
-			llvm::Function::Create( llvm::FunctionType::get( this->voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_free", this->module );
+			llvm::Function::Create( llvm::FunctionType::get( this->voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, this->module );
 
 			/*
 			 * this is main() well the entry

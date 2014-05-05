@@ -26,12 +26,6 @@
 #ifndef EXO_GC_DISABLE
 # include <gc/gc.h>
 # include <gc/gc_cpp.h>
-# define realloc GC_REALLOC
-#else
-class gc {};
-# define GC_malloc malloc
-# define GC_free free
-# define GC_realloc realloc
 #endif
 
 #include <fstream>

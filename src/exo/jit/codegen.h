@@ -122,6 +122,14 @@ namespace exo
 #define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
 #define EXO_GET_CALLEE(a,b) llvm::Function* a = module->getFunction( b ); if( a == 0 ) { EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup function!" ); }
 
+#ifndef EXO_GC_DISABLE
+# define EXO_ALLOC "GC_malloc"
+# define EXO_DEALLOC "GC_free"
+#else
+# define EXO_ALLOC "malloc"
+# define EXO_DEALLOC "free"
+#endif
+
 /*
  * FIXME: not safe
  */
