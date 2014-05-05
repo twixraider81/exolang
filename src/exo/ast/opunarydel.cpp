@@ -19,9 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtDelete::StmtDelete( Expr* expr ) : StmtExpr( expr )
+		OpUnaryDel::OpUnaryDel( Expr* a ) : OpUnary( a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Delete statement";
+			BOOST_LOG_TRIVIAL(debug) << "Delete";
 		}
 	}
 }

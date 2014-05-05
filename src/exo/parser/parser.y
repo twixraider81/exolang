@@ -49,7 +49,7 @@
 %left		T_LT T_LE T_GT T_GE.
 %left		T_PLUS T_MINUS.
 %left		T_MUL T_DIV.
-%right		T_NEW.
+%right		T_NEW T_DELETE.
 %left		T_SEMICOLON.
 
 
@@ -115,11 +115,6 @@ stmt(s) ::= stmtif(i) T_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "stmt(S) ::= stmtif(I) T_SEMICOLON.";
 	POINTERCHECK(i);
 	s = i;
-}
-stmt(s) ::= T_DELETE expr(e) T_SEMICOLON. {
-	BOOST_LOG_TRIVIAL(trace) << "stmt(S) ::= T_DELETE expr(E) T_SEMICOLON.";
-	POINTERCHECK(e);
-	s = new exo::ast::StmtDelete( e );
 }
 stmt(s) ::= expr(e) T_SEMICOLON. {
 	BOOST_LOG_TRIVIAL(trace) << "stmt(S) ::= expr(E) T_SEMICOLON.";
@@ -214,24 +209,6 @@ vardec(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
 	delete v;
 }
 
-
-/* a variable list, are variables seperated by a colon 
-%type varlist { exo::ast::ExprList* }
-%destructor varlist { delete $$; }
-varlist(l) ::= S_VAR(v). {
-	BOOST_LOG_TRIVIAL(trace) << "varlist(L) ::= S_VAR(V).";
-	POINTERCHECK(v);
-	l = new exo::ast::ExprList;
-	l->list.push_back( new exo::ast::ExprVar(v) );
-}
-varlist(e) ::= varlist(l) T_COMMA S_VAR(v). {
-	BOOST_LOG_TRIVIAL(trace) << "varlist(E) ::= varlist(L) T_COMMA S_VAR(V).";
-	POINTERCHECK(l);
-	POINTERCHECK(v);
-	l->list.push_back( new exo::ast::ExprVar(v) );
-	e = l;
-}
-*/
 
 /* a variable declaration lists are variable declarations seperated by a colon optionally or empty */
 %type vardeclist { exo::ast::DecList* }
@@ -509,6 +486,11 @@ expr(e) ::= T_NEW expr(a). {
 	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= T_NEW expr(A).";
 	POINTERCHECK(a);
 	e = new exo::ast::OpUnaryNew( a );
+}
+expr(e) ::= T_DELETE expr(a). {
+	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= T_DELETE expr(A).";
+	POINTERCHECK(a);
+	e = new exo::ast::OpUnaryDel( a );
 }
 
 

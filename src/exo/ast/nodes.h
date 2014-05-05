@@ -338,12 +338,20 @@ namespace exo
 				virtual ~OpUnary();
 		};
 
+		class OpUnaryDel : public virtual OpUnary
+		{
+			public:
+				OpUnaryDel( Expr* a );
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
 		class OpUnaryNew : public virtual OpUnary
 		{
 			public:
 				OpUnaryNew( Expr* a );
 
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); }
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 
@@ -354,14 +362,6 @@ namespace exo
 
 				StmtExpr( Expr* expr );
 				~StmtExpr();
-
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class StmtDelete : public virtual StmtExpr
-		{
-			public:
-				StmtDelete( Expr* expr );
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
