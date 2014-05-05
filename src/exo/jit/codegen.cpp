@@ -105,16 +105,10 @@ namespace exo
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating function call to \"" << call->name << "\" in (" << getCurrentBlockName() << ")";
-
-			std::string name = call->name;
-			llvm::Function* callee = module->getFunction( name );
-
-			if( callee == 0 ) {
-				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function: " + name );
-			}
+			EXO_GET_CALLEE( callee, call->name );
 
 			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
-				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + name );
+				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + call->name );
 			}
 
 			std::vector<exo::ast::Expr*>::iterator it;
@@ -127,23 +121,51 @@ namespace exo
 			return( builder.CreateCall( callee, arguments, "call" ) );
 		}
 
+		/*
+		 * TODO: use vtbl (after we got it working)
+		 */
 		llvm::Value* Codegen::Generate( exo::ast::CallMethod* call )
 		{
-			llvm::Value* object = call->expression->Generate( this );
-			BOOST_LOG_TRIVIAL(trace) << "Generating method call to " << call->name << " in (" << getCurrentBlockName() << ")";
+			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>( call->expression );
 
-			if( !object->getType()->isPointerTy() ) {
-				EXO_THROW_EXCEPTION( UnknownVar, "Can not invoke method of non class/pointer type." );
+			/*
+			 * TODO: make a function of this...
+			 */
+			if( !var ) {
+				EXO_THROW_EXCEPTION( InvalidCall, "Can only do a method call on a variable!" );
 			}
-/*
-			std::string cName = object->getType()->getPointerElementType()->getStructName();
-			std::string mName = EXO_METHOD( cName, call->name );
 
-			call->arguments->list.insert( call->arguments->list.begin(), new exo::ast::ExprVar( object ) );
-			exo::ast::CallFun* fun = new exo::ast::CallFun( mName, call->arguments );
-			return( fun->Generate( this ) );
-*/
-			return( NULL );
+			std::string vName = var->variable;
+			std::map<std::string,llvm::Value*>::const_iterator vit = getCurrentBlockVars().find( vName );
+			if( vit == getCurrentBlockVars().end() ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + vName );
+			}
+
+			llvm::Value* lVar = getCurrentBlockVars()[ vName ];
+			if( !lVar->getType()->getPointerElementType()->isStructTy() ) {
+				EXO_THROW_EXCEPTION( InvalidCall, "Can only invoke method on an object." );
+			}
+
+			std::string cName = lVar->getType()->getPointerElementType()->getStructName();
+			std::string mName = EXO_METHOD( cName, call->name );
+			BOOST_LOG_TRIVIAL(trace) << "Generating call to $" << vName << "->" << call->name << "/" << mName << " in (" << getCurrentBlockName() << ")";
+
+			EXO_GET_CALLEE( callee, mName );
+
+			// make space for $this ptr
+			if( callee->arg_size() != ( call->arguments->list.size() + 1 ) && !callee->isVarArg() ) {
+				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for function " + mName );
+			}
+
+			std::vector<exo::ast::Expr*>::iterator it;
+			std::vector<llvm::Value*> arguments;
+
+			arguments.push_back( getCurrentBlockVars()[ vName ] );
+			for( it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
+				arguments.push_back( (**it).Generate( this ) );
+			}
+
+			return( builder.CreateCall( callee, arguments, "call" ) );
 		}
 
 
@@ -336,7 +358,7 @@ namespace exo
 				EXO_GET_CALLEE( gcmalloc, "GC_malloc" );
 
 				std::vector<llvm::Value*> arguments;
-				arguments.push_back( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, 6 ) ) );
+				arguments.push_back( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, 64 ) ) );
 
 				getCurrentBlockVars()[ dName ] = builder.CreateBitCast( builder.CreateCall( gcmalloc, arguments ), llvm::PointerType::getUnqual( lType ) );
 			} else {
