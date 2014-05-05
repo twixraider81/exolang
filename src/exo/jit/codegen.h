@@ -41,9 +41,10 @@ namespace exo
 
 		class OpBinary;
 		class OpBinaryAssign;
-		class OpBinaryNew;
 
-		class StmtDelete;
+		class OpUnaryDel;
+		class OpUnaryNew;
+
 		class StmtExpr;
 		class StmtIf;
 		class StmtReturn;
@@ -99,9 +100,10 @@ namespace exo
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
 			    llvm::Value* Generate( exo::ast::OpBinaryAssign* op );
-			    llvm::Value* Generate( exo::ast::OpBinaryNew* op );
 
-			    llvm::Value* Generate( exo::ast::StmtDelete* stmt );
+			    llvm::Value* Generate( exo::ast::OpUnaryDel* op );
+			    llvm::Value* Generate( exo::ast::OpUnaryNew* op );
+
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
@@ -115,6 +117,7 @@ namespace exo
 #define EXO_CLASS(n) (n)
 #define EXO_VTABLE(n) EXO_CLASS(n) + "_vtbl"
 #define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
+#define EXO_GET_CALLEE(a,b) llvm::Function* a = module->getFunction( b ); if( a == 0 ) { EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup function!" ); }
 
 /*
  * FIXME: not safe

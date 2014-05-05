@@ -95,7 +95,8 @@ namespace exo
 				return( ltype );
 			}
 
-			return( llvm::Type::getVoidTy( context ) );
+			EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + type->name );
+			return( NULL ); // satisfy IDE
 		}
 
 
@@ -330,29 +331,21 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::DecVar* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Creating " << decl->type->name << " $" << decl->name << " in (" << getCurrentBlockName() << ")";
 			std::string dName = decl->name;
-
 			llvm::Type* lType = getType( decl->type, module->getContext() );
 
 			if( lType->isStructTy() ) {
-				llvm::Function* callee = module->getFunction( "GC_malloc" );
-
-				if( callee == 0 ) {
-					EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup allocator!" );
-				}
+				BOOST_LOG_TRIVIAL(trace) << "Creating " << decl->type->name << " $" << decl->name << " on heap in (" << getCurrentBlockName() << ")";
+				EXO_GET_CALLEE( gcmalloc, "GC_malloc" );
 
 				std::vector<llvm::Value*> arguments;
 				arguments.push_back( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, 6 ) ) );
 
-				//getCurrentBlockVars()[ dName ] = builder.CreateCall( callee, arguments, "call" );
-				//builder.CreateBitCast( getCurrentBlockVars()[ dName ], lType );
+				getCurrentBlockVars()[ dName ] = builder.CreateBitCast( builder.CreateCall( gcmalloc, arguments ), llvm::PointerType::getUnqual( lType ) );
 			} else {
+				BOOST_LOG_TRIVIAL(trace) << "Creating " << decl->type->name << " $" << decl->name << " on stack in (" << getCurrentBlockName() << ")";
 				getCurrentBlockVars()[ dName ] = builder.CreateAlloca( lType );
 			}
-
-
-			BOOST_LOG_TRIVIAL(trace) << "Amount of local variables: " << getCurrentBlockVars().size();
 
 			if( decl->expression ) {
 				exo::ast::OpBinaryAssign* a = new exo::ast::OpBinaryAssign( new exo::ast::ExprVar( dName ), decl->expression );
@@ -373,11 +366,14 @@ namespace exo
 				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + vName );
 			}
 
-			//if( !getCurrentBlockVars()[ vName ]->getAllocatedType()->isPointerTy() ) {
+			// see if we can somehow smooth this check, see also binopassign and unaryopdel
+			if( !getCurrentBlockVars()[ vName ]->getType()->getPointerElementType()->isStructTy() ) {
+				BOOST_LOG_TRIVIAL(trace) << "Load variable $" << vName << " from stack in (" << getCurrentBlockName() << ")";
 				return( builder.CreateLoad( getCurrentBlockVars()[ vName ] ) );
-			//} else {
-			//	return( getCurrentBlockVars()[ vName ] );
-			//}
+			} else {
+				BOOST_LOG_TRIVIAL(trace) << "Load variable $" << vName << " from heap in (" << getCurrentBlockName() << ")";
+				return( getCurrentBlockVars()[ vName ] );
+			}
 		}
 
 
@@ -411,7 +407,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::OpBinaryAssign* assign )
 		{
-			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>(assign->lhs);
+			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>( assign->lhs );
 
 			if( !var ) {
 				EXO_THROW_EXCEPTION( UnknownVar, "Can only assign to a variable!" );
@@ -420,10 +416,58 @@ namespace exo
 			std::string vName = var->variable;
 			llvm::Value* rhs = assign->rhs->Generate( this );
 
-			BOOST_LOG_TRIVIAL(trace) << "Assigning variable $" << vName << " in (" << getCurrentBlockName() << ")";
-			return( builder.CreateStore( rhs, getCurrentBlockVars()[ vName ] ) );
+			if( !getCurrentBlockVars()[ vName ]->getType()->getPointerElementType()->isStructTy() ) {
+				BOOST_LOG_TRIVIAL(trace) << "Store variable $" << vName << " on stack in (" << getCurrentBlockName() << ")";
+				return( builder.CreateStore( rhs, getCurrentBlockVars()[ vName ] ) );
+			} else {
+				BOOST_LOG_TRIVIAL(trace) << "Store variable $" << vName << " on heap in (" << getCurrentBlockName() << ")";
+				return( getCurrentBlockVars()[ vName ] );
+			}
 		}
 
+
+		/*
+		 * TODO: call destructor
+		 */
+		llvm::Value* Codegen::Generate( exo::ast::OpUnaryDel* op )
+		{
+			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>( op->rhs );
+
+			if( !var ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Can only delete a variable!" );
+			}
+
+			std::string vName = var->variable;
+
+			std::map<std::string,llvm::Value*>::const_iterator it = getCurrentBlockVars().find( vName );
+			if( it == getCurrentBlockVars().end() ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + vName );
+			}
+
+			if( getCurrentBlockVars()[ vName ]->getType()->getPointerElementType()->isStructTy() ) {
+				BOOST_LOG_TRIVIAL(trace) << "Deleting variable $" << vName << " from heap in (" << getCurrentBlockName() << ")";
+				EXO_GET_CALLEE( gcfree, "GC_free" );
+
+				std::vector<llvm::Value*> arguments;
+				arguments.push_back( builder.CreateBitCast( getCurrentBlockVars()[ vName ], llvm::Type::getInt64PtrTy( module->getContext() ) ) );
+
+				builder.CreateCall( gcfree, arguments );
+			} else {
+				// NULL var?
+				BOOST_LOG_TRIVIAL(trace) << "Deleting variable $" << vName << " from stack in (" << getCurrentBlockName() << ")";
+			}
+
+			getCurrentBlockVars().erase( vName );
+
+			/*
+			 * FIXME: should probably return nothing
+			 */
+			return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
+		}
+
+		/*
+		 * TODO: call constructor
+		 */
 		llvm::Value* Codegen::Generate( exo::ast::OpUnaryNew* op )
 		{
 			exo::ast::CallFun* init = dynamic_cast<exo::ast::CallFun*>( op->rhs );
@@ -439,39 +483,6 @@ namespace exo
 			return( NULL );
 		}
 
-
-		llvm::Value* Codegen::Generate( exo::ast::StmtDelete* stmt )
-		{
-			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>( stmt->expression );
-			llvm::Value* object = stmt->expression->Generate( this );
-
-			if( !var ) {
-				EXO_THROW_EXCEPTION( UnknownVar, "Can only assign to a variable!" );
-			}
-
-			std::string vName = var->variable;
-			BOOST_LOG_TRIVIAL(trace) << "Deleting $" << vName;
-
-			delete stmt;
-
-			std::map<std::string,llvm::Value*>::const_iterator it;
-			getCurrentBlockVars().find( vName );
-			if( it != getCurrentBlockVars().end() ) {
-				getCurrentBlockVars().erase( vName );
-			}
-
-			if( object->getType()->isPointerTy() ) {
-				/*
-				 * FIXME: call GC_free
-				 */
-				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
-			} else {
-				/*
-				 * FIXME: should probably return nothing
-				 */
-				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
-			}
-		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
@@ -513,7 +524,6 @@ namespace exo
 			popBlock();
 			popBlock();
 
-			//delete stmt;
 			return( phi );
 		}
 
@@ -549,14 +559,21 @@ namespace exo
 
 			pushBlock( block, name );
 
-			// register externals
 			/*
+			 * register externals (GC_alloc, GC_free)
 			 * TODO: only x64 :s
 			 */
+			llvm::Type* ptrType = llvm::Type::getInt64PtrTy( module->getContext() );
+			llvm::Type* sizeType = llvm::Type::getInt64Ty( module->getContext() );
+			llvm::Type* voidType = llvm::Type::getVoidTy( module->getContext() );
 			std::vector<llvm::Type*> fArgs;
-			fArgs.push_back( llvm::Type::getInt64Ty( module->getContext() ) );
-			llvm::FunctionType* fType = llvm::FunctionType::get( llvm::Type::getInt64PtrTy( module->getContext() ), fArgs, false );
-			llvm::Function* function = llvm::Function::Create( fType, llvm::GlobalValue::ExternalLinkage, "GC_malloc", module );
+
+			fArgs.push_back( sizeType );
+			llvm::Function::Create( llvm::FunctionType::get( ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_malloc", module );
+
+			fArgs.clear();
+			fArgs.push_back( ptrType );
+			llvm::Function::Create( llvm::FunctionType::get( voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_free", module );
 
 
 			Generate( tree->stmts );
