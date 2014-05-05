@@ -358,7 +358,7 @@ namespace exo
 				EXO_GET_CALLEE( gcmalloc, "GC_malloc" );
 
 				std::vector<llvm::Value*> arguments;
-				arguments.push_back( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, 64 ) ) );
+				arguments.push_back( llvm::ConstantExpr::getSizeOf( lType ) );
 
 				getCurrentBlockVars()[ dName ] = builder.CreateBitCast( builder.CreateCall( gcmalloc, arguments ), llvm::PointerType::getUnqual( lType ) );
 			} else {
