@@ -45,6 +45,9 @@ class Object
 }
 */
 
+int function puts( string $str );
+int function printf( string $str ... );
+
 class Object
 {
 	public	string	$typeName;
@@ -91,8 +94,8 @@ Integer $i = new Integer();
 Float $f = new Float();
 
 $i = $o->getInt( 1 );
-int function printf( string $str ... );
-printf( "$o->getInt()=%i", $i );
+printf( "$o->getInt() = %i", $i );
+puts( $o->getTypeName() );
 
 delete $o;
 delete $b;
