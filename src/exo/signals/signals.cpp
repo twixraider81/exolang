@@ -28,8 +28,8 @@ namespace exo
 				unw_cursor_t cursor; unw_context_t uc;
 				unw_word_t ip, sp, offp;
 
-				unw_getcontext (&uc);
-				unw_init_local (&cursor, &uc );
+				unw_getcontext( &uc );
+				unw_init_local( &cursor, &uc );
 
 				while( unw_step( &cursor ) > 0 ) {
 					char file[256];
@@ -46,7 +46,7 @@ namespace exo
 						demangled = name;
 					}
 
-					BOOST_LOG_TRIVIAL(debug) << "(" << demangled << "), ip:" << boost::format( "%lx" ) % ip << ", sp:" << boost::format( "%lx" ) % sp;
+					BOOST_LOG_TRIVIAL(debug) << ( boost::format( "(%s), ip:%lx, sp:%lx" ) % demangled % ip % sp );
 				}
 
 				EXO_THROW_EXCEPTION( Segfault, "Segmentation fault!" );
