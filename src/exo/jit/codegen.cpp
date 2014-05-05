@@ -282,7 +282,12 @@ namespace exo
 			pushBlock( block, decl->name );
 
 			for( it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				(**it).Generate( this );
+				llvm::Type* arg = getType( (**it).type, module->getContext() );
+
+				// for classes/structs we have ptr and do not generate defaults
+				if( !arg->isStructTy() ) {
+					(**it).Generate( this );
+				}
 			}
 
 			Generate( decl->stmts );
@@ -291,14 +296,6 @@ namespace exo
 				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getCurrentBlockName() << ")";
 				builder.CreateRet( llvm::Constant::getNullValue( getType( decl->returnType, module->getContext() ) ) );
 			}
-
-			/* only in llvm 3.5
-			std::string buffer;
-			llvm::raw_string_ostream ostream( buffer );
-			if( !llvm::verifyFunction( *function, ostream ) ) {
-				EXO_THROW_EXCEPTION( LLVM, buffer );
-			}
-			*/
 
 			popBlock();
 
@@ -479,7 +476,6 @@ namespace exo
 			std::string vName = init->name;
 			BOOST_LOG_TRIVIAL(trace) << "Creating instance of " << vName;
 
-			module->dump();
 			return( NULL );
 		}
 
