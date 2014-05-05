@@ -90,11 +90,9 @@ Boolean $b = new Boolean();
 Integer $i = new Integer();
 Float $f = new Float();
 
-/*
 $i = $o->getInt( 1 );
 int function printf( string $str ... );
 printf( "$o->getInt()=%i", $i );
-*/
 
 delete $o;
 delete $b;
