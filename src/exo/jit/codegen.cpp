@@ -30,6 +30,11 @@ namespace exo
 			module = new llvm::Module( cname, llvm::getGlobalContext() );
 			module->setTargetTriple( target );
 			entry = NULL;
+
+			llvm::DataLayout dataLayout( module );
+			intType = dataLayout.getIntPtrType( module->getContext() );
+			ptrType = llvm::PointerType::getUnqual( intType );
+			voidType = llvm::Type::getVoidTy( module->getContext() );
 		}
 
 		Codegen::~Codegen()
@@ -38,41 +43,41 @@ namespace exo
 
 		void Codegen::popBlock()
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Poping \"" << getCurrentBlockName() << "\" from stack, stacksize:" << blocks.size();
+			BOOST_LOG_TRIVIAL(trace) << "Poping \"" << this->getCurrentBlockName() << "\" from stack, stacksize:" << this->blocks.size();
 
-			blocks.pop();
+			this->blocks.pop();
 
 			// reset our insert point
-			if( blocks.size() > 0 ) {
-				builder.SetInsertPoint( blocks.top()->block );
+			if( this->blocks.size() > 0 ) {
+				this->builder.SetInsertPoint( this->blocks.top()->block );
 			}
 		}
 
 		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name )
 		{
-			blocks.push( new Block() );
-			blocks.top()->block = block;
-			blocks.top()->name = name;
+			this->blocks.push( new Block() );
+			this->blocks.top()->block = block;
+			this->blocks.top()->name = name;
 
 			// reset our new insert point
-			builder.SetInsertPoint( blocks.top()->block );
+			builder.SetInsertPoint( this->blocks.top()->block );
 
-			BOOST_LOG_TRIVIAL(trace) << "Pushing \"" << getCurrentBlockName() << "\" onto stack, stacksize:" << blocks.size();
+			BOOST_LOG_TRIVIAL(trace) << "Pushing \"" << this->getCurrentBlockName() << "\" onto stack, stacksize:" << this->blocks.size();
 		}
 
 		llvm::BasicBlock* Codegen::getCurrentBasicBlock()
 		{
-			 return( blocks.top()->block );
+			 return( this->blocks.top()->block );
 		}
 
 		std::string Codegen::getCurrentBlockName()
 		{
-			 return( blocks.top()->name );
+			 return( this->blocks.top()->name );
 		}
 
 		std::map<std::string,llvm::Value*>& Codegen::getCurrentBlockVars()
 		{
-			return( blocks.top()->variables );
+			return( this->blocks.top()->variables );
 		}
 
 		/*
@@ -95,11 +100,9 @@ namespace exo
 				return( ltype );
 			}
 
-			EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + type->name );
+			EXO_THROW_EXCEPTION( UnknownClass, "Unknown class \"" + type->name  + "\"" );
 			return( NULL ); // satisfy IDE
 		}
-
-
 
 
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
@@ -228,7 +231,7 @@ namespace exo
 				llvm::StructType* parent = module->getTypeByName( pName );
 
 				if( !parent ) {
-					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class: " + pName );
+					EXO_THROW_EXCEPTION( UnknownClass, "Unknown class \"" + pName + "\"" );
 				}
 
 				for( llvm::StructType::element_iterator it = parent->element_begin(); it != parent->element_end(); it++ ) {
@@ -468,7 +471,7 @@ namespace exo
 				EXO_GET_CALLEE( gcfree, "GC_free" );
 
 				std::vector<llvm::Value*> arguments;
-				arguments.push_back( builder.CreateBitCast( getCurrentBlockVars()[ vName ], llvm::Type::getInt64PtrTy( module->getContext() ) ) );
+				arguments.push_back( builder.CreateBitCast( getCurrentBlockVars()[ vName ], this->ptrType ) );
 
 				builder.CreateCall( gcfree, arguments );
 			} else {
@@ -568,38 +571,32 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( boost::shared_ptr<exo::ast::Tree> tree )
 		{
-			// FIXME: should probably switch the return type
-			llvm::Type* retType = llvm::Type::getInt64Ty( module->getContext() );
-			llvm::Value* retVal;
-			llvm::FunctionType *ftype = llvm::FunctionType::get( retType, false );
-			entry = llvm::Function::Create( ftype, llvm::GlobalValue::InternalLinkage, name, module );
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), "entry", entry, 0 );
-
-			pushBlock( block, name );
+			std::vector<llvm::Type*> fArgs;
 
 			/*
 			 * register externals (GC_alloc, GC_free)
-			 * TODO: only x64 :s
 			 */
-			llvm::Type* ptrType = llvm::Type::getInt64PtrTy( module->getContext() );
-			llvm::Type* sizeType = llvm::Type::getInt64Ty( module->getContext() );
-			llvm::Type* voidType = llvm::Type::getVoidTy( module->getContext() );
-			std::vector<llvm::Type*> fArgs;
-
-			fArgs.push_back( sizeType );
-			llvm::Function::Create( llvm::FunctionType::get( ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_malloc", module );
+			fArgs.push_back( this->intType );
+			llvm::Function::Create( llvm::FunctionType::get( this->ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_malloc", this->module );
 
 			fArgs.clear();
-			fArgs.push_back( ptrType );
-			llvm::Function::Create( llvm::FunctionType::get( voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_free", module );
+			fArgs.push_back( this->ptrType );
+			llvm::Function::Create( llvm::FunctionType::get( this->voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, "GC_free", this->module );
 
+			/*
+			 * this is main() well the entry
+			 */
+			this->entry = llvm::Function::Create( llvm::FunctionType::get( this->intType, false ), llvm::GlobalValue::InternalLinkage, this->name, this->module );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), "entry", this->entry, 0 );
+
+			pushBlock( block, this->name );
 
 			Generate( tree->stmts );
 
-			retVal = block->getTerminator();
+			llvm::Value* retVal = block->getTerminator();
 			if( retVal == NULL ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getCurrentBlockName() << ")";
-				retVal = builder.CreateRet( llvm::Constant::getNullValue( retType ) );
+				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << this->name << ")";
+				retVal = this->builder.CreateRet( llvm::Constant::getNullValue( this->intType ) );
 			}
 
 			popBlock();

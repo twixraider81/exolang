@@ -69,6 +69,9 @@ namespace exo
 				llvm::Function*		entry;
 				llvm::Module*		module;
 			    llvm::IRBuilder<>	builder;
+				llvm::Type* 		intType;
+				llvm::Type* 		ptrType;
+				llvm::Type* 		voidType;
 
 			    Codegen( std::string cname, std::string target );
 			    Codegen( std::string cname ) : Codegen( cname, llvm::sys::getProcessTriple() ) {};
