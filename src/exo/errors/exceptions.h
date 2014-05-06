@@ -66,11 +66,6 @@ namespace exo
 		class UnknownVar : public virtual Exception {};
 
 		/**
-		 * Exception that will be thrown in case the IR generator stumbles across an unknown operator.
-		 */
-		class UnknownBinaryOp : public virtual Exception {};
-
-		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an undefined function.
 		 */
 		class UnknownFunction : public virtual Exception {};
@@ -84,6 +79,11 @@ namespace exo
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
 		 */
 		class InvalidCall : public virtual Exception {};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid operator/operation.
+		 */
+		class InvalidOp : public virtual Exception {};
 
 		/**
 		 * Exception that will be thrown in case we ran out of memory
