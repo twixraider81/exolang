@@ -8,24 +8,28 @@ string $s = __FILE__;
 string $v = __VERSION__;
 string $t = __TARGET__;
 
-int function test( int $e )
-{
-	int $a = $e + 1;
-	return $a;
-};
-
-int $f = test( 2 );
-test( 3 );
-
 // external prototype
 float function sin( float $x );
 float function cos( float $x );
 int function puts( string $str );
 int function printf( string $str ... );
 
+int function test( int $e )
+{
+	int $a = $e + 1;
+	return $a;
+};
+
+
 puts( $s );
 puts( $v );
 puts( $t );
+
+int $f = test( 2 );
+printf( "int $f = test( 2 ) - %i", $f );
+puts( "" );
+printf( "test( 3 ) - %i", test( 3 ) );
+puts( "" );
 
 float $g = 32.4;
 printf( "sinus: %f - %f", $g, sin( $g ) );
