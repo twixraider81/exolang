@@ -28,7 +28,6 @@ namespace exo
 		CallMethod::~CallMethod()
 		{
 			delete expression;
-			delete arguments;
 		}
 	}
 }
