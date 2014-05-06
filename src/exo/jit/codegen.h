@@ -38,6 +38,7 @@ namespace exo
 		class DecVar;
 
 		class ExprVar;
+		class ExprProp;
 
 		class OpBinary;
 		class OpBinaryAssign;
@@ -101,6 +102,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::DecVar* dec );
 
 			    llvm::Value* Generate( exo::ast::ExprVar* expr );
+			    llvm::Value* Generate( exo::ast::ExprProp* expr );
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
 			    llvm::Value* Generate( exo::ast::OpBinaryAssign* op );

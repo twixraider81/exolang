@@ -54,7 +54,8 @@ class Object
 
 	public string function getTypeName()
 	{
-		return "Object";
+		$this->typeName = "Object";
+		return $this->typeName;
 	};
 
 	public int function getInt( int $int )

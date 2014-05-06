@@ -400,7 +400,14 @@ expr(e) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
 	POINTERCHECK(v);
 	POINTERCHECK(i);
 	POINTERCHECK(a);
-	e = new exo::ast::CallMethod( v, TOKENSTR(i), a );
+	e = new exo::ast::CallMethod( TOKENSTR(i), v, a );
+	delete i;
+}
+expr(e) ::= expr(v) T_PTR S_ID(i). {
+	BOOST_LOG_TRIVIAL(trace) << "expr(E) ::= expr(V) T_PTR S_ID(I).";
+	POINTERCHECK(v);
+	POINTERCHECK(i);
+	e = new exo::ast::ExprProp( TOKENSTR(i), v );
 	delete i;
 }
 expr(e) ::= S_VAR(v). {

@@ -241,10 +241,8 @@ namespace exo
 				}
 			}
 
-			// now our own
 			// FIXME: should overwrite properties, not just append
-			std::vector<exo::ast::DecProp*>::iterator pit;
-			for( pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
+			for( std::vector<exo::ast::DecProp*>::iterator pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
 				BOOST_LOG_TRIVIAL(trace) << "Generating property $" << (**pit).property->name;
 				properties.push_back( this->getType( (**pit).property->type ) );
 			}
@@ -409,6 +407,13 @@ namespace exo
 				BOOST_LOG_TRIVIAL(trace) << "Load variable pointer $" << expr->name << " in (" << this->getCurrentBlockName() << ")";
 				return( variable );
 			}
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ExprProp* expr )
+		{
+			llvm::Value* variable = this->getCurrentBlockVar( expr->name );
+			BOOST_LOG_TRIVIAL(trace) << "Load property $" << expr->name << "->" << expr->property << " (" << this->getCurrentBlockName() << ")";
+			return( variable );
 		}
 
 

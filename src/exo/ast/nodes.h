@@ -70,7 +70,7 @@ namespace exo
 			public:
 				Expr* expression;
 
-				CallMethod( Expr* e, std::string n, ExprList* a );
+				CallMethod( std::string n, Expr* e, ExprList* a );
 				virtual ~CallMethod();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
@@ -220,7 +220,6 @@ namespace exo
 
 
 
-
 		class ExprList : public virtual Expr
 		{
 			public:
@@ -239,12 +238,21 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class ExprProp : public virtual ExprVar
+		{
+			public:
+				Expr* expression;
+
+				ExprProp( std::string pName, Expr* e );
+				virtual ~ExprProp();
+		};
+
+
 		class ModAccess : public virtual Node
 		{
 			public:
 				ModAccess();
 		};
-
 
 
 
