@@ -93,9 +93,23 @@ Boolean $b = new Boolean();
 Integer $i = new Integer();
 Float $f = new Float();
 
-$i = $o->getInt( 1 );
-printf( "$o->getInt() = %i", $i );
-puts( $o->getTypeName() );
+int function getInt( int $int )
+{
+	return $int;
+};
+
+int $t = 1;
+int $h = $o->getInt( $t );
+int $j = getInt( $t );
+
+// corrupt
+// $i = $o->getInt( 1 );
+printf( "$o->getInt() = %i", $h );
+puts("");
+printf( "getInt() = %i", $j );
+puts("");
+// corrupt, gets freed
+//puts( $o->getTypeName() );
 
 delete $o;
 delete $b;

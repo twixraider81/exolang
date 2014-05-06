@@ -28,6 +28,7 @@
  * TODO: 2. document ast and jit
  * TODO: 3. use boost unit tests!
  * TODO: 4. fix leaks
+ * TODO: 5. implement a real symbol table which tracks types, memory locations and pointer/refs
  */
 int main( int argc, char **argv )
 {
