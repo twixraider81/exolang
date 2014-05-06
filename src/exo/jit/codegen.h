@@ -82,8 +82,9 @@ namespace exo
 			    llvm::BasicBlock*					getCurrentBasicBlock();
 			    std::string							getCurrentBlockName();
 			    std::map<std::string,llvm::Value*>&	getCurrentBlockVars();
+			    llvm::Value*						getCurrentBlockVar( std::string vName );
 
-			    llvm::Type* getType( exo::ast::Type* type, llvm::LLVMContext& context );
+			    llvm::Type* getType( exo::ast::Type* type );
 
 			    llvm::Value* Generate( exo::ast::CallFun* call );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
