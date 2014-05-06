@@ -22,7 +22,7 @@ namespace exo
 		ExprVar::ExprVar( std::string vName )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Variable expression $" << vName;
-			variable = vName;
+			name = vName;
 		}
 	}
 }

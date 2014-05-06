@@ -232,7 +232,7 @@ namespace exo
 		class ExprVar : public virtual Expr
 		{
 			public:
-				std::string variable;
+				std::string name;
 
 				ExprVar( std::string vName );
 
