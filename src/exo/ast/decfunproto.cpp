@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecFunProto::DecFunProto( std::string n, Type* rType, DecList* vArgs, bool va )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring function \"" << n << "\"";
 			name = n;
 			returnType = rType;
 			arguments = vArgs;

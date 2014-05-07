@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinaryDiv::OpBinaryDiv( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Division";
 		}
 	}
 }

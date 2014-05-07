@@ -21,7 +21,6 @@ namespace exo
 	{
 		ModAccess::ModAccess()
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Access modifier";
 		}
 	}
 }

@@ -46,7 +46,7 @@ namespace exo
 		void Tree::Parse( std::string fName )
 		{
 			fileName = fName;
-			BOOST_LOG_TRIVIAL(trace) <<  "Opening <" << fileName << ">";
+			BOOST_LOG_TRIVIAL(debug) <<  "Opening <" << fileName << ">";
 
 			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = 0x0;
@@ -81,7 +81,7 @@ namespace exo
 		void Tree::Parse( std::istream& stream )
 		{
 			fileName = "<stdin>";
-			BOOST_LOG_TRIVIAL(trace) << "Opening <stdin>";
+			BOOST_LOG_TRIVIAL(debug) << "Opening <stdin>";
 
 			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = 0x0;

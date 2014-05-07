@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinaryLe::OpBinaryLe( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Lower equal";
 		}
 	}
 }

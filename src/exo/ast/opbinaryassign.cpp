@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinaryAssign::OpBinaryAssign( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Assignment";
 		}
 	}
 }

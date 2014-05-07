@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpUnaryNew::OpUnaryNew( Expr* a ) : OpUnary( a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "New";
 		}
 	}
 }

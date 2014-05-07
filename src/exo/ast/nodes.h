@@ -245,6 +245,8 @@ namespace exo
 
 				ExprProp( std::string pName, Expr* e );
 				virtual ~ExprProp();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 

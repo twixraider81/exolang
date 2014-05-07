@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinaryNeq::OpBinaryNeq( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Not equal";
 		}
 	}
 }

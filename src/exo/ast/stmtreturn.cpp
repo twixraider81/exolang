@@ -21,7 +21,6 @@ namespace exo
 	{
 		StmtReturn::StmtReturn( Expr* expr ) : StmtExpr( expr )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Return statement";
 		}
 	}
 }

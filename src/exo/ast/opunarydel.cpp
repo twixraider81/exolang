@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpUnaryDel::OpUnaryDel( Expr* a ) : OpUnary( a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Delete";
 		}
 	}
 }

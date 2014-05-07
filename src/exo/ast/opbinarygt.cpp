@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinaryGt::OpBinaryGt( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Greater than";
 		}
 	}
 }

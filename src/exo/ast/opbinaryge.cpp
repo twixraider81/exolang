@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinaryGe::OpBinaryGe( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Greater equal";
 		}
 	}
 }

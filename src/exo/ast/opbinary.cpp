@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinary::OpBinary( Expr* a, Expr* b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Binary operation";
 			lhs = a;
 			rhs = b;
 		}

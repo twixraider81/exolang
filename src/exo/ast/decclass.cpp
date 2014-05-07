@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecClass::DecClass( std::string n, ClassBlock* b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\"";
 			name = n;
 			block = b;
 			parent = "";
@@ -29,7 +28,6 @@ namespace exo
 
 		DecClass::DecClass( std::string n, std::string p, ClassBlock* b ) : DecClass( n, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << n << "\" parent \"" << p << "\"";
 			parent = p;
 		}
 

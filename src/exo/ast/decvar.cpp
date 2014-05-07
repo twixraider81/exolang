@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecVar::DecVar( std::string vName, Type* vType )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring $" << vName;
 			name = vName;
 			type = vType;
 			expression = NULL;
@@ -29,7 +28,6 @@ namespace exo
 
 		DecVar::DecVar( std::string vName, Type* vType, Expr* expr )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring/assigning $" << vName;
 			name = vName;
 			type = vType;
 			expression = expr;

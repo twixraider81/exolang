@@ -21,7 +21,6 @@ namespace exo
 	{
 		ClassBlock::ClassBlock()
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Class members";
 		}
 	}
 }

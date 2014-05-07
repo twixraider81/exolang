@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecMethod::DecMethod( DecFun* m, ModAccess* a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring method \"" << m->name << "\"";
 			access = a;
 			method = m;
 		}

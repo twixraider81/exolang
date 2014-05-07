@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpUnary::OpUnary( Expr* a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Unary operation";
 			rhs = a;
 		}
 

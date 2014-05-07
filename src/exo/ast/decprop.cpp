@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecProp::DecProp( DecVar* d, ModAccess* a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring property $" << d->name;
 			access = a;
 			property = d;
 		}

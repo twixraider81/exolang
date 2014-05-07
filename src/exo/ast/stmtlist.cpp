@@ -21,7 +21,6 @@ namespace exo
 	{
 		StmtList::StmtList()
 		{
-			BOOST_LOG_TRIVIAL(debug) << "List of statements";
 		}
 	}
 }

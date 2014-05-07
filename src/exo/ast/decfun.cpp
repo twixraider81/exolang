@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecFun::DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock, bool va ) : DecFunProto( n, rType, vArgs, va )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring function block \"" << n << "\"";
 			stmts = cBlock;
 		}
 

@@ -21,7 +21,6 @@ namespace exo
 	{
 		ExprList::ExprList()
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Arguments / expression list";
 		}
 	}
 }

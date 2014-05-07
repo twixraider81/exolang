@@ -21,7 +21,6 @@ namespace exo
 	{
 		OpBinarySub::OpBinarySub( Expr* a, Expr* b ) : OpBinary( a, b )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Subtraction";
 		}
 	}
 }

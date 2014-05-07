@@ -21,7 +21,6 @@ namespace exo
 	{
 		DecList::DecList()
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Variable declaration list";
 		}
 	}
 }

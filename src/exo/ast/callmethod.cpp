@@ -21,7 +21,6 @@ namespace exo
 	{
 		CallMethod::CallMethod( std::string n, Expr* e, ExprList* a ) : CallFun( n, a )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Method call \"" << n << "\"";
 			expression = e;
 		}
 

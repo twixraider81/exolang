@@ -21,7 +21,6 @@ namespace exo
 	{
 		ConstBool::ConstBool( bool v )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Constant boolean \"" << ( v ? "true" : "false" ) << "\"";
 			value = v;
 		}
 	}
