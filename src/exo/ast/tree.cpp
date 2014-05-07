@@ -31,6 +31,8 @@ namespace exo
 				EXO_THROW_EXCEPTION( OutOfMemory, "Out of memory." );
 			}
 
+			// will get rerouted via preprocessor to boost::log
+			::ParseTrace( stdout, (char*)banner.c_str() );
 			stmts = NULL;
 		}
 
@@ -56,8 +58,6 @@ namespace exo
 			quex::lexer lexer( fileName );
 			lexer.receive( &currentToken );
 			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
-				BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> in " << fileName << " on " << currentToken->line_number() << ":" << currentToken->column_number();
-
 				switch( currentToken->type_id() ) {
 					case QUEX_TKN_S_INT:
 					case QUEX_TKN_S_FLOAT:
@@ -102,8 +102,6 @@ namespace exo
 				lexer.receive( &currentToken );
 
 				while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
-					BOOST_LOG_TRIVIAL(trace) << "Received <" << currentToken->type_id_name() << "> on " << currentToken->line_number() << ":" << currentToken->column_number();
-
 					switch( currentToken->type_id() ) {
 						case QUEX_TKN_S_INT:
 						case QUEX_TKN_S_FLOAT:

@@ -126,6 +126,7 @@ def configure( conf ):
 	#conf.check_cxx( header_name = "boost/locale.hpp" )
 	conf.check_cxx( header_name = "boost/format.hpp" )
 	conf.check_cxx( header_name = "boost/units/detail/utility.hpp" )
+	conf.check_cxx( header_name = "boost/algorithm/string.hpp" )
 
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )

@@ -26,6 +26,9 @@ namespace exo
 
 		class Tree
 		{
+			private:
+				std::string		banner;
+
 			public:
 				void*			parser;
 				std::string		fileName;

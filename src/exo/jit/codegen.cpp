@@ -120,7 +120,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating call to \"" << call->name << "\" in (" << this->getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating call to \"" << call->name << "\" in (" << this->getCurrentBlockName() << ")";
 			EXO_GET_CALLEE( callee, call->name );
 
 			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
@@ -156,7 +156,7 @@ namespace exo
 			std::string cName = vType->getPointerElementType()->getStructName();
 			std::string mName = EXO_METHOD( cName, call->name );
 
-			BOOST_LOG_TRIVIAL(info) << "Generating call to $" << var->name << "->" << call->name << "/" << mName << " in (" << this->getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating call to $" << var->name << "->" << call->name << "/" << mName << " in (" << this->getCurrentBlockName() << ")";
 			EXO_GET_CALLEE( callee, mName );
 
 			if( callee->arg_size() != ( call->arguments->list.size() + 1 ) && !callee->isVarArg() ) {
@@ -176,7 +176,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating boolean \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 
 			if( val->value ) {
 				return( llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) ) );
@@ -187,27 +187,27 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating float \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 			double d = val->value;
 			return( llvm::ConstantFP::get( module->getContext(), llvm::APFloat( d ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating integer \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 			long long i = val->value;
 			return( llvm::ConstantInt::get( module->getContext(), llvm::APInt( 64, i ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating null in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating null in (" << getCurrentBlockName() << ")";
 			return( llvm::Constant::getNullValue( llvm::Type::getInt1Ty( module->getContext() ) ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating string \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating string \"" << val->value << "\" in (" << getCurrentBlockName() << ")";
 			llvm::Constant* stringConst = llvm::ConstantDataArray::getString( module->getContext(), val->value );
 			llvm::Value* stringVar = builder.CreateAlloca( stringConst->getType() );
 			builder.CreateStore( stringConst, stringVar );
@@ -222,7 +222,7 @@ namespace exo
 		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating class \"" << decl->name << "\"; " << decl->block->properties.size() << " properties; " << decl->block->methods.size() << " methods in (" << getCurrentBlockName() << ")";
 
 			// generate properties
 			std::vector<llvm::Type*> properties;
@@ -243,7 +243,7 @@ namespace exo
 
 			// FIXME: should overwrite properties, not just append
 			for( std::vector<exo::ast::DecProp*>::iterator pit = decl->block->properties.begin(); pit != decl->block->properties.end(); pit++ ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating property $" << (**pit).property->name;
+				BOOST_LOG_TRIVIAL(debug) << "Generating property $" << (**pit).property->name;
 				properties.push_back( this->getType( (**pit).property->type ) );
 			}
 
@@ -282,7 +282,7 @@ namespace exo
 		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating function \"" << decl->name << "\" in (" << this->getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating function \"" << decl->name << "\" in (" << this->getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> fArgs;
 			for( std::vector<exo::ast::DecVar*>::iterator it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
@@ -329,7 +329,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::DecFunProto* decl )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating prototype function \"" << decl->name << "\" in (" << this->getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating prototype function \"" << decl->name << "\" in (" << this->getCurrentBlockName() << ")";
 
 			std::vector<llvm::Type*> fArgs;
 			for( std::vector<exo::ast::DecVar*>::iterator it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
@@ -367,7 +367,7 @@ namespace exo
 
 			// only classes are stored on heap and are also passed around by pointer
 			if( vType->isStructTy() ) {
-				BOOST_LOG_TRIVIAL(info) << "Creating " << decl->type->name << " $" << decl->name << " on heap in (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Creating " << decl->type->name << " $" << decl->name << " on heap in (" << this->getCurrentBlockName() << ")";
 				EXO_GET_CALLEE( gcmalloc, EXO_ALLOC );
 
 				std::vector<llvm::Value*> arguments;
@@ -375,7 +375,7 @@ namespace exo
 
 				this->getCurrentBlockVars()[ decl->name ] = builder.CreateBitCast( builder.CreateCall( gcmalloc, arguments ), llvm::PointerType::getUnqual( vType ) );
 			} else {
-				BOOST_LOG_TRIVIAL(info) << "Creating " << decl->type->name << " $" << decl->name << " on stack in (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Creating " << decl->type->name << " $" << decl->name << " on stack in (" << this->getCurrentBlockName() << ")";
 				this->getCurrentBlockVars()[ decl->name ] = builder.CreateAlloca( vType );
 			}
 
@@ -401,10 +401,10 @@ namespace exo
 			 * see opbinaryassign and opunarydelete for the analogous operations
 			 */
 			if( vType->isPointerTy() && !vType->getPointerElementType()->isStructTy() ) {
-				BOOST_LOG_TRIVIAL(info) << "Load variable value $" << expr->name << " (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Load variable value $" << expr->name << " (" << this->getCurrentBlockName() << ")";
 				return( builder.CreateLoad( variable ) );
 			} else {
-				BOOST_LOG_TRIVIAL(info) << "Load variable pointer $" << expr->name << " in (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Load variable pointer $" << expr->name << " in (" << this->getCurrentBlockName() << ")";
 				return( variable );
 			}
 		}
@@ -417,9 +417,9 @@ namespace exo
 				EXO_THROW_EXCEPTION( InvalidOp, "Can only fetch property of a variable!" );
 			}
 
-			BOOST_LOG_TRIVIAL(info) << "Load property $" << var->name << "->" << expr->name << " (" << this->getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Load property $" << var->name << "->" << expr->name << " (" << this->getCurrentBlockName() << ")";
 			//llvm::Value* variable = this->getCurrentBlockVar( var->name );
-			//BOOST_LOG_TRIVIAL(info) << "Load property $" << var->name << "->" << expr->name << " (" << this->getCurrentBlockName() << ")";
+			//BOOST_LOG_TRIVIAL(debug) << "Load property $" << var->name << "->" << expr->name << " (" << this->getCurrentBlockName() << ")";
 			return( NULL );
 		}
 
@@ -431,19 +431,19 @@ namespace exo
 			llvm::Value* result;
 
 			if( typeid(*op) == typeid( exo::ast::OpBinaryAdd ) ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating addition in (" << getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Generating addition in (" << getCurrentBlockName() << ")";
 				result = builder.CreateAdd( lhs, rhs, "add" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinarySub ) ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating substraction in (" << getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Generating substraction in (" << getCurrentBlockName() << ")";
 				result = builder.CreateSub( lhs, rhs, "sub" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryMul ) ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating multiplication in (" << getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Generating multiplication in (" << getCurrentBlockName() << ")";
 				result = builder.CreateMul( lhs, rhs, "mul" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryDiv ) ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating division in (" << getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Generating division in (" << getCurrentBlockName() << ")";
 				result = builder.CreateSDiv( lhs, rhs, "div" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLt ) ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating lower than comparison in (" << getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Generating lower than comparison in (" << getCurrentBlockName() << ")";
 				result = builder.CreateICmpSLT( lhs, rhs, "cmp" );
 			} else {
 				EXO_THROW_EXCEPTION( InvalidOp, "Unknown binary operation." );
@@ -465,10 +465,10 @@ namespace exo
 			llvm::Type* vType = variable->getType();
 
 			if( vType->isPointerTy() && !vType->getPointerElementType()->isStructTy() ) {
-				BOOST_LOG_TRIVIAL(info) << "Store value of $" << var->name << " on stack in (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Store value of $" << var->name << " on stack in (" << this->getCurrentBlockName() << ")";
 				return( builder.CreateStore( value, variable ) );
 			} else {
-				BOOST_LOG_TRIVIAL(info) << "Set pointer to $" << var->name << " in heap in (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Set pointer to $" << var->name << " in heap in (" << this->getCurrentBlockName() << ")";
 				// FIXME: we do nothing with pointers for now. rework under premise of opunarynew
 				return( variable );
 			}
@@ -491,7 +491,7 @@ namespace exo
 
 			// only classes are stored on heap and need to be freed
 			if( vType->isPointerTy() && vType->getPointerElementType()->isStructTy() ) {
-				BOOST_LOG_TRIVIAL(info) << "Deleting $" << var->name << " from heap in (" << this->getCurrentBlockName() << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Deleting $" << var->name << " from heap in (" << this->getCurrentBlockName() << ")";
 				EXO_GET_CALLEE( gcfree, EXO_DEALLOC );
 
 				std::vector<llvm::Value*> arguments;
@@ -517,7 +517,7 @@ namespace exo
 			}
 
 			std::string vName = init->name;
-			BOOST_LOG_TRIVIAL(info) << "Creating instance of " << vName;
+			BOOST_LOG_TRIVIAL(debug) << "Creating instance of " << vName;
 
 			return( NULL );
 		}
@@ -531,7 +531,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating if statement in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating if statement in (" << getCurrentBlockName() << ")";
 
 			llvm::Value* condition = llvm::ConstantInt::getTrue( module->getContext() );
 
@@ -567,7 +567,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
-			BOOST_LOG_TRIVIAL(info) << "Generating return statement in (" << getCurrentBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Generating return statement in (" << getCurrentBlockName() << ")";
 			return( builder.CreateRet( stmt->expression->Generate( this ) ) );
 		}
 
@@ -612,7 +612,7 @@ namespace exo
 
 			llvm::Value* retVal = block->getTerminator();
 			if( retVal == NULL ) {
-				BOOST_LOG_TRIVIAL(info) << "Generating null return in (" << this->name << ")";
+				BOOST_LOG_TRIVIAL(debug) << "Generating null return in (" << this->name << ")";
 				retVal = this->builder.CreateRet( llvm::Constant::getNullValue( this->intType ) );
 			}
 

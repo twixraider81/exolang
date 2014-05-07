@@ -57,6 +57,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "exo/errors/error.h"
 #include "exo/errors/exceptions.h"
