@@ -46,12 +46,6 @@ namespace exo
 #ifndef EXO_GC_DISABLE
 			GC_INIT();
 			GC_enable_incremental();
-
-# ifdef EXO_DEBUG
-			setenv( "GC_PRINT_STATS",		"1", 1 );
-			setenv( "GC_DUMP_REGULARLY",	"1", 1 );
-			setenv( "GC_FIND_LEAK",			"1", 1 );
-# endif
 #endif
 			// initialize llvm
 			llvm::InitializeNativeTarget();
@@ -69,7 +63,6 @@ namespace exo
 #ifndef EXO_GC_DISABLE
 			GC_gcollect();
 #endif
-			exit( 0 );
 		}
 	}
 }
