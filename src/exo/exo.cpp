@@ -57,7 +57,7 @@ int main( int argc, char **argv )
 	// show help & exit
 	if( commandLine.count( "help" ) ) {
 		std::cout << availOptions;
-		return( 0 );
+		exit( 0 );
 	}
 
 	// show version & exit
@@ -72,19 +72,19 @@ int main( int argc, char **argv )
 #else
 		std::cout << "libgc: disabled" << std::endl;
 #endif
-		return( 0 );
+		exit( 0 );
 	}
 
 
 	// we are running, command line is parsed
 	if( !exo::init::Init::Startup( severity ) ) {
 		BOOST_LOG_TRIVIAL(fatal) << "Unable to complete initialization. exiting...";
-		return( -1 );
+		exit( 1 );
 	}
 
 	try {
 		boost::shared_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
-		// needed for internal constant __TARGET__
+		// only needed for internal constant __TARGET__
 		ast->targetMachine = target;
 
 		if( commandLine.count( "input" ) ) {
@@ -107,16 +107,16 @@ int main( int argc, char **argv )
 
 	} catch( boost::exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
-		retval = -1;
+		retval = 1;
 	}  catch( std::exception& e ) {
 		BOOST_LOG_TRIVIAL(fatal) << e.what();
-		retval = -1;
+		retval = 1;
 	} catch( ... ) {
 		BOOST_LOG_TRIVIAL(fatal) << "Unknown exception caught.";
-		retval = -1;
+		retval = 1;
 	}
 
 	exo::init::Init::Shutdown();
 
-	return( retval );
+	exit( retval );
 }

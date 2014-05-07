@@ -411,9 +411,16 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ExprProp* expr )
 		{
-			llvm::Value* variable = this->getCurrentBlockVar( expr->name );
-			BOOST_LOG_TRIVIAL(trace) << "Load property $" << expr->name << "->" << expr->property << " (" << this->getCurrentBlockName() << ")";
-			return( variable );
+			exo::ast::ExprVar* var = dynamic_cast<exo::ast::ExprVar*>( expr->expression );
+
+			if( !var ) {
+				EXO_THROW_EXCEPTION( InvalidOp, "Can only fetch property of a variable!" );
+			}
+
+			BOOST_LOG_TRIVIAL(trace) << "Load property $" << var->name << "->" << expr->name << " (" << this->getCurrentBlockName() << ")";
+			//llvm::Value* variable = this->getCurrentBlockVar( var->name );
+			//BOOST_LOG_TRIVIAL(trace) << "Load property $" << var->name << "->" << expr->name << " (" << this->getCurrentBlockName() << ")";
+			return( NULL );
 		}
 
 
@@ -518,9 +525,8 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << getCurrentBlockName() << ")";
-			llvm::Value* value = stmt->expression->Generate( this );
-			return( value );
+			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << this->getCurrentBlockName() << ")";
+			return( stmt->expression->Generate( this ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
