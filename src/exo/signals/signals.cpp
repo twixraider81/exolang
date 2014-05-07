@@ -46,7 +46,7 @@ namespace exo
 						demangled = name;
 					}
 
-					BOOST_LOG_TRIVIAL(debug) << ( boost::format( "(%s), ip:%lx, sp:%lx" ) % demangled % ip % sp );
+					BOOST_LOG_TRIVIAL(error) << ( boost::format( "(%s), ip:%lx, sp:%lx" ) % demangled % ip % sp );
 				}
 
 				EXO_THROW_EXCEPTION( Segfault, "Segmentation fault!" );
