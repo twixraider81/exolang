@@ -169,6 +169,9 @@ type(t) ::= T_TAUTO. {
 type(t) ::= T_TCALLABLE. {
 	t = new exo::ast::Type( "callable" );
 }
+type(t) ::= T_VNULL. {
+	t = new exo::ast::Type( "null" );
+}
 type(t) ::= S_ID(i). {
 	POINTERCHECK(i);
 	t = new exo::ast::Type( TOKENSTR(i) );

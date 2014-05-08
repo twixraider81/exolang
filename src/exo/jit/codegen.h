@@ -122,7 +122,8 @@ namespace exo
 }
 
 #define EXO_CLASS(n) (n)
-#define EXO_VTABLE(n) EXO_CLASS(n) + "_vtbl"
+#define EXO_VTABLE_STRUCT(n) "__vtbl_struct_" + EXO_CLASS(n)
+#define EXO_VTABLE(n) "__vtbl_" + EXO_CLASS(n)
 #define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
 #define EXO_GET_CALLEE(a,b) llvm::Function* a = module->getFunction( b ); if( a == 0 ) { EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup function!" ); }
 #define EXO_IS_CLASS_PTR(a) ( a->isPointerTy() && a->getPointerElementType()->isPointerTy() && a->getPointerElementType()->getPointerElementType()->isStructTy() )

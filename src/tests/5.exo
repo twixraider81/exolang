@@ -52,9 +52,13 @@ class Object
 {
 	public	string	$typeName;
 
-	public string function getTypeName()
+	public int function setTypeName()
 	{
 		$this->typeName = "Object";
+	};
+
+	public string function getTypeName()
+	{
 		return $this->typeName;
 	};
 
@@ -109,6 +113,7 @@ printf( "$o->getInt() = %i", $h );
 puts("");
 printf( "getInt() = %i", $j );
 puts("");
+$o->setTypeName();
 puts( $o->getTypeName() );
 
 delete $o;
