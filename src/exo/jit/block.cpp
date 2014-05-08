@@ -23,7 +23,6 @@ namespace exo
 	{
 		Block::~Block()
 		{
-			//delete block;
 		};
 	}
 }
