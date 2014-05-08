@@ -109,8 +109,7 @@ printf( "$o->getInt() = %i", $h );
 puts("");
 printf( "getInt() = %i", $j );
 puts("");
-// corrupt, gets freed
-//puts( $o->getTypeName() );
+puts( $o->getTypeName() );
 
 delete $o;
 delete $b;

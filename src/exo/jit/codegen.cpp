@@ -136,6 +136,7 @@ namespace exo
 
 
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << call->name << "\" in (" << this->getBlockName() << ")";
@@ -156,9 +157,6 @@ namespace exo
 			return( memory );
 		}
 
-		/*
-		 * TODO: use vtbl (after we got it working)
-		 */
 		llvm::Value* Codegen::Generate( exo::ast::CallMethod* call )
 		{
 			llvm::Value* variable = call->expression->Generate( this );
@@ -189,12 +187,12 @@ namespace exo
 			llvm::Value* retval = builder.CreateCall( callee, arguments, mName );
 			llvm::Value* memory = builder.CreateAlloca( retval->getType() );
 			builder.CreateStore( retval, memory );
-
 			return( memory );
 		}
 
 
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating boolean \"" << val->value << "\" in (" << this->getBlockName() << ")";
@@ -210,6 +208,7 @@ namespace exo
 			return( memory );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating float \"" << val->value << "\" in (" << this->getBlockName() << ")";
@@ -219,6 +218,7 @@ namespace exo
 			return( memory );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating integer \"" << val->value << "\" in (" << this->getBlockName() << ")";
@@ -228,6 +228,7 @@ namespace exo
 			return( memory );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating null in (" << this->getBlockName() << ")";
@@ -237,6 +238,7 @@ namespace exo
 			return( memory );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating string \"" << val->value << "\" in (" << this->getBlockName() << ")";
@@ -275,6 +277,7 @@ namespace exo
 
 			for( std::vector<exo::ast::DecProp*>::iterator it = decl->block->properties.begin(); it != decl->block->properties.end(); it++ ) {
 				BOOST_LOG_TRIVIAL(debug) << "Property " << (*it)->property->type->name << " $" << (*it)->property->name;
+				this->properties[ EXO_CLASS( decl->name ) ].push_back( (*it)->property->name );
 				properties.push_back( this->getType( (*it)->property->type ) );
 			}
 
@@ -368,6 +371,7 @@ namespace exo
 			return( fun );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::DecVar* decl )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Allocating " << decl->type->name << " $" << decl->name << " on stack in (" << this->getBlockName() << ")";
@@ -383,11 +387,13 @@ namespace exo
 
 
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
 		{
 			return( this->getBlockSymbol( expr->name ) );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ExprProp* expr )
 		{
 			llvm::Value* variable = expr->expression->Generate( this );
@@ -396,8 +402,17 @@ namespace exo
 				EXO_THROW_EXCEPTION( InvalidOp, "Can only fetch property of an object!" );
 			}
 
-			BOOST_LOG_TRIVIAL(debug) << "Load property $" << expr->name << " (" << this->getBlockName() << ")";
-			return( variable );
+			variable = builder.CreateLoad( variable );
+			std::string cName = variable->getType()->getPointerElementType()->getStructName();
+
+			int position = EXO_PROP_AT( cName, expr->name );
+			llvm::Value* idx[] = {
+					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
+					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
+			};
+
+			BOOST_LOG_TRIVIAL(debug) << "Load property " << cName << "->$" << expr->name << " @ " << position << " in (" << this->getBlockName() << ")";
+			return( builder.CreateInBoundsGEP( variable, idx, expr->name ) );
 		}
 
 
@@ -432,6 +447,7 @@ namespace exo
 			return( memory );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::OpBinaryAssign* assign )
 		{
 			llvm::Value* variable = assign->lhs->Generate( this );
@@ -499,6 +515,7 @@ namespace exo
 
 
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << this->getBlockName() << ")";
@@ -516,6 +533,7 @@ namespace exo
 			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
 		{
 			std::vector<exo::ast::Stmt*>::iterator it;

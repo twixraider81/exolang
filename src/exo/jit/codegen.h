@@ -139,6 +139,7 @@ namespace exo
 /*
  * FIXME: not safe
  */
-#define EXO_METHOD_AT(c,m)	std::distance( methods[ EXO_CLASS( c ) ].begin(), std::find( methods[ EXO_CLASS( c ) ].begin(), methods[ EXO_CLASS( c ) ].end(), EXO_METHOD( c, m ) ) )
+#define EXO_METHOD_AT(c,m)	std::distance( this->methods[ EXO_CLASS( c ) ].begin(), std::find( this->methods[ EXO_CLASS( c ) ].begin(), this->methods[ EXO_CLASS( c ) ].end(), EXO_METHOD( c, m ) ) )
+#define EXO_PROP_AT(c,p)	std::distance( this->properties[ EXO_CLASS( c ) ].begin(), std::find( this->properties[ EXO_CLASS( c ) ].begin(), this->properties[ EXO_CLASS( c ) ].end(), p ) )
 
 #endif /* CONTEXT_H_ */
