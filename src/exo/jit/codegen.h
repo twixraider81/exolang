@@ -78,12 +78,13 @@ namespace exo
 			    Codegen( std::string cname ) : Codegen( cname, llvm::sys::getProcessTriple() ) {};
 			    ~Codegen();
 
-			    void popBlock();
-			    void pushBlock( llvm::BasicBlock* block, std::string name );
-			    llvm::BasicBlock*					getCurrentBasicBlock();
-			    std::string							getCurrentBlockName();
-			    std::map<std::string,llvm::Value*>&	getCurrentBlockVars();
-			    llvm::Value*						getCurrentBlockVar( std::string vName );
+			    void 				popBlock();
+			    void 				pushBlock( llvm::BasicBlock* block, std::string name );
+			    llvm::BasicBlock*	getBlock();
+			    std::string			getBlockName();
+			    llvm::Value*		getBlockSymbol( std::string name );
+			    void				setBlockSymbol( std::string name, llvm::Value* value );
+			    void				delBlockSymbol( std::string name );
 
 			    llvm::Type* getType( exo::ast::Type* type );
 
@@ -124,6 +125,8 @@ namespace exo
 #define EXO_VTABLE(n) EXO_CLASS(n) + "_vtbl"
 #define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
 #define EXO_GET_CALLEE(a,b) llvm::Function* a = module->getFunction( b ); if( a == 0 ) { EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup function!" ); }
+#define EXO_IS_CLASS_PTR(a) ( a->isPointerTy() && a->getPointerElementType()->isPointerTy() && a->getPointerElementType()->getPointerElementType()->isStructTy() )
+#define EXO_IS_OBJECT(a) EXO_IS_CLASS_PTR( a->getType() )
 
 #ifndef EXO_GC_DISABLE
 # define EXO_ALLOC "GC_malloc"

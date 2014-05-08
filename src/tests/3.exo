@@ -1,2 +1,0 @@
-int function printf( string $str ... );
-return printf( "%f : %X : %i", 32.5, 3456, 3 );
