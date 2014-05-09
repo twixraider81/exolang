@@ -13,8 +13,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONTEXT_H_
-#define CONTEXT_H_
+#ifndef CODEGEN_H_
+#define CODEGEN_H_
 
 #include "exo/exo.h"
 #include "exo/jit/llvm.h"
@@ -64,8 +64,12 @@ namespace exo
 			public:
 				std::string			name;
 				std::stack<Block*>	blocks;
-				std::map< std::string, std::vector<std::string> >	properties;
-				std::map< std::string, std::vector<std::string> >	methods;
+				std::map< std::string, std::vector<std::string> >		propertyIndex;
+				std::map< std::string, std::vector<llvm::Type*> >		properties;
+				std::map< std::string, std::vector<std::string> >		methodIndex;
+				std::map< std::string, std::vector<llvm::Function*> >	methods;
+				std::map< std::string, std::vector<llvm::Type*> >		vtblSignatures;
+				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
 
 				llvm::Function*		entry;
 				llvm::Module*		module;
@@ -86,7 +90,10 @@ namespace exo
 			    void				setBlockSymbol( std::string name, llvm::Value* value );
 			    void				delBlockSymbol( std::string name );
 
-			    llvm::Type* getType( exo::ast::Type* type );
+			    llvm::Type*	getType( exo::ast::Type* type );
+			    int			getPropertyPosition( std::string className, std::string propName );
+			    int			getMethodPosition( std::string className, std::string methodName );
+			    llvm::Function*	getCallee( std::string className );
 
 			    llvm::Value* Generate( exo::ast::CallFun* call );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
@@ -122,12 +129,12 @@ namespace exo
 }
 
 #define EXO_CLASS(n) (n)
-#define EXO_VTABLE_STRUCT(n) "__vtbl_struct_" + EXO_CLASS(n)
 #define EXO_VTABLE(n) "__vtbl_" + EXO_CLASS(n)
-#define EXO_METHOD(c,m) "__" + EXO_CLASS(c) + "_" + m
-#define EXO_GET_CALLEE(a,b) llvm::Function* a = module->getFunction( b ); if( a == 0 ) { EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup function!" ); }
+#define EXO_VTABLE_STRUCT(n) "__vtbl_struct_" + EXO_CLASS(n)
+#define EXO_METHOD(c,m) "__method_" + EXO_CLASS(c) + "_" + m
 #define EXO_IS_CLASS_PTR(a) ( a->isPointerTy() && a->getPointerElementType()->isPointerTy() && a->getPointerElementType()->getPointerElementType()->isStructTy() )
 #define EXO_IS_OBJECT(a) EXO_IS_CLASS_PTR( a->getType() )
+#define EXO_OBJECT_CLASSNAME(a) a->getType()->getPointerElementType()->getStructName()
 
 #ifndef EXO_GC_DISABLE
 # define EXO_ALLOC "GC_malloc"
@@ -137,10 +144,4 @@ namespace exo
 # define EXO_DEALLOC "free"
 #endif
 
-/*
- * FIXME: not safe
- */
-#define EXO_METHOD_AT(c,m)	std::distance( this->methods[ EXO_CLASS( c ) ].begin(), std::find( this->methods[ EXO_CLASS( c ) ].begin(), this->methods[ EXO_CLASS( c ) ].end(), EXO_METHOD( c, m ) ) )
-#define EXO_PROP_AT(c,p)	std::distance( this->properties[ EXO_CLASS( c ) ].begin(), std::find( this->properties[ EXO_CLASS( c ) ].begin(), this->properties[ EXO_CLASS( c ) ].end(), p ) )
-
-#endif /* CONTEXT_H_ */
+#endif /* CODEGEN_H_ */

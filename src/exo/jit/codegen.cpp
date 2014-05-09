@@ -37,7 +37,7 @@ namespace exo
 
 			llvm::DataLayout dataLayout( module );
 			intType = dataLayout.getIntPtrType( module->getContext() );
-			ptrType = llvm::PointerType::getUnqual( intType );
+			ptrType = intType->getPointerTo();
 			voidType = llvm::Type::getVoidTy( module->getContext() );
 		}
 
@@ -47,7 +47,7 @@ namespace exo
 
 		void Codegen::popBlock()
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Pop \"" << this->getBlockName() << "\" onto stack, new size: " << this->blocks.size();
+			BOOST_LOG_TRIVIAL(trace) << "Pop \"" << this->getBlockName() << "\" from stack, new size: " << this->blocks.size();
 
 			this->blocks.pop();
 
@@ -66,7 +66,7 @@ namespace exo
 			// reset our new insert point
 			builder.SetInsertPoint( this->blocks.top()->block );
 
-			BOOST_LOG_TRIVIAL(trace) << "Push \"" << this->getBlockName() << "\" from stack, new size: " << this->blocks.size();
+			BOOST_LOG_TRIVIAL(trace) << "Push \"" << this->getBlockName() << "\" onto stack, new size: " << this->blocks.size();
 		}
 
 		llvm::BasicBlock* Codegen::getBlock()
@@ -111,7 +111,7 @@ namespace exo
 		}
 
 		/*
-		 * FIXME: wont be needed anymore once we get proper type system
+		 * TODO: allow raw ctypes with proper names, we want int, bool, etc for ourself
 		 */
 		llvm::Type* Codegen::getType( exo::ast::Type* type )
 		{
@@ -129,11 +129,44 @@ namespace exo
 
 			llvm::Type* ltype = module->getTypeByName( EXO_CLASS( type->name ) );
 			if( ltype != NULL ) {
-				return( llvm::PointerType::getUnqual( ltype ) );
+				return( ltype->getPointerTo() );
 			}
 
 			EXO_THROW_EXCEPTION( UnknownClass, "Unknown class \"" + type->name  + "\"" );
 			return( NULL ); // satisfy IDE
+		}
+
+		int Codegen::getPropertyPosition( std::string className, std::string propName )
+		{
+			std::vector<std::string>::iterator it = std::find( this->propertyIndex[ EXO_CLASS( className ) ].begin(), this->propertyIndex[ EXO_CLASS( className ) ].end(), propName );
+
+			if( it == this->propertyIndex[ EXO_CLASS( className ) ].end() ) {
+				EXO_THROW_EXCEPTION( UnknownVar, "Unknown property \"" + propName  + "\"" );
+			}
+
+			return( std::distance( this->propertyIndex[ EXO_CLASS( className ) ].begin(), it ) );
+		}
+
+		int Codegen::getMethodPosition( std::string className, std::string methodName )
+		{
+			std::vector<std::string>::iterator it = std::find( this->methodIndex[ EXO_CLASS( className ) ].begin(), this->methodIndex[ EXO_CLASS( className ) ].end(), methodName );
+
+			if( it == this->methodIndex[ EXO_CLASS( className ) ].end() ) {
+				EXO_THROW_EXCEPTION( InvalidCall, "Unknown method \"" + methodName  + "\"" );
+			}
+
+			return( std::distance( this->methodIndex[ EXO_CLASS( className ) ].begin(), it ) );
+		}
+
+		llvm::Function* Codegen::getCallee( std::string cName )
+		{
+			llvm::Function* callee = this->module->getFunction( cName );
+
+			if( callee == 0 ) {
+				EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup \"" + cName + "\"!" );
+			}
+
+			return( callee );
 		}
 
 
@@ -142,7 +175,7 @@ namespace exo
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << call->name << "\" in (" << this->getBlockName() << ")";
-			EXO_GET_CALLEE( callee, call->name );
+			llvm::Function* callee = this->getCallee( call->name );
 
 			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
 				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for \"" + call->name + "\"" );
@@ -169,16 +202,15 @@ namespace exo
 			}
 
 			variable = builder.CreateLoad( variable );
-
 			std::string cName = variable->getType()->getPointerElementType()->getStructName();
-			int position = EXO_METHOD_AT( cName, call->name );
 
+			int position = this->getMethodPosition( cName, call->name );
 			llvm::Value* idx[] = {
-					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
-					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
+				llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
+				llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
 			};
 
-			BOOST_LOG_TRIVIAL(debug) << "Call to " << cName << "->" << call->name << " @ " << position << " in (" << this->getBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << cName << "->" << call->name << "\"@" << position << " in (" << this->getBlockName() << ")";
 			llvm::Value* vtbl = this->module->getNamedGlobal( EXO_VTABLE( cName ) );
 			llvm::Value* callee = builder.CreateLoad( builder.CreateInBoundsGEP( vtbl, idx, call->name ) );
 
@@ -265,14 +297,14 @@ namespace exo
 		 * %__vtbl_struct_%className { a structure containing signatures to the class methods }
 		 * %__vtbl_%className { a global instance of the vtbl structure with approriate method pointers }
 		 * %className { a structure with all own + inherited properties }
-		 * FIXME: should overwrite properties, not just append
+		 * TODO: how do we overwrite methods & properties in a proper way?
 		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << decl->name << "\" in (" << this->getBlockName() << ")";
 
-			std::vector<llvm::Type*> properties;
-			if( decl->parent != "" ) { // parent properties first, so it can be casted?
+			// if we have a parent, do inherit properties and methods
+			if( decl->parent != "" ) {
 				std::string pName = EXO_CLASS( decl->parent );
 				llvm::StructType* parent;
 
@@ -280,40 +312,51 @@ namespace exo
 					EXO_THROW_EXCEPTION( UnknownClass, "Unknown parent class \"" + pName + "\"" );
 				}
 
+				/*
 				for( llvm::StructType::element_iterator it = parent->element_begin(); it != parent->element_end(); it++ ) {
 					properties.push_back( *it );
 				}
+				*/
+
+				this->properties[ EXO_CLASS( decl->name ) ]			= this->properties[ EXO_CLASS( pName ) ];
+				this->propertyIndex[ EXO_CLASS( decl->name ) ]		= this->propertyIndex[ EXO_CLASS( pName ) ];
+				this->methodIndex[ EXO_CLASS( decl->name ) ]		= this->methodIndex[ EXO_CLASS( pName ) ];
+				this->methods[ EXO_CLASS( decl->name ) ]			= this->methods[ EXO_CLASS( pName ) ];
+				this->vtblSignatures[ EXO_CLASS( decl->name ) ]		= this->vtblSignatures[ EXO_CLASS( pName ) ];
+				this->vtblInitializers[ EXO_CLASS( decl->name ) ]	= this->vtblInitializers[ EXO_CLASS( pName ) ];
 			}
 
+
+			// generate our properties
 			for( std::vector<exo::ast::DecProp*>::iterator it = decl->block->properties.begin(); it != decl->block->properties.end(); it++ ) {
 				BOOST_LOG_TRIVIAL(debug) << "Property " << (*it)->property->type->name << " $" << (*it)->property->name;
-				this->properties[ EXO_CLASS( decl->name ) ].push_back( (*it)->property->name );
-				properties.push_back( this->getType( (*it)->property->type ) );
+				this->propertyIndex[ EXO_CLASS( decl->name ) ].push_back( (*it)->property->name );
+				this->properties[ EXO_CLASS( decl->name ) ].push_back( this->getType( (*it)->property->type ) );
 			}
+			llvm::StructType* classStruct = llvm::StructType::create( this->module->getContext(), this->properties[ EXO_CLASS( decl->name ) ], EXO_CLASS( decl->name ) );
 
-			llvm::StructType* classStruct = llvm::StructType::create( this->module->getContext(), properties, EXO_CLASS( decl->name ) );
 
-
-			// generate methods & vtbl
+			// generate our methods & vtbl
 			std::vector<exo::ast::DecMethod*>::iterator mit;
-			std::vector<llvm::Type*> vtblSignature;
-			std::vector<llvm::Constant*> vtblInit;
 			for( mit = decl->block->methods.begin(); mit != decl->block->methods.end(); mit++ ) {
+				std::string oName = (*mit)->method->name;
 				(*mit)->method->name = EXO_METHOD( decl->name, (*mit)->method->name );
 
 				// a pointer to a class structure as first parameter for methods
 				(*mit)->method->arguments->list.insert( (*mit)->method->arguments->list.begin(), new exo::ast::DecVar( "this", new exo::ast::Type( decl->name ) ) );
 				(*mit)->method->Generate( this );
 
-				// mark position & signature for our vtbl
-				this->methods[ EXO_CLASS( decl->name ) ].push_back( (*mit)->method->name );
-				vtblSignature.push_back( llvm::PointerType::getUnqual( module->getFunction( (*mit)->method->name )->getFunctionType() ) );
-				vtblInit.push_back( module->getFunction( (*mit)->method->name ) );
+				// mark position & signature in our vtbl
+				llvm::Function* cMethod = module->getFunction( (*mit)->method->name );
+				this->methodIndex[ EXO_CLASS( decl->name ) ].push_back( oName );
+				this->methods[ EXO_CLASS( decl->name ) ].push_back( cMethod );
+				this->vtblSignatures[ EXO_CLASS( decl->name ) ].push_back( cMethod->getFunctionType()->getPointerTo() );
+				this->vtblInitializers[ EXO_CLASS( decl->name ) ].push_back( cMethod );
 			}
 
-			llvm::StructType* vtbl = llvm::StructType::create( module->getContext(), vtblSignature, EXO_VTABLE_STRUCT( decl->name ) );
+			llvm::StructType* vtbl = llvm::StructType::create( module->getContext(), this->vtblSignatures[ EXO_CLASS( decl->name ) ], EXO_VTABLE_STRUCT( decl->name ) );
 			llvm::GlobalVariable* value = new llvm::GlobalVariable( *module, vtbl, false, llvm::GlobalValue::ExternalLinkage, 0, EXO_VTABLE( decl->name ) );
-			value->setInitializer( llvm::ConstantStruct::get( vtbl, vtblInit ) );
+			value->setInitializer( llvm::ConstantStruct::get( vtbl, this->vtblInitializers[ EXO_CLASS( decl->name ) ] ) );
 			return( value );
 		}
 
@@ -415,15 +458,13 @@ namespace exo
 			}
 
 			variable = builder.CreateLoad( variable );
-			std::string cName = variable->getType()->getPointerElementType()->getStructName();
-
-			int position = EXO_PROP_AT( cName, expr->name );
+			int position = this->getPropertyPosition( EXO_OBJECT_CLASSNAME( variable ), expr->name );
 			llvm::Value* idx[] = {
 					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
 					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
 			};
 
-			BOOST_LOG_TRIVIAL(debug) << "Load property " << cName << "->$" << expr->name << " @ " << position << " in (" << this->getBlockName() << ")";
+			BOOST_LOG_TRIVIAL(debug) << "Load property \"" << std::string( EXO_OBJECT_CLASSNAME( variable ) ) << "->" << expr->name << "\"@" << position << " in (" << this->getBlockName() << ")";
 			return( builder.CreateInBoundsGEP( variable, idx, expr->name ) );
 		}
 
@@ -481,8 +522,7 @@ namespace exo
 
 			if( EXO_IS_OBJECT( variable ) ) {
 				BOOST_LOG_TRIVIAL(debug) << "Deleting $" << var->name << " from heap in (" << this->getBlockName() << ")";
-				EXO_GET_CALLEE( gcfree, EXO_DEALLOC );
-
+				llvm::Function* gcfree = this->getCallee( EXO_DEALLOC );
 				std::vector<llvm::Value*> arguments;
 				arguments.push_back( builder.CreateBitCast( builder.CreateLoad( variable ), this->ptrType ) );
 				builder.CreateCall( gcfree, arguments );
@@ -508,19 +548,17 @@ namespace exo
 			}
 
 			llvm::Type* type;
-			llvm::Type* ptrType;
 			if( !(type = module->getTypeByName( EXO_CLASS( init->name ) ) ) ) {
 				EXO_THROW_EXCEPTION( UnknownClass, "Unknown class \"" + init->name + "\"" );
 			}
 
 			BOOST_LOG_TRIVIAL(debug) << "Allocating memory for \"" << init->name << "\" on heap in (" << this->getBlockName() << ")";
-			EXO_GET_CALLEE( gcmalloc, EXO_ALLOC );
-			ptrType = llvm::PointerType::getUnqual( type );
+			llvm::Function* gcmalloc = this->getCallee( EXO_ALLOC );
 
 			std::vector<llvm::Value*> arguments;
 			arguments.push_back( llvm::ConstantExpr::getSizeOf( type ) );
-			llvm::Value* value = builder.CreateBitCast( builder.CreateCall( gcmalloc, arguments ), ptrType );
-			llvm::Value* memory = builder.CreateAlloca( ptrType );
+			llvm::Value* value = builder.CreateBitCast( builder.CreateCall( gcmalloc, arguments ), type->getPointerTo() );
+			llvm::Value* memory = builder.CreateAlloca( type->getPointerTo() );
 			builder.CreateStore( value, memory );
 			return( memory );
 		}
