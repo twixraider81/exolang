@@ -42,6 +42,11 @@ int $b, float $c, string $d;
 
 blabla3( $d );
 
+function vaArg( ... )
+{
+	$1;
+}
+
 __FILE__
 __LINE__
 __HALT__

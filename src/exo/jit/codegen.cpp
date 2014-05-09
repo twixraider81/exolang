@@ -192,7 +192,7 @@ namespace exo
 			return( memory );
 		}
 
-		// TODO: check parameter matchings
+		// TODO: check if the invoker is actually a type / sub type
 		llvm::Value* Codegen::Generate( exo::ast::CallMethod* call )
 		{
 			llvm::Value* variable = call->expression->Generate( this );
@@ -213,14 +213,23 @@ namespace exo
 			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << cName << "->" << call->name << "\"@" << position << " in (" << this->getBlockName() << ")";
 			llvm::Value* vtbl = this->module->getNamedGlobal( EXO_VTABLE( cName ) );
 			llvm::Value* callee = builder.CreateLoad( builder.CreateInBoundsGEP( vtbl, idx, call->name ) );
+			//llvm::Function* method = llvm::dyn_cast<llvm::Function>( callee );
+			llvm::Function* method = this->methods[cName][position];
 
-			/*
-			if( callee->arg_size() != ( call->arguments->list.size() + 1 ) && !callee->isVarArg() ) {
-				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for \"" + call->name + "\"" );
+			if( method->arg_size() != ( call->arguments->list.size() + 1 ) && !method->isVarArg() ) {
+				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for \"" + cName + "->" + call->name + "\"!" );
 			}
-			*/
+
 			std::vector<llvm::Value*> arguments;
-			arguments.push_back( variable ); // this pointer
+
+			llvm::Function::arg_iterator it = method->arg_begin();
+			if( EXO_OBJECT_CLASSNAME( it ) != EXO_OBJECT_CLASSNAME( variable ) ) {
+				BOOST_LOG_TRIVIAL(debug) << "Cast " << cName << " to " << std::string( EXO_OBJECT_CLASSNAME( it ) ) << " in (" << this->getBlockName() << ")";
+				arguments.push_back( builder.CreateBitCast( variable, it->getType() ) );
+			} else {
+				arguments.push_back( variable );
+			}
+
 			for( std::vector<exo::ast::Expr*>::iterator it = call->arguments->list.begin(); it != call->arguments->list.end(); it++ ) {
 				arguments.push_back( builder.CreateLoad( (*it)->Generate( this ) ) );
 			}

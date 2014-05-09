@@ -72,6 +72,11 @@ class Boolean extends Object
 {
 	public boolean $value;
 
+	/*public int function setTypeName()
+	{
+		$this->typeName = "Boolean";
+	};*/
+
 	public boolean function getValue()
 	{
 		return true;
@@ -85,11 +90,21 @@ class Boolean extends Object
 
 class Integer extends Boolean
 {
+	/*public int function setTypeName()
+	{
+		$this->typeName = "Integer";
+	};*/
+	
 	public	integer $value;
 };
 
 class Float extends Integer
 {
+	public int function setTypeName()
+	{
+		$this->typeName = "Float";
+	};
+
 	public	integer $value;
 };
 
@@ -115,6 +130,8 @@ printf( "getInt() = %i", $j );
 puts("");
 $o->setTypeName();
 puts( $o->getTypeName() );
+$f->setTypeName();
+puts( $f->getTypeName() );
 
 delete $o;
 delete $b;
