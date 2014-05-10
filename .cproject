@@ -29,24 +29,18 @@
 							<tool id="org.eclipse.cdt.build.core.settings.holder.250259295" name="Assembly" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1452796974" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/exolang/src}&quot;"/>
-									<listOptionValue builtIn="false" value="/usr/include"/>
-									<listOptionValue builtIn="false" value="/usr/include/llvm"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1190900920" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1425268445" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.987820637" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/exolang/src}&quot;"/>
-									<listOptionValue builtIn="false" value="/usr/include"/>
-									<listOptionValue builtIn="false" value="/usr/include/llvm"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.47495032" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1284655725" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.2043044009" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/exolang/src}&quot;"/>
-									<listOptionValue builtIn="false" value="/usr/include"/>
-									<listOptionValue builtIn="false" value="/usr/include/llvm"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.412917990" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -96,6 +90,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/exolang/src}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/llvm"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.8/"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.590815582" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -104,6 +99,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/exolang/src}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/llvm"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.8/"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.100481038" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -112,6 +108,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/exolang/src}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/llvm"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.8/"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.310940121" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>

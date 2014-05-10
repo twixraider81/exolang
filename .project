@@ -56,7 +56,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1396616706079</id>
+			<id>1399748432537</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -65,7 +65,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706090</id>
+			<id>1399748432548</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -74,7 +74,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706094</id>
+			<id>1399748432560</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -83,7 +83,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706104</id>
+			<id>1399748432569</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -92,7 +92,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706119</id>
+			<id>1399748432573</id>
 			<name></name>
 			<type>22</type>
 			<matcher>
@@ -101,7 +101,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706129</id>
+			<id>1399748432578</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -110,7 +110,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706138</id>
+			<id>1399748432585</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -119,12 +119,21 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1396616706145</id>
+			<id>1399748432598</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
 				<arguments>1.0-name-matches-false-false-libatomicops</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1399748450739</id>
+			<name>src/exo/lexer</name>
+			<type>6</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-lexer.cpp</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>
