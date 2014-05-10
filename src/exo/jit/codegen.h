@@ -79,7 +79,6 @@ namespace exo
 				llvm::Type* 		voidType;
 
 			    Codegen( std::string cname, std::string target );
-			    Codegen( std::string cname ) : Codegen( cname, llvm::sys::getProcessTriple() ) {};
 			    ~Codegen();
 
 			    void 				popBlock();
