@@ -29,21 +29,23 @@
  * TODO: 3. use boost unit tests!
  * TODO: 4. fix leaks
  * TODO: 5. implement a real symbol table which tracks types, memory locations and pointer/refs
+ * TODO: 6. support other targets / "asm" output
  */
 int main( int argc, char **argv )
 {
 	int severity, optimize, retval;
-	std::string target = llvm::sys::getProcessTriple();
+	std::string target;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
 	availOptions.add_options()
 		( "help,h",			"Show this usage/help" )
-		( "input,i",		boost::program_options::value<std::string>(),						"Parse file" )
-		( "emit,e",			boost::program_options::value<std::string>(),						"Emit LLVM IR file & don't run script" )
+		( "input,i",		boost::program_options::value<std::string>(),						"File to parse and execute if -e is not given" )
+		( "emit,e",			boost::program_options::value<std::string>(),						"File to emit LLVM IR into" )
 		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
 		( "optimize,o", 	boost::program_options::value<int>(&optimize)->default_value(2),	"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
-		( "version,v",		"Show version" )
+		( "target,t", 		boost::program_options::value<std::string>(&target)->default_value( llvm::sys::getProcessTriple() ), "Set target" )
+		( "version,v",		"Show version, libraries and targets" )
 		;
 
 	boost::program_options::positional_options_description positionalOptions;
@@ -62,16 +64,25 @@ int main( int argc, char **argv )
 
 	// show version & exit
 	if( commandLine.count( "version" ) ) {
-		std::cout << "version: " << EXO_VERSION << std::endl;
-		std::cout << "host cpu: " << llvm::sys::getHostCPUName() << std::endl;
-		std::cout << "jit target: " << target << std::endl;
-
+		std::cout << "Version:\t" << EXO_VERSION << std::endl;
+		std::cout << "Host CPU:\t" << llvm::sys::getHostCPUName() << std::endl;
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
-		std::cout << "libgc version: " << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
+		std::cout << "LibGC version:\t\t" << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
 #else
-		std::cout << "libgc: disabled" << std::endl;
+		std::cout << "LibGC:\t\tdisabled" << std::endl;
 #endif
+
+		llvm::InitializeAllTargets();
+		std::cout << std::endl << "Native target:\t" << llvm::sys::getProcessTriple() << std::endl << "Supported targets:" << std::endl;
+		for( llvm::TargetRegistry::iterator it = llvm::TargetRegistry::begin(); it !=  llvm::TargetRegistry::end(); it++ ) {
+			std::string name = it->getName();
+			std::cout << " - " << name << "\t";
+			if( name.size() < 5 ) {
+				std::cout << "\t";
+			}
+			std::cout << ": " << it->getShortDescription() << std::endl;
+		}
 		exit( 0 );
 	}
 
@@ -94,7 +105,7 @@ int main( int argc, char **argv )
 		}
 
 		// codegen takes ownership of the ast nodes, this will however leak horribly on unproper shutdown
-		boost::shared_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main" ) );
+		boost::shared_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main", target ) );
 		generator->Generate( ast );
 
 		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator, optimize ) );
