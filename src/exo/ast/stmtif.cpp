@@ -27,7 +27,6 @@ namespace exo
 
 		StmtIf::~StmtIf()
 		{
-			delete expression;
 			delete onTrue;
 			delete onFalse;
 		}

@@ -371,7 +371,7 @@ namespace exo
 				Expr* expression;
 
 				StmtExpr( Expr* expr );
-				~StmtExpr();
+				virtual ~StmtExpr();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
@@ -379,7 +379,6 @@ namespace exo
 		class StmtIf : public virtual StmtExpr
 		{
 			public:
-				Expr* expression;
 				StmtList* onTrue;
 				StmtList* onFalse;
 
