@@ -71,12 +71,12 @@ program ::= stmts(s). {
 /* statements are a single statement followed by ; and other statements */
 %type stmts { exo::ast::StmtList* }
 %destructor stmts { delete $$; }
-stmts(a) ::= stmt(b). {
+stmts(a) ::= stmt(b) T_SEMICOLON. {
 	POINTERCHECK(b);
 	a = new exo::ast::StmtList;
 	a->list.push_back( b );
 }
-stmts(s) ::= stmts(a) stmt(b). {
+stmts(s) ::= stmts(a) stmt(b) T_SEMICOLON. {
 	POINTERCHECK(a);
 	POINTERCHECK(b);
 	a->list.push_back( b );
@@ -90,37 +90,37 @@ stmts(s) ::= stmts(a) stmt(b). {
  */
 %type stmt { exo::ast::Stmt* }
 %destructor stmt { delete $$; }
-stmt(s) ::= vardec(v) T_SEMICOLON. {
+stmt(s) ::= vardec(v). {
 	POINTERCHECK(v);
 	s = v;
 }
-stmt(s) ::= funproto(f) T_SEMICOLON. {
+stmt(s) ::= funproto(f). {
 	POINTERCHECK(f);
 	s = f;
 }
-stmt(s) ::= fundec(f) T_SEMICOLON. {
+stmt(s) ::= fundec(f). {
 	POINTERCHECK(f);
 	s = f;
 }
-stmt(s) ::= classdec(c) T_SEMICOLON. {
+stmt(s) ::= classdec(c). {
 	POINTERCHECK(c);
 	s = c;
 }
-stmt(s) ::= T_RETURN expr(e) T_SEMICOLON. {
+stmt(s) ::= T_RETURN expr(e). {
 	POINTERCHECK(e);
 	s = new exo::ast::StmtReturn( e );
 }
-stmt(s) ::= stmtif(i) T_SEMICOLON. {
+stmt(s) ::= stmtif(i). {
 	POINTERCHECK(i);
 	s = i;
 }
-stmt(s) ::= expr(e) T_SEMICOLON. {
+stmt(s) ::= expr(e). {
 	POINTERCHECK(e);
 	s = new exo::ast::StmtExpr( e );
 }
 
 
-/* a block is empty (i.e. protofunctions, class blocks ) or a collection of statements delimited by brackets */
+/* a block is empty (i.e. protofunctions, class blocks ), a collection of statements delimited by brackets or a single statement */
 %type block { exo::ast::StmtList* }
 %destructor block { delete $$; }
 block(b) ::= T_LBRACKET T_RBRACKET. {
@@ -129,6 +129,11 @@ block(b) ::= T_LBRACKET T_RBRACKET. {
 block(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
 	POINTERCHECK(s);
 	b = s;
+}
+block(b) ::= stmt(s). {
+	POINTERCHECK(s);
+	b = new exo::ast::StmtList;
+	b->list.push_back( s );
 }
 
 
