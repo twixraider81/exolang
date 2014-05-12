@@ -35,7 +35,7 @@ namespace exo
 				std::string		targetMachine;
 				StmtList*		stmts;
 
-				Tree();
+				Tree( std::string target );
 				~Tree();
 
 				void Parse( std::string fName );

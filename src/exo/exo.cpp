@@ -34,14 +34,14 @@
 int main( int argc, char **argv )
 {
 	int severity, optimize, retval;
-	std::string target;
+	std::string target, emit, input;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
 	availOptions.add_options()
 		( "help,h",			"Show this usage/help" )
-		( "input,i",		boost::program_options::value<std::string>(),						"File to parse and execute if -e is not given" )
-		( "emit,e",			boost::program_options::value<std::string>(),						"File to emit LLVM IR into" )
+		( "input,i",		boost::program_options::value<std::string>(&input),					"File to parse and execute if -e is not given" )
+		( "emit,e",			boost::program_options::value<std::string>(&emit),					"File to emit LLVM IR into" )
 		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
 		( "optimize,o", 	boost::program_options::value<int>(&optimize)->default_value(2),	"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
 		( "target,t", 		boost::program_options::value<std::string>(&target)->default_value( llvm::sys::getProcessTriple() ), "Set target" )
@@ -94,17 +94,14 @@ int main( int argc, char **argv )
 	}
 
 	try {
-		boost::shared_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
-		// only needed for internal constant __TARGET__
-		ast->targetMachine = target;
+		boost::shared_ptr<exo::ast::Tree> ast( new exo::ast::Tree( target ) );
 
 		if( commandLine.count( "input" ) ) {
-			ast->Parse( commandLine["input"].as<std::string>() );
+			ast->Parse( input );
 		} else {
 			ast->Parse( std::cin );
 		}
 
-		// codegen takes ownership of the ast nodes, this will however leak horribly on unproper shutdown
 		boost::shared_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main", target ) );
 		generator->Generate( ast );
 
@@ -113,7 +110,7 @@ int main( int argc, char **argv )
 		if( !commandLine.count( "emit" ) ) {
 			retval = jit->Execute();
 		} else {
-			retval = jit->Emit( commandLine["emit"].as<std::string>() );
+			retval = jit->Emit( emit );
 		}
 
 	} catch( boost::exception& e ) {

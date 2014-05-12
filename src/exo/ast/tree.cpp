@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree()
+		Tree::Tree( std::string target )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );
@@ -34,6 +34,7 @@ namespace exo
 			// will get rerouted via preprocessor to boost::log
 			::ParseTrace( stdout, (char*)banner.c_str() );
 			stmts = NULL;
+			targetMachine = target;
 		}
 
 		Tree::~Tree()
