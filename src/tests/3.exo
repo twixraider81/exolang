@@ -20,7 +20,6 @@ puts( "" );
 printf( "$d: %i", $d );
 puts( "" );
 
-__HALT__;
 while( $a < $b ) {
 	$a += 1;
 	printf( "%i", $a );
@@ -28,5 +27,6 @@ while( $a < $b ) {
 };
 
 printf( "%i", $a );
+puts( "" );
 
 return 0;

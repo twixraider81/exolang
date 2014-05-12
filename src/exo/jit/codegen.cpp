@@ -650,12 +650,13 @@ namespace exo
 			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
 
 			llvm::Value* condition = stmt->expression->Generate( this );
-			builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
+			builder.CreateCondBr( builder.CreateLoad( stmt->expression->Generate( this ) ), whileBlock, contBlock );
 
 			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
 			this->pushBlock( whileBlock, "whileblock" );
 			this->getBlockSymbols() = blockSymbols;
 			stmt->block->Generate( this );
+			condition = stmt->expression->Generate( this );
 			builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
 			this->popBlock();
 
