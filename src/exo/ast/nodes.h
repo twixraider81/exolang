@@ -406,6 +406,16 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class StmtWhile : public virtual StmtExpr
+		{
+			public:
+				StmtList* block;
+
+				StmtWhile( Expr* expr, StmtList* doBlock );
+				virtual ~StmtWhile();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
 
 		class Type : public virtual Node
 		{

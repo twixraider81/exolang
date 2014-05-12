@@ -14,6 +14,12 @@ if( $a == $c ) {
 	puts( "$a == $c" );
 };
 
+if( $a == $b ) {
+	puts( "$a == $b" );
+} else if( $b == $c ) {
+	puts( "$b == $c" );
+};
+
 return 0;
 
 /*

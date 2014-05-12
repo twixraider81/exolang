@@ -50,6 +50,7 @@ namespace exo
 		class StmtIf;
 		class StmtReturn;
 		class StmtList;
+		class StmtWhile;
 
 		class Tree;
 		class Type;
@@ -120,7 +121,8 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
-			    llvm::Value* Generate( exo::ast::StmtList* list );
+			    llvm::Value* Generate( exo::ast::StmtList* stmts );
+			    llvm::Value* Generate( exo::ast::StmtWhile* stmt );
 
 			    llvm::Value* Generate( boost::shared_ptr<exo::ast::Tree> tree );
 		};

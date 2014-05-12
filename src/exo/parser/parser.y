@@ -85,7 +85,7 @@ stmts(s) ::= stmts(a) stmt(b) T_SEMICOLON. {
 
 
 /*
- * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if flow or an expression.
+ * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if flow, while flow or an expression.
  * statements are terminated by a semicolon
  */
 %type stmt { exo::ast::Stmt* }
@@ -111,6 +111,10 @@ stmt(s) ::= T_RETURN expr(e). {
 	s = new exo::ast::StmtReturn( e );
 }
 stmt(s) ::= stmtif(i). {
+	POINTERCHECK(i);
+	s = i;
+}
+stmt(s) ::= stmtwhile(i). {
 	POINTERCHECK(i);
 	s = i;
 }
@@ -150,6 +154,16 @@ stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t) T_ELSE block(f). {
 	POINTERCHECK(t);
 	POINTERCHECK(f);
 	i = new exo::ast::StmtIf( e, t, f );
+}
+
+
+/* a while block */
+%type stmtwhile { exo::ast::StmtWhile* }
+%destructor stmtwhile { delete $$; }
+stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE block(b). {
+	POINTERCHECK(e);
+	POINTERCHECK(b);
+	i = new exo::ast::StmtWhile( e, b );
 }
 
 	

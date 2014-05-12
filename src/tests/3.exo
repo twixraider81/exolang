@@ -1,0 +1,10 @@
+int $a = 0;
+int $b = 1000;
+
+int function printf( string $str ... );
+
+while( $a < $b ) {
+	$a++;
+};
+
+printf( "%i", $a );
