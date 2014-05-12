@@ -1,5 +1,6 @@
 int $a = 1;
 int $b = 2;
+int $c = 1;
 
 int function puts( string $str );
 
@@ -9,6 +10,9 @@ if( $a < $b ) {
 	puts( "$a => $b" );
 };
 
+if( $a == $c ) {
+	puts( "$a == $c" );
+};
 
 return 0;
 

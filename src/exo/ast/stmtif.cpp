@@ -28,7 +28,10 @@ namespace exo
 		StmtIf::~StmtIf()
 		{
 			delete onTrue;
-			delete onFalse;
+
+			if( onFalse != NULL ) {
+				delete onFalse;
+			}
 		}
 	}
 }

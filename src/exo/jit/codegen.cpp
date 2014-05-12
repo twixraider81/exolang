@@ -500,6 +500,21 @@ namespace exo
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLt ) ) {
 				BOOST_LOG_TRIVIAL(debug) << "Generating lower than comparison in (" << this->getBlockName() << ")";
 				result = builder.CreateICmpSLT( lhs, rhs, "cmp" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLe ) ) {
+				BOOST_LOG_TRIVIAL(debug) << "Generating lower equal comparison in (" << this->getBlockName() << ")";
+				result = builder.CreateICmpSLE( lhs, rhs, "cmp" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryGe ) ) {
+				BOOST_LOG_TRIVIAL(debug) << "Generating greater equal comparison in (" << this->getBlockName() << ")";
+				result = builder.CreateICmpSGE( lhs, rhs, "cmp" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryGt ) ) {
+				BOOST_LOG_TRIVIAL(debug) << "Generating greater than comparison in (" << this->getBlockName() << ")";
+				result = builder.CreateICmpSGT( lhs, rhs, "cmp" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryEq ) ) {
+				BOOST_LOG_TRIVIAL(debug) << "Generating is equal comparison in (" << this->getBlockName() << ")";
+				result = builder.CreateICmpEQ( lhs, rhs, "cmp" );
+			} else if( typeid(*op) == typeid( exo::ast::OpBinaryEq ) ) {
+				BOOST_LOG_TRIVIAL(debug) << "Generating not equal comparison in (" << this->getBlockName() << ")";
+				result = builder.CreateICmpNE( lhs, rhs, "cmp" );
 			} else {
 				EXO_THROW_EXCEPTION( InvalidOp, "Unknown binary operation." );
 			}
@@ -583,7 +598,38 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
 		{
-			return( this->builder.CreateRet( llvm::Constant::getNullValue( this->intType ) ) );
+			BOOST_LOG_TRIVIAL(debug) << "Generating if statement in (" << this->getBlockName() << ")";
+
+			llvm::BasicBlock* ifBlock	= llvm::BasicBlock::Create( this->module->getContext(), "if", this->getBlock()->getParent(), 0 );
+			llvm::BasicBlock* elseBlock;
+			if( stmt->onFalse != NULL ) {
+				elseBlock = llvm::BasicBlock::Create( this->module->getContext(), "else", this->getBlock()->getParent(), 0 );
+			}
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
+
+			llvm::Value* condition = stmt->expression->Generate( this );
+
+			if( stmt->onFalse != NULL ) {
+				builder.CreateCondBr( builder.CreateLoad( condition ), ifBlock, elseBlock );
+			} else {
+				builder.CreateCondBr( builder.CreateLoad( condition ), ifBlock, contBlock );
+			}
+
+			this->pushBlock( ifBlock, "ifblock" );
+			stmt->onTrue->Generate( this );
+			builder.CreateBr( contBlock );
+			this->popBlock();
+
+			if( stmt->onFalse != NULL ) {
+				this->pushBlock( elseBlock, "elseblock" );
+				stmt->onFalse->Generate( this );
+				builder.CreateBr( contBlock );
+				this->popBlock();
+			}
+
+			// continue with instructions after continue
+			builder.SetInsertPoint( contBlock );
+			return( condition );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )

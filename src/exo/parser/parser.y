@@ -138,7 +138,7 @@ block(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
 stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t). {
 	POINTERCHECK(e);
 	POINTERCHECK(t);
-	i = new exo::ast::StmtIf( e, t, new exo::ast::StmtList() );
+	i = new exo::ast::StmtIf( e, t, NULL );
 }
 stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t) T_ELSE block(f). {
 	POINTERCHECK(e);
