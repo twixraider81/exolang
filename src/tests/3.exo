@@ -1,5 +1,5 @@
 int $a = 0;
-int $b = 1000;
+int $b = 525;
 int $c = 500;
 int $d = 5;
 
