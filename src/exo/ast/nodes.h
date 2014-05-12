@@ -376,6 +376,19 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class StmtFor : public virtual StmtExpr
+		{
+			public:
+				StmtList*	block;
+				DecList*	initialization;
+				Expr*		update;
+
+				StmtFor( Expr* expr, DecList* init, Expr* upd, StmtList* doBlock );
+				virtual ~StmtFor();
+
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
 		class StmtIf : public virtual StmtExpr
 		{
 			public:

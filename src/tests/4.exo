@@ -4,7 +4,17 @@
 // single line comment
 # single line comment too
 
+int function puts( string $str );
+int function printf( string $str ... );
 
+for( int $i = 0; $i < 25; $i += 1 ) {
+	printf( "%i", $i );
+	puts( "" );
+};
+
+return 0;
+
+/*
 auto function blabla1 { ; };
 function() blabla2 { ; };
 string function blabla3( string $s ) { $s; };
@@ -50,3 +60,4 @@ function vaArg( ... )
 __FILE__
 __LINE__
 __HALT__
+*/

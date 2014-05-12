@@ -47,6 +47,7 @@ namespace exo
 		class OpUnaryNew;
 
 		class StmtExpr;
+		class StmtFor;
 		class StmtIf;
 		class StmtReturn;
 		class StmtList;
@@ -120,6 +121,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::OpUnaryNew* op );
 
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
+			    llvm::Value* Generate( exo::ast::StmtFor* stmt );
 			    llvm::Value* Generate( exo::ast::StmtIf* stmt );
 			    llvm::Value* Generate( exo::ast::StmtReturn* stmt );
 			    llvm::Value* Generate( exo::ast::StmtList* stmts );

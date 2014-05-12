@@ -85,7 +85,7 @@ stmts(s) ::= stmts(a) stmt(b) T_SEMICOLON. {
 
 
 /*
- * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if flow, while flow or an expression.
+ * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if/while/for flow or an expression.
  * statements are terminated by a semicolon
  */
 %type stmt { exo::ast::Stmt* }
@@ -114,9 +114,13 @@ stmt(s) ::= stmtif(i). {
 	POINTERCHECK(i);
 	s = i;
 }
-stmt(s) ::= stmtwhile(i). {
-	POINTERCHECK(i);
-	s = i;
+stmt(s) ::= stmtwhile(w). {
+	POINTERCHECK(w);
+	s = w;
+}
+stmt(s) ::= stmtfor(f). {
+	POINTERCHECK(f);
+	s = f;
 }
 stmt(s) ::= expr(e). {
 	POINTERCHECK(e);
@@ -141,7 +145,7 @@ block(b) ::= stmt(s). {
 }
 
 
-/* an if block */
+/* an if or if else block */
 %type stmtif { exo::ast::StmtIf* }
 %destructor stmtif { delete $$; }
 stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t). {
@@ -157,13 +161,25 @@ stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t) T_ELSE block(f). {
 }
 
 
-/* a while block */
+/* a while has a condition which is checked block and an asscoiated block */
 %type stmtwhile { exo::ast::StmtWhile* }
 %destructor stmtwhile { delete $$; }
 stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE block(b). {
 	POINTERCHECK(e);
 	POINTERCHECK(b);
 	i = new exo::ast::StmtWhile( e, b );
+}
+
+
+/* a for block has a variable declaration list, followed by 2 expression statements and an asscoiated block */
+%type stmtfor { exo::ast::StmtFor* }
+%destructor stmtfor { delete $$; }
+stmtfor(f) ::= T_FOR T_LANGLE vardeclist(l) T_SEMICOLON expr(c) T_SEMICOLON expr(u) T_RANGLE block(b). {
+	POINTERCHECK(l);
+	POINTERCHECK(c);
+	POINTERCHECK(u);
+	POINTERCHECK(b);
+	f = new exo::ast::StmtFor( c, l, u, b );
 }
 
 	

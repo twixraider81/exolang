@@ -64,6 +64,7 @@ mode EXO:
 	"if"							=> QUEX_TKN_T_IF;
 	"else"							=> QUEX_TKN_T_ELSE;
 	"while"							=> QUEX_TKN_T_WHILE;
+	"for"							=> QUEX_TKN_T_FOR;
 
 	"class"							=> QUEX_TKN_T_CLASS;
 	"extends"						=> QUEX_TKN_T_EXTENDS;
