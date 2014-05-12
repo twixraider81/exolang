@@ -89,6 +89,7 @@ namespace exo
 			    llvm::Value*		getBlockSymbol( std::string name );
 			    void				setBlockSymbol( std::string name, llvm::Value* value );
 			    void				delBlockSymbol( std::string name );
+			    std::map<std::string,llvm::Value*>& getBlockSymbols();
 
 			    llvm::Type*	getType( exo::ast::Type* type );
 			    int			getPropertyPosition( std::string className, std::string propName );

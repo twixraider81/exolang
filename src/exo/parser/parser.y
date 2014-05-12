@@ -467,6 +467,27 @@ expr(e) ::= T_DELETE expr(a). {
 	POINTERCHECK(a);
 	e = new exo::ast::OpUnaryDel( a );
 }
+/* FIXME: these leak */
+expr(e) ::= expr(a) T_PLUS T_ASSIGN expr(b). {
+	POINTERCHECK(a);
+	POINTERCHECK(b);
+	e = new exo::ast::OpBinaryAssign( a, new exo::ast::OpBinaryAdd( a, b ) );
+}
+expr(e) ::= expr(a) T_MINUS T_ASSIGN expr(b). {
+	POINTERCHECK(a);
+	POINTERCHECK(b);
+	e = new exo::ast::OpBinaryAssign( a, new exo::ast::OpBinarySub( a, b ) );
+}
+expr(e) ::= expr(a) T_MUL T_ASSIGN expr(b). {
+	POINTERCHECK(a);
+	POINTERCHECK(b);
+	e = new exo::ast::OpBinaryAssign( a, new exo::ast::OpBinaryMul( a, b ) );
+}
+expr(e) ::= expr(a) T_DIV T_ASSIGN expr(b). {
+	POINTERCHECK(a);
+	POINTERCHECK(b);
+	e = new exo::ast::OpBinaryAssign( a, new exo::ast::OpBinaryDiv( a, b ) );
+}
 
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */

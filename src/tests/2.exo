@@ -18,6 +18,8 @@ if( $a == $b ) {
 	puts( "$a == $b" );
 } else if( $b == $c ) {
 	puts( "$b == $c" );
+} else {
+	puts( "$a != $c, $b != $c" );
 };
 
 return 0;

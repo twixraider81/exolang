@@ -110,6 +110,12 @@ namespace exo
 			this->blocks.top()->symbols.erase( name );
 		}
 
+		std::map<std::string,llvm::Value*>& Codegen::getBlockSymbols()
+		{
+			return( this->blocks.top()->symbols );
+		}
+
+
 		/*
 		 * TODO: allow raw ctypes with proper names, we want int, bool, etc for ourself
 		 */
@@ -615,17 +621,43 @@ namespace exo
 				builder.CreateCondBr( builder.CreateLoad( condition ), ifBlock, contBlock );
 			}
 
+			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
+
 			this->pushBlock( ifBlock, "ifblock" );
+			this->getBlockSymbols() = blockSymbols;
 			stmt->onTrue->Generate( this );
 			builder.CreateBr( contBlock );
 			this->popBlock();
 
 			if( stmt->onFalse != NULL ) {
 				this->pushBlock( elseBlock, "elseblock" );
+				this->getBlockSymbols() = blockSymbols;
 				stmt->onFalse->Generate( this );
 				builder.CreateBr( contBlock );
 				this->popBlock();
 			}
+
+			// continue with instructions after continue
+			builder.SetInsertPoint( contBlock );
+			return( condition );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtWhile* stmt )
+		{
+			BOOST_LOG_TRIVIAL(debug) << "Generating while statement in (" << this->getBlockName() << ")";
+
+			llvm::BasicBlock* whileBlock = llvm::BasicBlock::Create( this->module->getContext(), "while", this->getBlock()->getParent(), 0 );
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
+
+			llvm::Value* condition = stmt->expression->Generate( this );
+			builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
+
+			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
+			this->pushBlock( whileBlock, "whileblock" );
+			this->getBlockSymbols() = blockSymbols;
+			stmt->block->Generate( this );
+			builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
+			this->popBlock();
 
 			// continue with instructions after continue
 			builder.SetInsertPoint( contBlock );

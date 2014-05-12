@@ -1,10 +1,32 @@
 int $a = 0;
 int $b = 1000;
+int $c = 500;
+int $d = 5;
 
+int function puts( string $str );
 int function printf( string $str ... );
 
+$a += 1;
+$b -= 500;
+$d *= $c;
+$c /= 5;
+
+printf( "$a: %i", $a );
+puts( "" );
+printf( "$b: %i", $b );
+puts( "" );
+printf( "$c: %i", $c );
+puts( "" );
+printf( "$d: %i", $d );
+puts( "" );
+
+__HALT__;
 while( $a < $b ) {
-	$a++;
+	$a += 1;
+	printf( "%i", $a );
+	puts( "" );
 };
 
 printf( "%i", $a );
+
+return 0;
