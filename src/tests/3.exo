@@ -33,14 +33,12 @@ puts( "" );
 int $f = 0;
 while( true ) {
 	$f += 1;
-	printf( "% i", $a );
+	printf( "% i", $f );
 	puts( "" );
 
-/*
 	if( $f > 5 ) {
 		break;
 	};
-*/
 };
 
 return 0;
