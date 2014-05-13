@@ -7,11 +7,11 @@
 int function puts( string $str );
 int function printf( string $str ... );
 
-for( int $i = 0; $i < 25; $i += 1 ) {
-	printf( "%i", $i );
-	puts( "" );
+for( int $i = 0, int $j = 25; $i < 25; $i += 1, $j -= 1 ) {
+	printf( "%i:%i ", $i, $j );
 };
 
+puts( "" );
 return 0;
 
 /*

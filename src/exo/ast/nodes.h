@@ -381,9 +381,9 @@ namespace exo
 			public:
 				StmtList*	block;
 				DecList*	initialization;
-				Expr*		update;
+				ExprList*	update;
 
-				StmtFor( Expr* expr, DecList* init, Expr* upd, StmtList* doBlock );
+				StmtFor( Expr* expr, DecList* init, ExprList* upd, StmtList* doBlock );
 				virtual ~StmtFor();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };

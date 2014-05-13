@@ -171,10 +171,10 @@ stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE block(b). {
 }
 
 
-/* a for block has a variable declaration list, followed by 2 expression statements and an asscoiated block */
+/* a for block has a variable declaration list, followed by an expression condition, an expression update list and an asscoiated block */
 %type stmtfor { exo::ast::StmtFor* }
 %destructor stmtfor { delete $$; }
-stmtfor(f) ::= T_FOR T_LANGLE vardeclist(l) T_SEMICOLON expr(c) T_SEMICOLON expr(u) T_RANGLE block(b). {
+stmtfor(f) ::= T_FOR T_LANGLE vardeclist(l) T_SEMICOLON expr(c) T_SEMICOLON exprlist(u) T_RANGLE block(b). {
 	POINTERCHECK(l);
 	POINTERCHECK(c);
 	POINTERCHECK(u);

@@ -595,7 +595,39 @@ namespace exo
 
 
 
-		// ok
+		llvm::Value* Codegen::Generate( exo::ast::StmtFor* stmt )
+		{
+			BOOST_LOG_TRIVIAL(debug) << "Generating for statement in (" << this->getBlockName() << ")";
+
+			llvm::BasicBlock* forBlock = llvm::BasicBlock::Create( this->module->getContext(), "for", this->getBlock()->getParent(), 0 );
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
+
+			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
+
+			for( std::vector<exo::ast::DecVar*>::iterator it = stmt->initialization->list.begin(); it != stmt->initialization->list.end(); it++ ) {
+				(*it)->Generate( this );
+			}
+
+			builder.CreateBr( forBlock );
+			this->pushBlock( forBlock, "for" );
+			this->getBlockSymbols() = blockSymbols;
+
+			llvm::Value* condition = stmt->expression->Generate( this );
+			stmt->block->Generate( this );
+
+			for( std::vector<exo::ast::Expr*>::iterator it = stmt->update->list.begin(); it != stmt->update->list.end(); it++ ) {
+				(*it)->Generate( this );
+			}
+
+			builder.CreateCondBr( builder.CreateLoad( condition ), forBlock, contBlock );
+
+			this->popBlock();
+
+			// continue with instructions after continue
+			builder.SetInsertPoint( contBlock );
+			return( condition );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << this->getBlockName() << ")";
@@ -604,8 +636,6 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Generating if statement in (" << this->getBlockName() << ")";
-
 			llvm::BasicBlock* ifBlock	= llvm::BasicBlock::Create( this->module->getContext(), "if", this->getBlock()->getParent(), 0 );
 			llvm::BasicBlock* elseBlock;
 			if( stmt->onFalse != NULL ) {
@@ -623,14 +653,16 @@ namespace exo
 
 			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
 
-			this->pushBlock( ifBlock, "ifblock" );
+			BOOST_LOG_TRIVIAL(debug) << "Generating if statement in (" << this->getBlockName() << ")";
+			this->pushBlock( ifBlock, "if" );
 			this->getBlockSymbols() = blockSymbols;
 			stmt->onTrue->Generate( this );
 			builder.CreateBr( contBlock );
 			this->popBlock();
 
 			if( stmt->onFalse != NULL ) {
-				this->pushBlock( elseBlock, "elseblock" );
+				BOOST_LOG_TRIVIAL(debug) << "Generating else statement in (" << this->getBlockName() << ")";
+				this->pushBlock( elseBlock, "else" );
 				this->getBlockSymbols() = blockSymbols;
 				stmt->onFalse->Generate( this );
 				builder.CreateBr( contBlock );
@@ -653,11 +685,13 @@ namespace exo
 			builder.CreateCondBr( builder.CreateLoad( stmt->expression->Generate( this ) ), whileBlock, contBlock );
 
 			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
-			this->pushBlock( whileBlock, "whileblock" );
+			this->pushBlock( whileBlock, "while" );
 			this->getBlockSymbols() = blockSymbols;
+
 			stmt->block->Generate( this );
 			condition = stmt->expression->Generate( this );
 			builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
+
 			this->popBlock();
 
 			// continue with instructions after continue
@@ -665,6 +699,7 @@ namespace exo
 			return( condition );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating return statement in (" << this->getBlockName() << ")";

@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtFor::StmtFor( Expr* expr, DecList* init, Expr* upd, StmtList* doBlock ) : StmtExpr( expr )
+		StmtFor::StmtFor( Expr* expr, DecList* init, ExprList* upd, StmtList* doBlock ) : StmtExpr( expr )
 		{
 			initialization = init;
 			update = upd;
@@ -29,6 +29,8 @@ namespace exo
 		StmtFor::~StmtFor()
 		{
 			delete block;
+			delete initialization;
+			delete update;
 		}
 	}
 }
