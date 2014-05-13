@@ -415,9 +415,15 @@ namespace exo
 
 			decl->stmts->Generate( this );
 
-			if( block->getTerminator() == NULL && !this->getType( decl->returnType )->isVoidTy() ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getBlockName() << ")";
-				builder.CreateRet( llvm::Constant::getNullValue( this->getType( decl->returnType ) ) );
+			llvm::TerminatorInst* retVal = block->getTerminator();
+			if( retVal == NULL || !llvm::isa<llvm::ReturnInst>(retVal) ) {
+				if( this->getType( decl->returnType )->isVoidTy() ) {
+					BOOST_LOG_TRIVIAL(trace) << "Generating void return in (" << getBlockName() << ")";
+					builder.CreateRetVoid();
+				} else {
+					BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getBlockName() << ")";
+					builder.CreateRet( llvm::Constant::getNullValue( this->getType( decl->returnType ) ) );
+				}
 			}
 
 			this->popBlock();
@@ -763,10 +769,10 @@ namespace exo
 
 			Generate( tree->stmts );
 
-			llvm::Value* retVal = block->getTerminator();
-			if( retVal == NULL ) {
+			llvm::TerminatorInst* retVal = block->getTerminator();
+			if( retVal == NULL || !llvm::isa<llvm::ReturnInst>(retVal) ) {
 				BOOST_LOG_TRIVIAL(debug) << "Generating null return in (" << this->name << ")";
-				retVal = this->builder.CreateRet( llvm::Constant::getNullValue( this->intType ) );
+				retVal = this->builder.CreateRet( llvm::ConstantInt::get( this->intType, 0 ) );
 			}
 
 			popBlock();

@@ -13,4 +13,3 @@ int function fibonacci( int $n ) {
 };
 
 printf( "%d", fibonacci( 1 ) );
-return 0;

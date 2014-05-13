@@ -22,8 +22,6 @@ if( $a == $b ) {
 	puts( "$a != $c, $b != $c" );
 };
 
-return 0;
-
 /*
 auto $c = auto $d;
 auto $e = 1 + $c;
