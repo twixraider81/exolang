@@ -401,7 +401,7 @@ exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 }
 
 
-/* an expression may be an function call, method call, property, variable (expression), constant, binary (add, ... assignment) operation */
+/* an expression may be an function call, method call, property, variable (expression), constant, binary (add, ... assignment) operation, delimited/grouped by brackets */
 %type expr { exo::ast::Expr* }
 %destructor expr { delete $$; }
 expr(e) ::= S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
@@ -518,6 +518,10 @@ expr(e) ::= expr(a) T_DIV T_ASSIGN expr(b). {
 	POINTERCHECK(b);
 	e = new exo::ast::OpBinaryAssign( a, new exo::ast::OpBinaryDiv( a, b ) );
 }
+expr(e) ::= T_LANGLE expr(a) T_RANGLE. {
+	POINTERCHECK(a);
+	e = a;
+}
 
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */
@@ -563,9 +567,19 @@ number(n) ::= S_INT(i). {
 	n = new exo::ast::ConstInt( boost::lexical_cast<long>( TOKENSTR(i) ) );
 	delete i;
 }
+number(n) ::= T_MINUS S_INT(i). {
+	POINTERCHECK(i);
+	n = new exo::ast::ConstInt( -( boost::lexical_cast<long>( TOKENSTR(i) ) ) );
+	delete i;
+}
 number(n) ::= S_FLOAT(f). {
 	POINTERCHECK(f);
 	n = new exo::ast::ConstFloat( boost::lexical_cast<double>( TOKENSTR(f) ) );
+	delete f;
+}
+number(n) ::= T_MINUS S_FLOAT(f). {
+	POINTERCHECK(f);
+	n = new exo::ast::ConstFloat( -( boost::lexical_cast<double>( TOKENSTR(f) ) ) );
 	delete f;
 }
 
