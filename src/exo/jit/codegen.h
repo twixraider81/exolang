@@ -46,6 +46,7 @@ namespace exo
 		class OpUnaryDel;
 		class OpUnaryNew;
 
+		class StmtBreak;
 		class StmtExpr;
 		class StmtFor;
 		class StmtIf;
@@ -84,8 +85,9 @@ namespace exo
 			    ~Codegen();
 
 			    void 				popBlock();
-			    void 				pushBlock( llvm::BasicBlock* block, std::string name );
+			    void 				pushBlock( llvm::BasicBlock* block, std::string name, llvm::BasicBlock* eblock = NULL );
 			    llvm::BasicBlock*	getBlock();
+			    llvm::BasicBlock*	getBlockExit();
 			    std::string			getBlockName();
 			    llvm::Value*		getBlockSymbol( std::string name );
 			    void				setBlockSymbol( std::string name, llvm::Value* value );
@@ -120,6 +122,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::OpUnaryDel* op );
 			    llvm::Value* Generate( exo::ast::OpUnaryNew* op );
 
+			    llvm::Value* Generate( exo::ast::StmtBreak* stmt );
 			    llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 			    llvm::Value* Generate( exo::ast::StmtFor* stmt );
 			    llvm::Value* Generate( exo::ast::StmtIf* stmt );

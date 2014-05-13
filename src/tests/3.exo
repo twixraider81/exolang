@@ -30,4 +30,17 @@ while( $a < $b ) {
 printf( "%i", $a );
 puts( "" );
 
+int $f = 0;
+while( true ) {
+	$f += 1;
+	printf( "% i", $a );
+	puts( "" );
+
+/*
+	if( $f > 5 ) {
+		break;
+	};
+*/
+};
+
 return 0;

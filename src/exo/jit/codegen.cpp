@@ -57,10 +57,11 @@ namespace exo
 			}
 		}
 
-		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name )
+		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name, llvm::BasicBlock* eblock )
 		{
 			this->blocks.push( new Block() );
 			this->blocks.top()->block = block;
+			this->blocks.top()->exitBlock = eblock;
 			this->blocks.top()->name = name;
 
 			// reset our new insert point
@@ -72,6 +73,11 @@ namespace exo
 		llvm::BasicBlock* Codegen::getBlock()
 		{
 			 return( this->blocks.top()->block );
+		}
+
+		llvm::BasicBlock* Codegen::getBlockExit()
+		{
+			 return( this->blocks.top()->exitBlock );
 		}
 
 		std::string Codegen::getBlockName()
@@ -595,6 +601,17 @@ namespace exo
 
 
 
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtBreak* stmt )
+		{
+			if( this->getBlockExit() == NULL ) {
+				EXO_THROW_EXCEPTION( InvalidBreak, "Can not break in (" + this->getBlockName() + ")" );
+			}
+
+			BOOST_LOG_TRIVIAL(trace) << "Generating break statement in (" << this->getBlockName() << ")";
+			return( builder.CreateBr( this->getBlockExit() ) );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtFor* stmt )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Generating for statement in (" << this->getBlockName() << ")";
@@ -609,7 +626,7 @@ namespace exo
 			}
 
 			builder.CreateBr( forBlock );
-			this->pushBlock( forBlock, "for" );
+			this->pushBlock( forBlock, "for", contBlock );
 			this->getBlockSymbols() = blockSymbols;
 
 			llvm::Value* condition = stmt->expression->Generate( this );
@@ -628,6 +645,7 @@ namespace exo
 			return( condition );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << this->getBlockName() << ")";
@@ -685,7 +703,7 @@ namespace exo
 			builder.CreateCondBr( builder.CreateLoad( stmt->expression->Generate( this ) ), whileBlock, contBlock );
 
 			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
-			this->pushBlock( whileBlock, "while" );
+			this->pushBlock( whileBlock, "while", contBlock );
 			this->getBlockSymbols() = blockSymbols;
 
 			stmt->block->Generate( this );

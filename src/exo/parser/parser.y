@@ -37,7 +37,7 @@
 }
 
 
-/* more like the "end" reduce ;) */
+/* more like the "end" reduce. */
 %start_symbol program
 
 %token_prefix QUEX_TKN_
@@ -51,6 +51,8 @@
 
 
 /* token precedences */
+%nonassoc	T_RANGLE.
+%nonassoc	T_ELSE.
 %nonassoc	S_ID.
 %right		T_TBOOL T_TINT T_TFLOAT T_TSTRING T_TAUTO T_TCALLABLE.
 %right		T_ASSIGN.
@@ -85,7 +87,7 @@ stmts(s) ::= stmts(a) stmt(b) T_SEMICOLON. {
 
 
 /*
- * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if/while/for flow or an expression.
+ * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if/while/for/break flow or an expression.
  * statements are terminated by a semicolon
  */
 %type stmt { exo::ast::Stmt* }
@@ -121,6 +123,10 @@ stmt(s) ::= stmtwhile(w). {
 stmt(s) ::= stmtfor(f). {
 	POINTERCHECK(f);
 	s = f;
+}
+stmt(s) ::= stmtbreak(b). {
+	POINTERCHECK(b);
+	s = b;
 }
 stmt(s) ::= expr(e). {
 	POINTERCHECK(e);
@@ -182,7 +188,15 @@ stmtfor(f) ::= T_FOR T_LANGLE vardeclist(l) T_SEMICOLON expr(c) T_SEMICOLON expr
 	f = new exo::ast::StmtFor( c, l, u, b );
 }
 
-	
+
+/* a while has a condition which is checked block and an asscoiated block */
+%type stmtbreak { exo::ast::StmtBreak* }
+%destructor stmtbreak { delete $$; }
+stmtbreak(i) ::= T_BREAK. {
+	i = new exo::ast::StmtBreak();
+}
+
+
 /* a type may be a null, bool, integer, float, string or auto or a classname */
 %type type { exo::ast::Type* }
 %destructor type { delete $$; }

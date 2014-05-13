@@ -27,6 +27,7 @@ namespace exo
 		{
 			public:
 			    llvm::BasicBlock*					block;
+			    llvm::BasicBlock*					exitBlock;
 			    std::string							name;
 			    std::map<std::string,llvm::Value*>	symbols;
 

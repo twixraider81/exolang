@@ -86,6 +86,11 @@ namespace exo
 		class InvalidOp : public virtual Exception {};
 
 		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid break.
+		 */
+		class InvalidBreak : public virtual Exception {};
+
+		/**
 		 * Exception that will be thrown in case we ran out of memory
 		 */
 		class OutOfMemory : public virtual Exception {};
