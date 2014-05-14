@@ -29,7 +29,7 @@ mode EXO:
 /**
  * handle whitespace and comments directly in the lexer
  */
-<skip: [ \r\n\t]>					/* skip whitespace */
+<skip: [ \r\n\t\f]>					/* skip whitespace */
 <skip_nested_range: "/*" "*/">		/* skip multiline comments */
 <skip_range: "//" "\n">				/* skip singleline comments */
 <skip_range: "#" "\n">				/* skip singleline comments */
@@ -134,6 +134,13 @@ mode DOUBLE_STRING:
 		self_send(QUEX_TKN_T_QUOTE);
 	}
 
+	[\r\n\t\f]+						{ self_accumulator_add(Lexeme, LexemeEnd); }
+	"\\r"							{ QUEX_TYPE_CHARACTER* carriage = (QUEX_TYPE_CHARACTER*)"\r"; self_accumulator_add(carriage, (QUEX_TYPE_CHARACTER*)carriage+1); }
+	"\\n"							{ QUEX_TYPE_CHARACTER* newline = (QUEX_TYPE_CHARACTER*)"\n"; self_accumulator_add(newline, (QUEX_TYPE_CHARACTER*)newline+1); }
+	"\\t"							{ QUEX_TYPE_CHARACTER* tab = (QUEX_TYPE_CHARACTER*)"\t"; self_accumulator_add(tab, (QUEX_TYPE_CHARACTER*)tab+1); }
+	"\\f"							{ QUEX_TYPE_CHARACTER* formfeed = (QUEX_TYPE_CHARACTER*)"\f"; self_accumulator_add(formfeed, (QUEX_TYPE_CHARACTER*)formfeed+1); }
+	"\\b"							{ QUEX_TYPE_CHARACTER* backspace = (QUEX_TYPE_CHARACTER*)"\b"; self_accumulator_add(backspace, (QUEX_TYPE_CHARACTER*)backspace+1); }
+	"\\e"							{ QUEX_TYPE_CHARACTER* escape = (QUEX_TYPE_CHARACTER*)"\e"; self_accumulator_add(escape, (QUEX_TYPE_CHARACTER*)escape+1); }
 	"\\\""							{ self_accumulator_add(Lexeme, LexemeEnd); }
 	"\\\\"							{ self_accumulator_add(Lexeme, LexemeEnd); }
 	"\""							{ self << EXO; RETURN; }

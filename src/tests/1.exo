@@ -26,16 +26,12 @@ puts( $v );
 puts( $t );
 
 int $f = test( 2 );
-printf( "int $f = test( 2 ) - %i", $f );
-puts( "" );
-printf( "test( 3 ) - %i", test( 3 ) );
-puts( "" );
+printf( "int $f = test( 2 ) - %i\n", $f );
+printf( "test( 3 ) - %i\n", test( 3 ) );
 
 float $g = 32.4;
-printf( "sinus: %f - %f", $g, sin( $g ) );
-puts( "" );
-printf( "cosinus: %f - %f", $g, cos( $g ) );
-puts( "" );
+printf( "sinus:\t\t%f - %f\n", $g, sin( $g ) );
+printf( "cosinus:\t%f - %f\n", $g, cos( $g ) );
 
 class testClass
 {

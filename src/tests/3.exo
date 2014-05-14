@@ -11,30 +11,22 @@ $b -= 500;
 $d *= $c;
 $c /= 5;
 
-printf( "$a: %i", $a );
-puts( "" );
-printf( "$b: %i", $b );
-puts( "" );
-printf( "$c: %i", $c );
-puts( "" );
-printf( "$d: %i", $d );
-puts( "" );
+printf( "$a: %i\n", $a );
+printf( "$b: %i\n", $b );
+printf( "$c: %i\n", $c );
+printf( "$d: %i\n", $d );
 
 while( $a < $b ) {
 	$a += 1;
-	printf( "%i", $a );
-	puts( "" );
-	//break;
+	printf( "%i\n", $a );
 };
 
-printf( "%i", $a );
-puts( "" );
+printf( "%i\n", $a );
 
 int $f = 0;
 while( true ) {
 	$f += 1;
-	printf( "% i", $f );
-	puts( "" );
+	printf( "% i\n", $f );
 
 	if( $f > 5 ) {
 		break;

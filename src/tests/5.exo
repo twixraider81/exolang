@@ -124,10 +124,8 @@ int $j = getInt( $t );
 
 // corrupt
 // $i = $o->getInt( 1 );
-printf( "$o->getInt() = %i", $h );
-puts("");
-printf( "getInt() = %i", $j );
-puts("");
+printf( "$o->getInt() = %i\n", $h );
+printf( "getInt() = %i\n", $j );
 $o->setTypeName();
 puts( $o->getTypeName() );
 $f->setTypeName();
