@@ -1,11 +1,11 @@
 int $a = 1;
-int $b = __LINE__;
+integer $b = __LINE__;
 int $c = $a + $b;
 int $d = $b - $a;
 bool $j = true;
-bool $k = false;
+boolean $k = false;
 string $s = __FILE__;
-string $v = __VERSION__;
+str $v = __VERSION__;
 string $t = __TARGET__;
 
 // external prototype
