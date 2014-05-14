@@ -147,8 +147,8 @@ mode DOUBLE_STRING:
 	"\\f"							{ QUEX_TYPE_CHARACTER* formfeed = (QUEX_TYPE_CHARACTER*)"\f"; self_accumulator_add(formfeed, (QUEX_TYPE_CHARACTER*)formfeed+1); }
 	"\\b"							{ QUEX_TYPE_CHARACTER* backspace = (QUEX_TYPE_CHARACTER*)"\b"; self_accumulator_add(backspace, (QUEX_TYPE_CHARACTER*)backspace+1); }
 	"\\e"							{ QUEX_TYPE_CHARACTER* escape = (QUEX_TYPE_CHARACTER*)"\e"; self_accumulator_add(escape, (QUEX_TYPE_CHARACTER*)escape+1); }
-	"\\\""							{ self_accumulator_add(Lexeme, LexemeEnd); }
-	"\\\\"							{ self_accumulator_add(Lexeme, LexemeEnd); }
+	"\\\""							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\\\"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"\""							{ self << EXO; RETURN; }
 	.								{ self_accumulator_add(Lexeme, LexemeEnd); }
 }
@@ -172,7 +172,8 @@ mode SINGLE_STRING:
 		self_send(QUEX_TKN_T_QUOTE);
 	}
 
-	"\\'"							{ self_accumulator_add(Lexeme, LexemeEnd); }
+	"\\'"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\\\"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"'"								{ self << EXO; RETURN; }
 	.								{ self_accumulator_add(Lexeme, LexemeEnd); }
 }

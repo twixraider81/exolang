@@ -28,7 +28,8 @@ puts( $t );
 printf( "test(3): %i\n", test( 3 ) );
 printf( "sinus($g):\t%f - %f\n", $g, sin( $g ) );
 printf( "cosinus($g):\t%f - %f\n", $g, cos( $g ) );
-puts( '\n"\'' );
+puts( '\n\\"\'' );
+puts( "\n\\\"'" );
 
 class testClass
 {
