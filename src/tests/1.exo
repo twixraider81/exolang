@@ -7,6 +7,7 @@ boolean $k = false;
 string $s = __FILE__;
 str $v = __VERSION__;
 string $t = __TARGET__;
+float $g = 32.4;
 
 // external prototype
 float function sin( float $x );
@@ -14,24 +15,19 @@ float function cos( float $x );
 int function puts( string $str );
 int function printf( string $str ... );
 
+// internal function
 int function test( int $e )
 {
-	int $a = $e + 1;
-	return $a;
+	return( $e + 1 );
 };
-
 
 puts( $s );
 puts( $v );
 puts( $t );
 
-int $f = test( 2 );
-printf( "int $f = test( 2 ) - %i\n", $f );
-printf( "test( 3 ) - %i\n", test( 3 ) );
-
-float $g = 32.4;
-printf( "sinus:\t\t%f - %f\n", $g, sin( $g ) );
-printf( "cosinus:\t%f - %f\n", $g, cos( $g ) );
+printf( "test(3): %i\n", test( 3 ) );
+printf( "sinus($g):\t%f - %f\n", $g, sin( $g ) );
+printf( "cosinus($g):\t%f - %f\n", $g, cos( $g ) );
 
 class testClass
 {
@@ -50,5 +46,5 @@ class testClass
 	};
 };
 
-testClass $i;
-//int $j = $i.getOne() + $i.getTwo();
+testClass $i = new testClass();
+printf( "$i->getOne() + $i->getTwo(): %d\n", $i->getOne() + $i->getTwo() );
