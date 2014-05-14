@@ -112,7 +112,13 @@ mode EXO:
 		self_send(QUEX_TKN_T_QUOTE);
 		self << DOUBLE_STRING;
 		RETURN;
-    }
+	}
+
+	"'"								{
+		self_send(QUEX_TKN_T_QUOTE);
+		self << SINGLE_STRING;
+		RETURN;
+	}
 }
 
 
@@ -144,5 +150,29 @@ mode DOUBLE_STRING:
 	"\\\""							{ self_accumulator_add(Lexeme, LexemeEnd); }
 	"\\\\"							{ self_accumulator_add(Lexeme, LexemeEnd); }
 	"\""							{ self << EXO; RETURN; }
+	.								{ self_accumulator_add(Lexeme, LexemeEnd); }
+}
+
+
+mode SINGLE_STRING:
+<entry: EXO>
+<exit:  EXO>
+{
+	<<EOF>>							=> QUEX_TKN_TERMINATION;
+	<<FAIL>>						{
+		EXO_THROW_EXCEPTION( UnknownToken, "Unknown token \"" + LEXEMESTR(Lexeme) + "\"" );
+	}
+
+	on_entry						{
+		self_accumulator_clear();
+	}
+
+	on_exit							{ 
+		self_accumulator_flush(QUEX_TKN_S_STRING); 
+		self_send(QUEX_TKN_T_QUOTE);
+	}
+
+	"\\'"							{ self_accumulator_add(Lexeme, LexemeEnd); }
+	"'"								{ self << EXO; RETURN; }
 	.								{ self_accumulator_add(Lexeme, LexemeEnd); }
 }
