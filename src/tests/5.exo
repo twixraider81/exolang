@@ -1,3 +1,83 @@
+int function puts( string $str );
+int function printf( string $str ... );
+
+class Object
+{
+	public	string	$typeName;
+
+	public null function __construct()
+	{
+		$this->typeName = "Object";
+	};
+
+	public null function __destruct()
+	{
+	};
+
+	public string function getTypeName()
+	{
+		return $this->typeName;
+	};
+};
+
+class Boolean extends Object
+{
+	public boolean $value;
+
+	public null function __construct()
+	{
+		$this->typeName = "Boolean";
+	};
+
+	public boolean function getValue()
+	{
+		return $this->value;
+	};
+
+	public null function setValue( boolean $newValue )
+	{
+		$this->value = $newValue;
+	};
+};
+
+class Integer extends Boolean
+{
+	public	integer $value;
+
+	public null function __construct()
+	{
+		$this->typeName = "Integer";
+	};
+};
+
+class Float extends Integer
+{
+	public float $value;
+
+	public null function __construct()
+	{
+		$this->typeName = "Float";
+	};
+};
+
+Object $o = new Object();
+Boolean $b = new Boolean();
+Integer $i = new Integer();
+Float $f = new Float();
+
+// corrupt
+// $i = $o->getInt( 1 );
+printf( "$o->getTypeName() : %s\n", $o->getTypeName() );
+printf( "$b->getTypeName() : %s\n", $b->getTypeName() );
+printf( "$i->getTypeName() : %s\n", $i->getTypeName() );
+printf( "$f->getTypeName() : %s\n", $f->getTypeName() );
+
+delete $o;
+delete $b;
+delete $i;
+delete $f;
+
+
 /*
 class Object
 {
@@ -44,96 +124,3 @@ class Object
 	}
 }
 */
-
-int function puts( string $str );
-int function printf( string $str ... );
-
-class Object
-{
-	public	string	$typeName;
-
-	public int function setTypeName()
-	{
-		$this->typeName = "Object";
-	};
-
-	public string function getTypeName()
-	{
-		return $this->typeName;
-	};
-
-	public int function getInt( int $int )
-	{
-		return $int;
-	};
-};
-
-class Boolean extends Object
-{
-	public boolean $value;
-
-	/*public int function setTypeName()
-	{
-		$this->typeName = "Boolean";
-	};*/
-
-	public boolean function getValue()
-	{
-		return true;
-	};
-
-	public boolean function setValue( Boolean $newValue )
-	{
-		return true;
-	};
-};
-
-class Integer extends Boolean
-{
-	/*public int function setTypeName()
-	{
-		$this->typeName = "Integer";
-	};*/
-	
-	public	integer $value;
-};
-
-class Float extends Integer
-{
-	public int function setTypeName()
-	{
-		$this->typeName = "Float";
-	};
-
-	public	integer $value;
-};
-
-Object $o = new Object();
-Boolean $b = new Boolean();
-Integer $i = new Integer();
-Float $f = new Float();
-
-int function getInt( int $int )
-{
-	return $int;
-};
-
-int $t = 1;
-int $h = $o->getInt( $t );
-int $j = getInt( $t );
-
-// corrupt
-// $i = $o->getInt( 1 );
-printf( "$o->getInt() = %i\n", $h );
-printf( "getInt() = %i\n", $j );
-$o->setTypeName();
-puts( $o->getTypeName() );
-$f->setTypeName();
-puts( $f->getTypeName() );
-
-delete $o;
-delete $b;
-delete $i;
-delete $f;
-
-//$o->getInt( $t );
