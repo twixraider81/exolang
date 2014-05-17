@@ -23,6 +23,8 @@ namespace exo
 {
 	namespace ast
 	{
+		class Expr;
+
 		class CallFun;
 		class CallMethod;
 
@@ -94,11 +96,14 @@ namespace exo
 			    void				delBlockSymbol( std::string name );
 			    std::map<std::string,llvm::Value*>& getBlockSymbols();
 
-			    llvm::Type*	getType( exo::ast::Type* type );
-			    int			getPropertyPosition( std::string className, std::string propName );
-			    int			getMethodPosition( std::string className, std::string methodName );
-			    llvm::Function*	getCallee( std::string className );
+			    llvm::Type*		getType( exo::ast::Type* type );
+			    int				getPropertyPosition( std::string className, std::string propName );
+			    int				getMethodPosition( std::string className, std::string methodName );
+			    llvm::Function*	getCallee( std::string call );
+			    bool			hasMethod( std::string className, std::string methodName );
 
+			    llvm::Value* invokeFunction( llvm::Function* call, std::vector<exo::ast::Expr*> arguments );
+			    llvm::Value* invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments );
 			    llvm::Value* Generate( exo::ast::CallFun* call );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
 
