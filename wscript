@@ -44,15 +44,15 @@ def configure( conf ):
 
 
 	# read llvm-config
-	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--cppflags'], stdout = subprocess.PIPE )
+	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cppflags'], stdout = subprocess.PIPE )
 	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
 	conf.msg( 'llvm-config cppflags:', cxxflags, 'CYAN' )	
 
-	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--ldflags'], stdout = subprocess.PIPE )
+	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--ldflags'], stdout = subprocess.PIPE )
 	ldflags = process.communicate()[0].strip().replace( "\n", '' )
 	conf.msg( 'llvm-config ldflags:', ldflags, 'CYAN' )
 
-	process = subprocess.Popen( [conf.env.LLVMCONFIG, '--libs'], stdout = subprocess.PIPE )
+	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--libs'], stdout = subprocess.PIPE )
 	llvmlibs = ''.join(process.communicate()[0].strip().replace( "\n", '' ).replace( "-l", '' ))
 	conf.env.append_value( 'LLVMLIBS', llvmlibs )
 
@@ -133,7 +133,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
 	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
-	conf.check_cxx( header_name = "llvm/Assembly/PrintModulePass.h" )
+	#conf.check_cxx( header_name = "llvm/Assembly/PrintModulePass.h" )
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/Host.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
