@@ -19,6 +19,7 @@ DIR=`pwd`
 UNAME=`uname -s | grep -m1 -ioE '[a-z]+' | awk 'NR==1{print $0}'` # detection of OS
 BINDIR="$DIR/bin"
 TMPDIR="$DIR/tmp"
+THREADS=`nproc`
 LLVM=0
 
 while getopts "cvl" opt; do
@@ -41,6 +42,7 @@ while getopts "cvl" opt; do
 	esac
 done
 
+
 # check for required tools
 TOOLS="curl gcc python make bison flex cmake"
 for TOOL in $TOOLS; do
@@ -53,12 +55,13 @@ done
 mkdir -p "$BINDIR"
 mkdir -p "$TMPDIR"
 
+
 # fetch quex
 cd "$TMPDIR"
 if ! test -d "$BINDIR/quex"; then
-	test -f "$TMPDIR/quex.tar.gz" || curl -v -L -o "$TMPDIR/quex.tar.gz" "http://downloads.sourceforge.net/project/quex/DOWNLOAD/quex-0.65.2.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fquex%2Ffiles%2FDOWNLOAD%2F&ts=1414291614&use_mirror=switch"
+	test -f "$TMPDIR/quex.tar.gz" || curl -v -o "$TMPDIR/quex.tar.gz" -L http://sourceforge.net/projects/quex/files/DOWNLOAD/quex-0.65.4.tar.gz/download
 	tar -xzf "$TMPDIR/quex.tar.gz" -C "$BINDIR"
-	mv "$BINDIR/quex-0.65.2" "$BINDIR/quex"
+	mv "$BINDIR/quex-0.65.4" "$BINDIR/quex"
 fi
 
 
@@ -66,63 +69,41 @@ fi
 if ! test -f "$BINDIR/lemon/lemon"; then
 	mkdir -p "$BINDIR/lemon"
 	cd "$BINDIR/lemon"
-	curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=01ca97f87610d1dac6d8cd96ab109ab1130e76dc"
-	curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=07aba6270d5a5016ba8107b09e431eea4ecdc123"
+	curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=3617143ddb9b176c3605defe6a9c798793280120"
+	curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=039f813b520b9395740c52f9cbf36c90b5d8df03"
 	gcc -o lemon lemon.c
 fi
+
 
 # build llvm
 if [ "$LLVM" == "1" ]; then
 	cd "$TMPDIR"
-	LLVMDIR="$TMPDIR/llvm-3.5.0.src"
-	LLVMARCHIVE="$TMPDIR/llvm-3.5.0.src.tar.xz"
-	CLANGARCHIVE="$TMPDIR/cfe-3.5.0.src.tar.xz"
-	CLANGEARCHIVE="$TMPDIR/clang-tools-extra-3.5.0.src.tar.xz"
-	RTARCHIVE="$TMPDIR/compiler-rt-3.5.0.src.tar.xz"
-	POLLYARCHIVE="polly-3.5.0.src.tar.xz"
+	LLVMDIR="$TMPDIR/llvm"
 
-	if [ ! -d "$LLVMDIR" ]; then
-		test -f "$LLVMARCHIVE" || curl -v -o "$LLVMARCHIVE" "http://llvm.org/releases/3.5.0/llvm-3.5.0.src.tar.xz"
-		tar -xJf "$LLVMARCHIVE" -C "$TMPDIR"
-	fi
-
-	if [ ! -d "$LLVMDIR/tools/clang" ]; then
-		test -f "$CLANGARCHIVE" || curl -v -o "$CLANGARCHIVE" "http://llvm.org/releases/3.5.0/cfe-3.5.0.src.tar.xz"
-		tar -xJf "$CLANGARCHIVE" -C "$LLVMDIR/tools"
-		mv "$LLVMDIR/tools/cfe-3.5.0.src" "$LLVMDIR/tools/clang"
-	fi
-
-	if [ ! -d "$LLVMDIR/tools/clang/tools/extra" ]; then
-		test -f "$CLANGEARCHIVE" || curl -v -o "$CLANGEARCHIVE" "http://llvm.org/releases/3.5.0/clang-tools-extra-3.5.0.src.tar.xz"
-		tar -xJf "$CLANGEARCHIVE" -C "$LLVMDIR/tools/clang/tools"
-		mv "$LLVMDIR/tools/clang/tools/clang-tools-extra-3.5.0.src" "$LLVMDIR/tools/clang/tools/extra"
-	fi
-
-	if [ ! -d "$LLVMDIR/projects/compiler-rt" ]; then
-		test -f "$RTARCHIVE" || curl -v -o "$RTARCHIVE" "http://llvm.org/releases/3.5.0/compiler-rt-3.5.0.src.tar.xz"
-		tar -xJf "$RTARCHIVE" -C "$LLVMDIR/projects"
-		mv "$LLVMDIR/projects/compiler-rt-3.5.0.src" "$LLVMDIR/projects/compiler-rt"
-	fi
-
-	if [ ! -d "$LLVMDIR/tools/polly" ]; then
-		test -f "$POLLYARCHIVE" || curl -v -o "$POLLYARCHIVE" "http://llvm.org/releases/3.5.0/polly-3.5.0.src.tar.xz"
-		tar -xJf "$POLLYARCHIVE" -C "$LLVMDIR/tools"
-		mv "$LLVMDIR/tools/polly-3.5.0.src" "$LLVMDIR/tools/polly"
-	fi
+	test -d "$LLVMDIR" || svn co http://llvm.org/svn/llvm-project/llvm/branches/release_37 llvm
+	cd "$LLVMDIR/tools"
+	test -d "$LLVMDIR/tools/clang" || svn co http://llvm.org/svn/llvm-project/cfe/branches/release_37 clang
+	cd "$LLVMDIR/tools/clang/tools"
+	test -d "$LLVMDIR/tools/clang/tools/extra" || svn co http://llvm.org/svn/llvm-project/clang-tools-extra/branches/release_37 extra
+	cd "$LLVMDIR/projects" 
+	test -d "$LLVMDIR/projects/compiler-rt" || svn co http://llvm.org/svn/llvm-project/compiler-rt/branches/release_37 compiler-rt
+	cd "$LLVMDIR/tools" 
+	test -d "$LLVMDIR/tools/polly" || svn co https://llvm.org/svn/llvm-project/polly/branches/release_37 polly
 
 	mkdir -p "$TMPDIR/llvm-build"
 	cd "$TMPDIR/llvm-build"
 
-	CC=cc CXX=c++ ../llvm-3.5.0.src/configure --prefix=$BINDIR --enable-polly --enable-cxx1y --enable-optimized=NO --enable-assertions --enable-debug-runtime --enable-debug-symbols --enable-keep-symbols --enable-jit --enable-backtraces --enable-experimental-targets --enable-terminfo --enable-libffi
+	CC=cc CXX=c++ ../llvm/configure --prefix=$BINDIR --enable-polly --enable-cxx1y --enable-optimized=NO --enable-assertions --enable-debug-runtime --enable-debug-symbols --enable-keep-symbols --enable-jit --enable-backtraces --enable-terminfo --enable-libffi
 
-	make -j
+	make -j$THREADS
 	make install
 fi
 
 cd "$DIR"
 
+
 # fetch waf
 if [ ! -f "waf" ]; then
-	curl -v -o "$DIR/waf" "http://ftp.waf.io/pub/release/waf-1.8.2"
+	curl -v -o "$DIR/waf" "https://waf.io/waf-1.8.14"
 	chmod a+rx "$DIR/waf"
 fi
