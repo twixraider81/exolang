@@ -25,12 +25,12 @@ LLVM=0
 while getopts "cvl" opt; do
 	case "$opt" in
 		c) # clean dir
-			rm -rf $TMPDIR
-			rm -rf $BINDIR
-			rm -rf $DIR/build
-			rm -rf $DIR/waf
-			rm -rf $DIR/.lock-*
-			rm -rf $DIR/.waf-*
+			rm -vrf $TMPDIR
+			rm -vrf $BINDIR
+			rm -vrf $DIR/build
+			rm -vrf $DIR/waf
+			rm -vrf $DIR/.lock-*
+			rm -vrf $DIR/.waf-*
 			exit 0
 		;;
 		v) # set verbosity
