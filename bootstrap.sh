@@ -31,6 +31,7 @@ while getopts "cvl" opt; do
 			rm -vrf $DIR/waf
 			rm -vrf $DIR/.lock-*
 			rm -vrf $DIR/.waf-*
+			rm -vrf $DIR/.waf3-*
 			exit 0
 		;;
 		v) # set verbosity
@@ -38,6 +39,9 @@ while getopts "cvl" opt; do
 		;;
 		l) # build llvm
 			LLVM=1
+		;;
+		t) # set thread count
+			THREADS=${OPTARG,,}
 		;;
 	esac
 done
