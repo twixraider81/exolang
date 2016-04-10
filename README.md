@@ -10,20 +10,20 @@ Prerequisites
 -------------
 I develop on a Debian system. In order to install the prerequisites there, it's suffice to do:
 
-apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind libunwind8-dev
+apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind libunwind8-dev libedit-dev swig ninja-build
 
 You will need atleast boost 1.54. Next call the bootstrap script:
 
-./bootstrap.sh or ( ./bootstrap.sh -vl -t 1 )
+./bootstrap.sh )
 
 This will to build the lemon parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
-The bootstrap script can also build a LLVM debug+asserts build under ./bin. To do that use bootstrap as follows.
+The bootstrap script can also build a LLVM under ./bin, do do that use bootstrap as follows.
 
-./bootstrap.sh -vl
+./bootstrap.sh -vkl
 - -c : force cleanup (delete downloaded folders)
 - -l : build llvm
-- -t : number of concurrent threads during compile time, defaults to number of available procs
 - -v : verbose, print what the script is doing
+- -k : keep, keep downloaded and temorary files
 
 Building
 --------

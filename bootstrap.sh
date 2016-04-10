@@ -19,10 +19,10 @@ DIR=`pwd`
 UNAME=`uname -s | grep -m1 -ioE '[a-z]+' | awk 'NR==1{print $0}'` # detection of OS
 BINDIR="$DIR/bin"
 TMPDIR="$DIR/tmp"
-THREADS=`nproc`
 LLVM=0
+KEEP=0
 
-while getopts "cvl" opt; do
+while getopts "cvkl" opt; do
 	case "$opt" in
 		c) # clean dir
 			rm -vrf $TMPDIR
@@ -37,24 +37,25 @@ while getopts "cvl" opt; do
 		v) # set verbosity
 			set -x
 		;;
+		k) # keep files
+			KEEP=1
+		;;
 		l) # build llvm
 			LLVM=1
-		;;
-		t) # set thread count
-			THREADS=${OPTARG,,}
 		;;
 	esac
 done
 
 
 # check for required tools
-TOOLS="curl gcc python make bison flex cmake"
+TOOLS="curl gcc cc tar unzip python make bison flex cmake ninja"
 for TOOL in $TOOLS; do
 	if ! which "$TOOL"; then
 		echo "$TOOL not found; exiting"
 		exit 0;
 	fi
 done
+
 
 mkdir -p "$BINDIR"
 mkdir -p "$TMPDIR"
@@ -63,51 +64,110 @@ mkdir -p "$TMPDIR"
 # fetch quex
 cd "$TMPDIR"
 if ! test -d "$BINDIR/quex"; then
-	test -f "$TMPDIR/quex.tar.gz" || curl -v -o "$TMPDIR/quex.tar.gz" -L http://sourceforge.net/projects/quex/files/DOWNLOAD/quex-0.65.4.tar.gz/download
-	tar -xzf "$TMPDIR/quex.tar.gz" -C "$BINDIR"
-	mv "$BINDIR/quex-0.65.4" "$BINDIR/quex"
+	ARQUEX="quex-0.65.11.zip"
+	URLQUEX="http://sourceforge.net/projects/quex/files/DOWNLOAD/$ARQUEX/download"
+
+	test -f "$TMPDIR/$ARQUEX" || curl -v -o "$TMPDIR/$ARQUEX" -L $URLQUEX
+	#test -d "$BINDIR/quex" || tar -xzf "$TMPDIR/$ARQUEX" -C "$TMPDIR"
+
+	test -d "$BINDIR/quex" || unzip -d "$TMPDIR" "$TMPDIR/$ARQUEX"
+	mv "$TMPDIR/${ARQUEX:0:-4}" "$BINDIR/quex"
+
+	if [ "$KEEP" == "0" ]; then
+		rm -f "$TMPDIR/$ARQUEX"
+	fi
 fi
 
 
 # build lemon
+cd "$TMPDIR"
 if ! test -f "$BINDIR/lemon/lemon"; then
 	mkdir -p "$BINDIR/lemon"
 	cd "$BINDIR/lemon"
-	curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=3617143ddb9b176c3605defe6a9c798793280120"
-	curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=039f813b520b9395740c52f9cbf36c90b5d8df03"
+	test -d "lempar.c" || curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=404ea3dc27dbeed343f0e61b1d36e97b9f5f0fb6"
+	test -d "lemon.c" || curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=cfbfe061a4b2766512f6b484882eee2c86a14506"
 	gcc -o lemon lemon.c
+
+	if [ "$KEEP" == "0" ]; then
+		rm -f lemon.c
+	fi
 fi
 
 
 # build llvm
-if [ "$LLVM" == "1" ]; then
+cd "$TMPDIR"
+if [[ "$LLVM" == "1" && ! -f "$BINDIR/bin/llvm-config" ]]; then
 	cd "$TMPDIR"
 	LLVMDIR="$TMPDIR/llvm"
 
-	test -d "$LLVMDIR" || svn co http://llvm.org/svn/llvm-project/llvm/branches/release_37 llvm
-	cd "$LLVMDIR/tools"
-	test -d "$LLVMDIR/tools/clang" || svn co http://llvm.org/svn/llvm-project/cfe/branches/release_37 clang
-	cd "$LLVMDIR/tools/clang/tools"
-	test -d "$LLVMDIR/tools/clang/tools/extra" || svn co http://llvm.org/svn/llvm-project/clang-tools-extra/branches/release_37 extra
-	cd "$LLVMDIR/projects" 
-	test -d "$LLVMDIR/projects/compiler-rt" || svn co http://llvm.org/svn/llvm-project/compiler-rt/branches/release_37 compiler-rt
-	cd "$LLVMDIR/tools" 
-	test -d "$LLVMDIR/tools/polly" || svn co https://llvm.org/svn/llvm-project/polly/branches/release_37 polly
+	URLLLVM="http://llvm.org/releases/3.8.0"
+	ARLLVM="llvm-3.8.0.src.tar.xz"
+	ARCFE="cfe-3.8.0.src.tar.xz"
+	ARCLANGE="clang-tools-extra-3.8.0.src.tar.xz"
+	ARCOMPRT="compiler-rt-3.8.0.src.tar.xz"
+	ARPOLLY="polly-3.8.0.src.tar.xz"
+	AROPENMP="openmp-3.8.0.src.tar.xz"
+	ARLLDB="lldb-3.8.0.src.tar.xz"
+	ARLLD="lld-3.8.0.src.tar.xz"
+
+	test -f "$TMPDIR/$ARLLVM" || curl -v -o "$TMPDIR/$ARLLVM" -L $URLLLVM/$ARLLVM
+	test -d "$LLVMDIR" || tar -xJf "$TMPDIR/$ARLLVM" -C "$TMPDIR"
+	test -d "$LLVMDIR" || mv "$TMPDIR/${ARLLVM:0:-7}" "$LLVMDIR"
+
+	test -f "$TMPDIR/$ARCFE" || curl -v -o "$TMPDIR/$ARCFE" -L $URLLLVM/$ARCFE
+	test -d "$LLVMDIR/tools/clang" || tar -xJf "$TMPDIR/$ARCFE" -C "$TMPDIR"
+	test -d "$LLVMDIR/tools/clang" || mv "$TMPDIR/${ARCFE:0:-7}" "$LLVMDIR/tools/clang"
+
+	test -f "$TMPDIR/$ARCLANGE" || curl -v -o "$TMPDIR/$ARCLANGE" -L $URLLLVM/$ARCLANGE
+	test -d "$LLVMDIR/tools/clang/tools/extra" || tar -xJf "$TMPDIR/$ARCLANGE" -C "$TMPDIR"
+	test -d "$LLVMDIR/tools/clang/tools/extra" || mv "$TMPDIR/${ARCLANGE:0:-7}" "$LLVMDIR/tools/clang/tools/extra"
+
+	test -f "$TMPDIR/$ARCOMPRT" || curl -v -o "$TMPDIR/$ARCOMPRT" -L $URLLLVM/$ARCOMPRT
+	test -d "$LLVMDIR/projects/compiler-rt" || tar -xJf "$TMPDIR/$ARCOMPRT" -C "$TMPDIR"
+	test -d "$LLVMDIR/projects/compiler-rt" || mv "$TMPDIR/${ARCOMPRT:0:-7}" "$LLVMDIR/projects/compiler-rt"
+
+	test -f "$TMPDIR/$ARPOLLY" || curl -v -o "$TMPDIR/$ARPOLLY" -L $URLLLVM/$ARPOLLY
+	test -d "$LLVMDIR/tools/polly" || tar -xJf "$TMPDIR/$ARPOLLY" -C "$TMPDIR"
+	test -d "$LLVMDIR/tools/polly" || mv "$TMPDIR/${ARPOLLY:0:-7}" "$LLVMDIR/tools/polly"
+
+	test -f "$TMPDIR/$AROPENMP" || curl -v -o "$TMPDIR/$AROPENMP" -L $URLLLVM/$AROPENMP
+	test -d "$LLVMDIR/tools/openmp" || tar -xJf "$TMPDIR/$AROPENMP" -C "$TMPDIR"
+	test -d "$LLVMDIR/tools/openmp" || mv "$TMPDIR/${AROPENMP:0:-7}" "$LLVMDIR/tools/openmp"
+
+	test -f "$TMPDIR/$ARLLDB" || curl -v -o "$TMPDIR/$ARLLDB" -L $URLLLVM/$ARLLDB
+	test -d "$LLVMDIR/tools/lldb" || tar -xJf "$TMPDIR/$ARLLDB" -C "$TMPDIR"
+	test -d "$LLVMDIR/tools/lldb" || mv "$TMPDIR/${ARLLDB:0:-7}" "$LLVMDIR/tools/lldb"
+
+	test -f "$TMPDIR/$ARLLD" || curl -v -o "$TMPDIR/$ARLLD" -L $URLLLVM/$ARLLD
+	test -d "$LLVMDIR/tools/lld" || tar -xJf "$TMPDIR/$ARLLD" -C "$TMPDIR"
+	test -d "$LLVMDIR/tools/lld" || mv "$TMPDIR/${ARLLD:0:-7}" "$LLVMDIR/tools/lld"
 
 	mkdir -p "$TMPDIR/llvm-build"
 	cd "$TMPDIR/llvm-build"
 
-	CC=cc CXX=c++ ../llvm/configure --prefix=$BINDIR --enable-polly --enable-cxx1y --enable-optimized=NO --enable-assertions --enable-debug-runtime --enable-debug-symbols --enable-keep-symbols --enable-jit --enable-backtraces --enable-terminfo --enable-libffi
+	cmake -G Ninja ../llvm -DCMAKE_INSTALL_PREFIX="$BINDIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_POLLY=ON -DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_ASSERTIONS=ON -DCOMPILER_RT_DEBUG=ON -DLLVM_ENABLE_BACKTRACES=ON -DLLVM_ENABLE_TERMINFO=ON -DLLVM_ENABLE_FFI=ON -DLLVM_INSTALL_UTILS=ON
+	cmake --build .
+	cmake --build . --target install
 
-	make -j$THREADS
-	make install
+	cd "$TMPDIR"
+
+	if [ "$KEEP" == "0" ]; then
+		rm -rf $LLVMDIR llvm-build
+		rm -f $ARLLVM $ARCFE $ARCLANGE $ARCOMPRT $ARPOLLY $AROPENMP $ARLLDB $ARLLD
+	fi
 fi
+
 
 cd "$DIR"
 
 
 # fetch waf
 if [ ! -f "waf" ]; then
-	curl -v -o "$DIR/waf" "https://waf.io/waf-1.8.15"
+	curl -v -o "$DIR/waf" "https://waf.io/waf-1.8.20"
 	chmod a+rx "$DIR/waf"
+fi
+
+
+if [ "$KEEP" == "0" ]; then
+	rm -vrf "$TMPDIR"
 fi
