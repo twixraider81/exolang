@@ -79,6 +79,7 @@ namespace exo
 			::Parse( parser, 0, currentToken, this );
 		}
 
+		/*
 		void Tree::Parse( std::istream& stream )
 		{
 			fileName = "<stdin>";
@@ -121,5 +122,6 @@ namespace exo
 				::Parse( parser, 0, currentToken, this );
 			}
 		}
+		*/
 	}
 }

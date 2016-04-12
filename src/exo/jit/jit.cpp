@@ -25,13 +25,14 @@ namespace exo
 		JIT::JIT( boost::shared_ptr<exo::jit::Codegen> g, int optimize )
 		{
 			generator = g;
-
 			std::string buffer;
-			llvm::raw_string_ostream ostream( buffer );
-			llvm::legacy::FunctionPassManager*	fpm;
+			//std::unique_ptr<llvm::raw_string_ostream> ostream(buffer);
+
+			//llvm::raw_string_ostream ostream( buffer );
+			//llvm::legacy::FunctionPassManager*	fpm;
 
 			// takes ownership of module, thus we can't delete it ourself
-			llvm::EngineBuilder builder( generator->module );
+			llvm::EngineBuilder builder( (std::move( generator->module )) );
 			builder.setEngineKind( llvm::EngineKind::JIT );
 
 			// a bit ugly
@@ -51,7 +52,6 @@ namespace exo
 
 			buffer = "";
 			builder.setErrorStr( &buffer );
-			builder.setUseMCJIT( true );
 			engine = builder.create();
 
 			if( !engine ) {
@@ -60,16 +60,15 @@ namespace exo
 
 			/*
 			 * TODO: The docs for this whole stuff related to passes seem wildly out of date. Should use the "new" ModulePassManager, FunctionPassManager, AnalysisPassManager
-			 */
 			llvm::TargetMachine* target = builder.selectTarget();
 			// what? http://llvm.org/docs/doxygen/html/InitializePasses_8h_source.html
 			llvm::PassRegistry &registry = *llvm::PassRegistry::getPassRegistry();
 			llvm::initializeScalarOpts( registry );
 			llvm::initializeTransformUtils( registry );
 
-			fpm = new llvm::legacy::FunctionPassManager( generator->module );
+			fpm = new llvm::legacy::FunctionPassManager( generator->module.get() );
 			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( generator->module->getTargetTriple() ) ) );
-			fpm->add( new llvm::DataLayout( generator->module ) );
+			fpm->add( new llvm::DataLayout( generator->module.get() ) );
 			target->addAnalysisPasses( *fpm );
 
 			fpm->add( llvm::createBasicAliasAnalysisPass() );
@@ -96,8 +95,9 @@ namespace exo
 			buffer = "";
 			generator->module->print( ostream, NULL );
 			BOOST_LOG_TRIVIAL(trace) << "Final LLVM IR" << buffer;
+			*/
 
-			delete target;
+			//delete target;
 		}
 
 		JIT::~JIT()
@@ -122,14 +122,24 @@ namespace exo
 			BOOST_LOG_TRIVIAL(trace) << "Emmiting LLVM IR as \"" << path.native() << "\"";
 
 			std::string errorMsg;
-			llvm::raw_fd_ostream fstream( path.c_str(), errorMsg, llvm::sys::fs::F_None );
+			std::error_code err;
+			std::unique_ptr<llvm::raw_fd_ostream> fstream( new llvm::raw_fd_ostream( path.c_str(), err, llvm::sys::fs::F_None ) );
 
-			if( fstream.has_error() ) {
-				BOOST_LOG_TRIVIAL(error) << errorMsg;
+			if( fstream->has_error() ) {
+				//BOOST_LOG_TRIVIAL(error) << errorMsg;
 				return( -1 );
 			}
 
-			generator->module->print( fstream, NULL );
+			llvm::legacy::PassManager pm;
+
+			pm.add( new llvm::TargetLibraryInfoWrapperPass( llvm::Triple( generator->module->getTargetTriple() )  ));
+			pm.add( llvm::createAlwaysInlinerPass() );
+
+			engine->getTargetMachine()->Options.MCOptions.AsmVerbose = true;
+			engine->getTargetMachine()->addPassesToEmitFile( pm, *fstream, llvm::TargetMachine::CodeGenFileType::CGFT_AssemblyFile );
+
+			pm.run( *generator->module );
+
 			return( 1 );
 		}
 	}

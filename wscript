@@ -160,11 +160,12 @@ def configure( conf ):
 	conf.check_cxx( lib = "m" )
 	conf.check_cxx( lib = "unwind" )
 	conf.check_cxx( lib = "unwind-generic" )
+	conf.check_cxx( lib = "z" )
 
 # build
 def build( bld ):
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
-	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'boost_filesystem', 'unwind', 'unwind-generic', 'pthread', 'ffi', 'curses', 'dl', 'm' ]
+	libs = [ 'gc', 'boost_program_options', 'boost_log_setup', 'boost_log', 'boost_system', 'boost_filesystem', 'unwind', 'unwind-generic', 'pthread', 'ffi', 'curses', 'dl', 'm', 'z' ]
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 

@@ -24,11 +24,11 @@
 
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Verifier.h>
 
 #include <llvm/LinkAllPasses.h>
-#include <llvm/Analysis/Verifier.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/Assembly/PrintModulePass.h>
+#include <llvm/IR/IRPrintingPasses.h>
 
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Host.h>
@@ -36,7 +36,7 @@
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/FileSystem.h>
 
-#include <llvm/Target/TargetLibraryInfo.h>
+/*#include <llvm/Target/TargetLibraryInfo.h>*/
 
 #include <llvm/Transforms/Scalar.h>
 

@@ -77,8 +77,9 @@ namespace exo
 				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
 
 				llvm::Function*		entry;
-				llvm::Module*		module;
-			    llvm::IRBuilder<>	builder;
+				//llvm::Module*		module;
+				std::unique_ptr<llvm::Module>	module;
+			    llvm::IRBuilder<>				builder;
 				llvm::Type* 		intType;
 				llvm::Type* 		ptrType;
 				llvm::Type* 		voidType;

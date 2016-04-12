@@ -64,8 +64,10 @@ int main( int argc, char **argv )
 
 	// show version & exit
 	if( commandLine.count( "version" ) ) {
+		std::string hostName = llvm::sys::getHostCPUName();
+
 		std::cout << "Version:\t" << EXO_VERSION << std::endl;
-		std::cout << "Host CPU:\t" << llvm::sys::getHostCPUName() << std::endl;
+		std::cout << "Host CPU:\t" << hostName << std::endl;
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
 		std::cout << "LibGC version:\t\t" << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
@@ -74,15 +76,18 @@ int main( int argc, char **argv )
 #endif
 
 		llvm::InitializeAllTargets();
-		std::cout << std::endl << "Native target:\t" << llvm::sys::getProcessTriple() << std::endl << "Supported targets:" << std::endl;
-		for( llvm::TargetRegistry::iterator it = llvm::TargetRegistry::begin(); it !=  llvm::TargetRegistry::end(); it++ ) {
-			std::string name = it->getName();
-			std::cout << " - " << name << "\t";
-			if( name.size() < 5 ) {
+
+		llvm::Triple t( llvm::sys::getDefaultTargetTriple() );
+		std::cout << std::endl << "Native target:\t" << t.getArchName().str() << std::endl << "Supported targets:" << std::endl;
+
+		for( auto &t : llvm::TargetRegistry::targets() ) {
+			std::cout << " - " << t.getName() << "\t";
+			if( strlen( t.getName() ) < 5 ) {
 				std::cout << "\t";
 			}
-			std::cout << ": " << it->getShortDescription() << std::endl;
+			std::cout << ": " << t.getShortDescription() << std::endl;
 		}
+
 		exit( 0 );
 	}
 
@@ -99,7 +104,8 @@ int main( int argc, char **argv )
 		if( commandLine.count( "input" ) ) {
 			ast->Parse( input );
 		} else {
-			ast->Parse( std::cin );
+			//ast->Parse( std::cin );
+			exit( 1 );
 		}
 
 		boost::shared_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main", target ) );

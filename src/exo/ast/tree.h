@@ -39,7 +39,7 @@ namespace exo
 				~Tree();
 
 				void Parse( std::string fName );
-				void Parse( std::istream& stream );
+				//void Parse( std::istream& stream );
 		};
 	}
 }

@@ -19,7 +19,7 @@
 	#include "exo/ast/tree.h"
 
 	// could use a va_arg function
-	#define fprintf(file, ... )		__lemonLog( __VA_ARGS__ )
+
 	void __lemonLog( std::string msg )												{ boost::algorithm::trim( msg ); if( msg.size() ) { BOOST_LOG_TRIVIAL(trace) << msg; }; }
 	void __lemonLog( const char* fmt )												{ __lemonLog( std::string( fmt ) ); }
 	void __lemonLog( const char* fmt, const char* msg1 )							{ __lemonLog( ( boost::format( fmt ) % msg1 ).str() ); }

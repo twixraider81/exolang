@@ -31,12 +31,11 @@ namespace exo
 		Codegen::Codegen( std::string cname, std::string target ) : builder( llvm::getGlobalContext() )
 		{
 			name = cname;
-			module = new llvm::Module( cname, llvm::getGlobalContext() );
+			module = llvm::make_unique<llvm::Module>( cname, llvm::getGlobalContext());
 			module->setTargetTriple( target );
 			entry = NULL;
 
-			llvm::DataLayout dataLayout( module );
-			intType = dataLayout.getIntPtrType( module->getContext() );
+			intType = module->getDataLayout().getIntPtrType( module->getContext() );
 			ptrType = intType->getPointerTo();
 			voidType = llvm::Type::getVoidTy( module->getContext() );
 		}
@@ -442,17 +441,17 @@ namespace exo
 					llvm::FunctionType::get( this->getType( decl->returnType ),	fArgs, decl->hasVaArg ),
 					llvm::GlobalValue::InternalLinkage,
 					decl->name,
-					this->module
+					this->module.get()
 			);
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), decl->name, fun, 0 );
 
 			this->pushBlock( block, decl->name );
 
 			int i = 0;
-			for( llvm::Function::arg_iterator it = fun->arg_begin(); it != fun->arg_end(); it++ ) {
-				llvm::Value* memory = builder.CreateAlloca( it->getType() );
-				builder.CreateStore( it, memory );
-				this->setBlockSymbol( decl->arguments->list.at( i )->name, memory );
+			for( auto &arg : fun->args() ) {
+				llvm::Value* memory = builder.CreateAlloca( arg.getType() );
+				builder.CreateStore( &arg, memory );
+				this->setBlockSymbol( arg.getName(), memory );
 				i++;
 			}
 
@@ -490,7 +489,7 @@ namespace exo
 				llvm::FunctionType::get( this->getType( decl->returnType ), fArgs, decl->hasVaArg ),
 				llvm::GlobalValue::ExternalLinkage,
 				decl->name,
-				this->module
+				this->module.get()
 			);
 
 			return( fun );
@@ -848,16 +847,16 @@ namespace exo
 			 * register essential externals
 			 */
 			fArgs.push_back( this->intType );
-			llvm::Function::Create( llvm::FunctionType::get( this->ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_ALLOC, this->module );
+			llvm::Function::Create( llvm::FunctionType::get( this->ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_ALLOC, this->module.get() );
 
 			fArgs.clear();
 			fArgs.push_back( this->ptrType );
-			llvm::Function::Create( llvm::FunctionType::get( this->voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, this->module );
+			llvm::Function::Create( llvm::FunctionType::get( this->voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, this->module.get() );
 
 			/*
 			 * this is main()
 			 */
-			this->entry = llvm::Function::Create( llvm::FunctionType::get( this->intType, false ), llvm::GlobalValue::InternalLinkage, this->name, this->module );
+			this->entry = llvm::Function::Create( llvm::FunctionType::get( this->intType, false ), llvm::GlobalValue::InternalLinkage, this->name, this->module.get() );
 			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), "entry", this->entry, 0 );
 
 			pushBlock( block, this->name );

@@ -141,12 +141,12 @@ mode DOUBLE_STRING:
 	}
 
 	[\r\n\t\f]+						{ self_accumulator_add(Lexeme, LexemeEnd); }
-	"\\r"							{ QUEX_TYPE_CHARACTER* carriage = (QUEX_TYPE_CHARACTER*)"\r"; self_accumulator_add(carriage, (QUEX_TYPE_CHARACTER*)carriage+1); }
-	"\\n"							{ QUEX_TYPE_CHARACTER* newline = (QUEX_TYPE_CHARACTER*)"\n"; self_accumulator_add(newline, (QUEX_TYPE_CHARACTER*)newline+1); }
-	"\\t"							{ QUEX_TYPE_CHARACTER* tab = (QUEX_TYPE_CHARACTER*)"\t"; self_accumulator_add(tab, (QUEX_TYPE_CHARACTER*)tab+1); }
-	"\\f"							{ QUEX_TYPE_CHARACTER* formfeed = (QUEX_TYPE_CHARACTER*)"\f"; self_accumulator_add(formfeed, (QUEX_TYPE_CHARACTER*)formfeed+1); }
-	"\\b"							{ QUEX_TYPE_CHARACTER* backspace = (QUEX_TYPE_CHARACTER*)"\b"; self_accumulator_add(backspace, (QUEX_TYPE_CHARACTER*)backspace+1); }
-	"\\e"							{ QUEX_TYPE_CHARACTER* escape = (QUEX_TYPE_CHARACTER*)"\e"; self_accumulator_add(escape, (QUEX_TYPE_CHARACTER*)escape+1); }
+	"\\r"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\n"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\t"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\f"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\b"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\e"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"\\\""							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"\\\\"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"\""							{ self << EXO; RETURN; }
