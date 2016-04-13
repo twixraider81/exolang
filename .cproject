@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.config.llvm.jit.linux.exe.debug.1911064762">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.llvm.jit.linux.exe.debug.1911064762" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.llvm.jit.linux.exe.debug.1911064762" name="Debug" parent="cdt.managedbuild.config.llvm.jit.linux.exe.debug">
+					<folderInfo id="cdt.managedbuild.config.llvm.jit.linux.exe.debug.1911064762." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.llvm.jit.linux.exe.debug.306300366" name="LLVM with JIT/Interpreter (Linux)" superClass="cdt.managedbuild.toolchain.llvm.jit.linux.exe.debug">
+							<targetPlatform archList="all" id="cdt.managedbuild.target.llvm.jit.linux.platform.exe.debug.1117528739" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.llvm.jit.linux.platform.exe.debug"/>
+							<builder buildPath="${workspace_loc:/exolang}/Debug" id="cdt.managedbuild.target.llvm.jit.linux.builder.exe.debug.1607480331" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="cdt.managedbuild.target.llvm.jit.linux.builder.exe.debug"/>
+							<tool id="cdt.managedbuild.tool.llvm.jit.linux.assembler.exe.debug.91301949" name="LLVM assembler" superClass="cdt.managedbuild.tool.llvm.jit.linux.assembler.exe.debug"/>
+							<tool id="cdt.managedbuild.tool.llvm.archiver.base.520746816" name="LLVM archiver" superClass="cdt.managedbuild.tool.llvm.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.llvm.lli.base.1219192704" name="LLVM JIT compiler/Interpreter" superClass="cdt.managedbuild.tool.llvm.lli.base"/>
+							<tool id="cdt.managedbuild.tool.llvm.jit.linux.lli.exe.debug.937619346" name="LLVM JIT compiler/Interpreter" superClass="cdt.managedbuild.tool.llvm.jit.linux.lli.exe.debug"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="bin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.llvm.jit.linux.exe.release.15396971">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.llvm.jit.linux.exe.release.15396971" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.llvm.jit.linux.exe.release.15396971" name="Release" parent="cdt.managedbuild.config.llvm.jit.linux.exe.release">
+					<folderInfo id="cdt.managedbuild.config.llvm.jit.linux.exe.release.15396971." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.llvm.jit.linux.exe.release.1309063921" name="LLVM with JIT/Interpreter (Linux)" superClass="cdt.managedbuild.toolchain.llvm.jit.linux.exe.release">
+							<targetPlatform archList="all" id="cdt.managedbuild.target.llvm.jit.linux.platform.exe.release.1980492014" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.llvm.jit.linux.platform.exe.release"/>
+							<builder buildPath="${workspace_loc:/exolang}/Release" id="cdt.managedbuild.target.llvm.jit.linux.builder.exe.release.1066393980" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="cdt.managedbuild.target.llvm.jit.linux.builder.exe.release"/>
+							<tool id="cdt.managedbuild.tool.llvm.jit.linux.assembler.exe.release.836789903" name="LLVM assembler" superClass="cdt.managedbuild.tool.llvm.jit.linux.assembler.exe.release"/>
+							<tool id="cdt.managedbuild.tool.llvm.archiver.base.1898965954" name="LLVM archiver" superClass="cdt.managedbuild.tool.llvm.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.llvm.lli.base.1568385545" name="LLVM JIT compiler/Interpreter" superClass="cdt.managedbuild.tool.llvm.lli.base"/>
+							<tool id="cdt.managedbuild.tool.llvm.jit.linux.lli.exe.release.930614135" name="LLVM JIT compiler/Interpreter" superClass="cdt.managedbuild.tool.llvm.jit.linux.lli.exe.release"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="bin" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="exolang.cdt.managedbuild.target.llvm.jit.linux.exe.601016821" name="Executable" projectType="cdt.managedbuild.target.llvm.jit.linux.exe"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/exolang"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/exolang"/>
+		</configuration>
+	</storageModule>
+</cproject>
