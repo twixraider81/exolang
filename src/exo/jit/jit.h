@@ -26,18 +26,19 @@ namespace exo
 
 		class JIT
 		{
-			boost::shared_ptr<exo::jit::Codegen>	generator;
-			llvm::ExecutionEngine*					engine;
+			exo::jit::Codegen*			generator;
+			llvm::legacy::PassManager	passManager;
+			int							optLevel;
 
 			public:
 				/**
 				 * Builds a LLVM MachineCode JIT IR and loads the LLVM IR of the AST
 				 */
-				JIT( boost::shared_ptr<exo::jit::Codegen> c, int optimize );
+				JIT( exo::jit::Codegen*	g, int optimize );
 				~JIT();
 
 				int Execute();
-				int Emit( std::string fileName );
+				int Emit();
 		};
 	}
 }

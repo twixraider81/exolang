@@ -21,6 +21,7 @@
 
 namespace exo
 {
+	// forward declarations
 	namespace ast
 	{
 		class Expr;
@@ -77,7 +78,6 @@ namespace exo
 				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
 
 				llvm::Function*		entry;
-				//llvm::Module*		module;
 				std::unique_ptr<llvm::Module>	module;
 			    llvm::IRBuilder<>				builder;
 				llvm::Type* 		intType;
@@ -97,11 +97,11 @@ namespace exo
 			    void				delBlockSymbol( std::string name );
 			    std::map<std::string,llvm::Value*>& getBlockSymbols();
 
-			    llvm::Type*	getType( exo::ast::Type* type );
-			    int			getPropertyPosition( std::string className, std::string propName );
-			    int			getMethodPosition( std::string className, std::string methodName );
+			    llvm::Type*		getType( exo::ast::Type* type );
+			    int				getPropertyPosition( std::string className, std::string propName );
+			    int				getMethodPosition( std::string className, std::string methodName );
 			    llvm::Function*	getCallee( std::string className );
-			    llvm::Value* invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments );
+			    llvm::Value* 	invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments );
 
 			    llvm::Value* Generate( exo::ast::CallFun* call );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
@@ -134,7 +134,7 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtList* stmts );
 			    llvm::Value* Generate( exo::ast::StmtWhile* stmt );
 
-			    llvm::Value* Generate( boost::shared_ptr<exo::ast::Tree> tree );
+			    llvm::Value* Generate( exo::ast::Tree* tree );
 		};
 	}
 }

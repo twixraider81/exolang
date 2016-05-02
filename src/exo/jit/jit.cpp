@@ -22,91 +22,58 @@ namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( boost::shared_ptr<exo::jit::Codegen> g, int optimize )
+		JIT::JIT( exo::jit::Codegen* g, int optimize ) : generator( g ), optLevel( optimize )
 		{
-			generator = g;
-			std::string buffer;
-			//std::unique_ptr<llvm::raw_string_ostream> ostream(buffer);
+			passManager.add( new llvm::TargetLibraryInfoWrapperPass( llvm::Triple( generator->module->getTargetTriple() )  ));
+			passManager.add( llvm::createAlwaysInlinerPass() );
+			passManager.add( llvm::createPromoteMemoryToRegisterPass() );
+			passManager.add( llvm::createLICMPass() );
+			passManager.add( llvm::createLoopVectorizePass() );
+			passManager.add( llvm::createEarlyCSEPass() );
+			passManager.add( llvm::createInstructionCombiningPass() );
+			passManager.add( llvm::createReassociatePass() );
+			passManager.add( llvm::createGVNPass() );
+			passManager.add( llvm::createCFGSimplificationPass() );
+			passManager.run( *generator->module );
+		}
 
-			//llvm::raw_string_ostream ostream( buffer );
-			//llvm::legacy::FunctionPassManager*	fpm;
+		JIT::~JIT()
+		{
+		}
 
-			// takes ownership of module, thus we can't delete it ourself
+		int JIT::Execute()
+		{
+			llvm::ExecutionEngine*	engine;
+
+			// careful, this transfers module ownership
 			llvm::EngineBuilder builder( (std::move( generator->module )) );
 			builder.setEngineKind( llvm::EngineKind::JIT );
 
 			// a bit ugly
-			if( optimize < 0 || optimize > 3 ) {
+			if( optLevel < 0 || optLevel > 3 ) {
 				BOOST_LOG_TRIVIAL(warning) << "Invalid optimization level.";
+				builder.setOptLevel( llvm::CodeGenOpt::None );
 			} else {
-				if( optimize == 0 ) {
+				if( optLevel == 0 ) {
 					builder.setOptLevel( llvm::CodeGenOpt::None );
-				} else if( optimize == 1 ) {
+				} else if( optLevel == 1 ) {
 					builder.setOptLevel( llvm::CodeGenOpt::Less );
-				} else if( optimize == 2 ) {
+				} else if( optLevel == 2 ) {
 					builder.setOptLevel( llvm::CodeGenOpt::Default );
-				} else if( optimize == 3 ) {
+				} else if( optLevel == 3 ) {
 					builder.setOptLevel( llvm::CodeGenOpt::Aggressive );
 				}
 			}
 
-			buffer = "";
+			std::string buffer = "";
 			builder.setErrorStr( &buffer );
 			engine = builder.create();
 
 			if( !engine ) {
 				EXO_THROW_EXCEPTION( LLVM, buffer );
+				return( -1 );
 			}
 
-			/*
-			 * TODO: The docs for this whole stuff related to passes seem wildly out of date. Should use the "new" ModulePassManager, FunctionPassManager, AnalysisPassManager
-			llvm::TargetMachine* target = builder.selectTarget();
-			// what? http://llvm.org/docs/doxygen/html/InitializePasses_8h_source.html
-			llvm::PassRegistry &registry = *llvm::PassRegistry::getPassRegistry();
-			llvm::initializeScalarOpts( registry );
-			llvm::initializeTransformUtils( registry );
-
-			fpm = new llvm::legacy::FunctionPassManager( generator->module.get() );
-			fpm->add( new llvm::TargetLibraryInfo( llvm::Triple( generator->module->getTargetTriple() ) ) );
-			fpm->add( new llvm::DataLayout( generator->module.get() ) );
-			target->addAnalysisPasses( *fpm );
-
-			fpm->add( llvm::createBasicAliasAnalysisPass() );
-
-			fpm->add( llvm::createPromoteMemoryToRegisterPass() );
-			fpm->add( llvm::createLICMPass() );
-			fpm->add( llvm::createLoopVectorizePass() );
-			fpm->add( llvm::createEarlyCSEPass() );
-
-			fpm->add( llvm::createInstructionCombiningPass() );
-			fpm->add( llvm::createReassociatePass() );
-			fpm->add( llvm::createGVNPass() );
-
-			fpm->add( llvm::createCFGSimplificationPass() );
-
-			buffer = "";
-			generator->module->print( ostream, NULL );
-			BOOST_LOG_TRIVIAL(trace) << "Intermediate LLVM IR" << buffer;
-
-			fpm->run( *generator->entry );
-			engine->finalizeObject();
-			delete fpm;
-
-			buffer = "";
-			generator->module->print( ostream, NULL );
-			BOOST_LOG_TRIVIAL(trace) << "Final LLVM IR" << buffer;
-			*/
-
-			//delete target;
-		}
-
-		JIT::~JIT()
-		{
-			delete engine;
-		}
-
-		int JIT::Execute()
-		{
 			BOOST_LOG_TRIVIAL(trace) << "Running main.";
 			int( *jitMain )() = (int(*)())engine->getFunctionAddress( "main" );
 			int retval = jitMain();
@@ -114,31 +81,16 @@ namespace exo
 			return( retval );
 		}
 
-		int JIT::Emit( std::string fileName )
+		int JIT::Emit()
 		{
-			boost::filesystem::path path( fileName );
-			path.replace_extension( ".ll" );
+			BOOST_LOG_TRIVIAL(trace) << "Emitting LLVM IR.";
 
-			BOOST_LOG_TRIVIAL(trace) << "Emmiting LLVM IR as \"" << path.native() << "\"";
+			std::string buffer;
+			llvm::raw_string_ostream bStream( buffer );
 
-			std::string errorMsg;
-			std::error_code err;
-			std::unique_ptr<llvm::raw_fd_ostream> fstream( new llvm::raw_fd_ostream( path.c_str(), err, llvm::sys::fs::F_None ) );
+			generator->module->print( bStream, NULL );
 
-			if( fstream->has_error() ) {
-				//BOOST_LOG_TRIVIAL(error) << errorMsg;
-				return( -1 );
-			}
-
-			llvm::legacy::PassManager pm;
-
-			pm.add( new llvm::TargetLibraryInfoWrapperPass( llvm::Triple( generator->module->getTargetTriple() )  ));
-			pm.add( llvm::createAlwaysInlinerPass() );
-
-			engine->getTargetMachine()->Options.MCOptions.AsmVerbose = true;
-			engine->getTargetMachine()->addPassesToEmitFile( pm, *fstream, llvm::TargetMachine::CodeGenFileType::CGFT_AssemblyFile );
-
-			pm.run( *generator->module );
+			std::cout << bStream.str();
 
 			return( 1 );
 		}

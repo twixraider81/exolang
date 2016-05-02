@@ -39,13 +39,14 @@ int main( int argc, char **argv )
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
 	availOptions.add_options()
-		( "help,h",			"Show this usage/help" )
+		( "help,h",																				"Show this usage/help" )
 		( "input,i",		boost::program_options::value<std::string>(&input),					"File to parse and execute if -e is not given" )
-		( "emit,e",			boost::program_options::value<std::string>(&emit),					"File to emit LLVM IR into" )
+		( "emit,e",																				"Emit LLVM IR to stdout" )
 		( "log-severity,s", boost::program_options::value<int>(&severity)->default_value(4),	"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
 		( "optimize,o", 	boost::program_options::value<int>(&optimize)->default_value(2),	"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
-		( "target,t", 		boost::program_options::value<std::string>(&target)->default_value( llvm::sys::getProcessTriple() ), "Set target" )
-		( "version,v",		"Show version, libraries and targets" )
+		( "target,t", 		boost::program_options::value<std::string>(&target)->default_value( llvm::Triple( llvm::sys::getDefaultTargetTriple() ).getArchName().str() ),
+																								"Set target" )
+		( "version,v",																			"Show version, libraries and targets" )
 		;
 
 	boost::program_options::positional_options_description positionalOptions;
@@ -57,7 +58,7 @@ int main( int argc, char **argv )
 
 
 	// show help & exit
-	if( commandLine.count( "help" ) ) {
+	if( commandLine.count( "help" ) || argc == 1 ) {
 		std::cout << availOptions;
 		exit( 0 );
 	}
@@ -74,6 +75,7 @@ int main( int argc, char **argv )
 #else
 		std::cout << "LibGC:\t\tdisabled" << std::endl;
 #endif
+		std::cout << "LLVM Framework:\t" << LLVM_VERSION_STRING << std::endl;
 
 		llvm::InitializeAllTargets();
 
@@ -94,29 +96,28 @@ int main( int argc, char **argv )
 
 	// we are running, command line is parsed
 	if( !exo::init::Init::Startup( severity ) ) {
-		BOOST_LOG_TRIVIAL(fatal) << "Unable to complete initialization. exiting...";
+		BOOST_LOG_TRIVIAL(fatal) << "Unable to complete initialization.";
 		exit( 1 );
 	}
 
 	try {
-		boost::shared_ptr<exo::ast::Tree> ast( new exo::ast::Tree( target ) );
-
-		if( commandLine.count( "input" ) ) {
-			ast->Parse( input );
-		} else {
-			//ast->Parse( std::cin );
+		if( !commandLine.count( "input" ) ) {
+			BOOST_LOG_TRIVIAL(fatal) << "No input file given.";
 			exit( 1 );
 		}
 
-		boost::shared_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main", target ) );
-		generator->Generate( ast );
+		std::unique_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
+		ast->Parse( input, target );
 
-		boost::scoped_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator, optimize ) );
+		std::unique_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main", target ) );
+		generator->Generate( ast.get() );
+
+		std::unique_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get(), optimize ) );
 
 		if( !commandLine.count( "emit" ) ) {
 			retval = jit->Execute();
 		} else {
-			retval = jit->Emit( emit );
+			retval = jit->Emit();
 		}
 
 	} catch( boost::exception& e ) {

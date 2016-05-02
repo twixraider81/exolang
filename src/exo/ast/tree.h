@@ -35,11 +35,10 @@ namespace exo
 				std::string		targetMachine;
 				StmtList*		stmts;
 
-				Tree( std::string target );
+				Tree();
 				~Tree();
 
-				void Parse( std::string fName );
-				//void Parse( std::istream& stream );
+				void Parse( std::string fName, std::string target );
 		};
 	}
 }

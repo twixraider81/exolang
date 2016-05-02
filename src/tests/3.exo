@@ -32,3 +32,5 @@ while( true ) {
 		break;
 	};
 };
+
+$a = 1;

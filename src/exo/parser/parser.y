@@ -18,15 +18,19 @@
 	#include "exo/ast/nodes.h"
 	#include "exo/ast/tree.h"
 
-	// could use a va_arg function
+	#define fprintf( file, ... )								__lemonLog( __VA_ARGS__ )
 
-	void __lemonLog( std::string msg )												{ boost::algorithm::trim( msg ); if( msg.size() ) { BOOST_LOG_TRIVIAL(trace) << msg; }; }
-	void __lemonLog( const char* fmt )												{ __lemonLog( std::string( fmt ) ); }
-	void __lemonLog( const char* fmt, const char* msg1 )							{ __lemonLog( ( boost::format( fmt ) % msg1 ).str() ); }
-	void __lemonLog( const char* fmt, int msg1 )									{ __lemonLog( ( boost::format( fmt ) % msg1 ).str() ); }
-	void __lemonLog( const char* fmt, const char* msg1, int msg2 )					{ __lemonLog( ( boost::format( fmt ) % msg1 % msg2 ).str() ); }
-	void __lemonLog( const char* fmt, const char* msg1, const char* msg2 )			{ __lemonLog( ( boost::format( fmt ) % msg1 % msg2 ).str() ); }
-	void __lemonLog( const char* fmt, const char* msg1, const char* msg2, int msg3 ){ __lemonLog( ( boost::format( fmt ) % msg1 % msg2 % msg3 ).str() ); }
+	void __lemonLog( std::string msg ) {
+		boost::algorithm::trim( msg );
+
+		if( msg.size() ) {
+			BOOST_LOG_TRIVIAL(trace) << msg;
+		};
+	}
+	
+	template<typename type1, typename type2, typename type3>	void __lemonLog( const char* fmt, type1 msg1, type2 msg2, type3 msg3 ) {  }
+	template<typename type1, typename type2>					void __lemonLog( const char* fmt, type1 msg1, type2 msg2 ) {  }
+	template<typename type>										void __lemonLog( const char* fmt, type msg1 ) {  boost::format message( fmt ); message % msg1; __lemonLog( boost::str( message ) ); }
 }
 
 %syntax_error {

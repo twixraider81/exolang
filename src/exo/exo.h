@@ -47,8 +47,6 @@
 #include <iterator>
 #include <algorithm>
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/log/core.hpp>

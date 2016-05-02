@@ -29,7 +29,7 @@ Building
 --------
 Next configure the build. For now since it's under heavy development:
 
-./waf configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
+./waf clean; ./waf configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
 
 After that start the build process via:
 
@@ -38,7 +38,7 @@ After that start the build process via:
 Usage
 -----
 After the build is complete, the binary will reside under build/exolang. To run a script do for example:
-build/exolang build/exolang examples/helloworld.exo
+build/exolang examples/helloworld.exo
 
 You can check the available command line options via:
 build/exolang -h
@@ -51,7 +51,7 @@ waf has a few extra commands at your disposal. Check:
 
 Examples
 --------
-Take a look at the examples directory. It contains pointers on synatx and constructs while i am working on a proper documentation.
+Take a look at the examples directory. It contains pointers on syntax and constructs while i am working on a proper documentation.
 
 Thanks & 3rd Party licenses
 ---------------------------

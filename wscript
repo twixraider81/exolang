@@ -36,14 +36,22 @@ def options( opt ):
 
 # configure
 def configure( conf ):
-	conf.load( 'compiler_cxx compiler_c' )
+	conf.load( 'compiler_cxx compiler_c')
 
 	conf.find_program( os.path.basename( conf.options.llvm ), var = 'LLVMCONFIG', mandatory = True, path_list = os.path.dirname( conf.options.llvm ) )
 	conf.find_program( 'gdb', var = 'GDB', mandatory = False )
 	conf.find_program( 'valgrind', var = 'VALGRIND', mandatory = False )
-
+	conf.find_program( 'ld.gold', var = 'GOLD', mandatory = False )
 
 	# read llvm-config
+	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--version'], stdout = subprocess.PIPE )
+	llvmversion = process.communicate()[0].strip()
+	conf.msg( 'llvm version:', llvmversion, 'GREEN' )
+	llvmversionNo = int( llvmversion.replace( ".", '' ) )
+
+	if llvmversionNo < 370:
+		conf.fatal( 'atleast llvm 3.7.0 is required' );
+	
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cppflags'], stdout = subprocess.PIPE )
 	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
 	conf.msg( 'llvm-config cppflags:', cxxflags, 'CYAN' )	
@@ -55,11 +63,14 @@ def configure( conf ):
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--libs'], stdout = subprocess.PIPE )
 	llvmlibs = ''.join(process.communicate()[0].strip().replace( "\n", '' ).replace( "-l", '' ))
 	conf.env.append_value( 'LLVMLIBS', llvmlibs )
-
+	exit
 
 	# construct compiler/linker flags
 	cxxflags = cxxflags.split( ' ' )
 	ldflags = ldflags.split( ' ' )
+
+	if conf.env.GOLD:
+		ldflags += [ '-fuse-ld=gold' ]
 
 	exoflags = [
 		'-DEXO_VERSION="'+VERSION+'"',
@@ -112,8 +123,6 @@ def configure( conf ):
 	conf.check_cxx( header_name = "algorithm" )
 	conf.check_cxx( header_name = "libunwind.h" )
 
-	conf.check_cxx( header_name = "boost/scoped_ptr.hpp" )
-	conf.check_cxx( header_name = "boost/shared_ptr.hpp" )
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
 	conf.check_cxx( header_name = "boost/exception/all.hpp" )
 	conf.check_cxx( header_name = "boost/throw_exception.hpp" )
@@ -133,7 +142,6 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
 	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
-	#conf.check_cxx( header_name = "llvm/Assembly/PrintModulePass.h" )
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/Host.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )

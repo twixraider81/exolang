@@ -28,12 +28,10 @@ namespace exo
 		 * RULE OF THUMB for LLVM. If there exists a get/create function, use it and there is no need to new/delete.
 		 * also some types share ownership and need not to be deleted, like module <-> execution engine
 		 */
-		Codegen::Codegen( std::string cname, std::string target ) : builder( llvm::getGlobalContext() )
+		Codegen::Codegen( std::string cname, std::string target ) : builder( llvm::getGlobalContext() ), name( cname ), entry( NULL )
 		{
-			name = cname;
 			module = llvm::make_unique<llvm::Module>( cname, llvm::getGlobalContext());
 			module->setTargetTriple( target );
-			entry = NULL;
 
 			intType = module->getDataLayout().getIntPtrType( module->getContext() );
 			ptrType = intType->getPointerTo();
@@ -214,7 +212,7 @@ namespace exo
 			return( builder.CreateStore( retval, memory ) );
 		}
 
-		// ok
+
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
 			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << call->name << "\" in (" << this->getBlockName() << ")";
@@ -423,40 +421,40 @@ namespace exo
 			return( value );
 		}
 
-		/*
-		 * TODO: merge with DecFunProto
-		 */
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Generating function \"" << decl->name << "\" in (" << this->getBlockName() << ")";
 
-			std::vector<llvm::Type*> fArgs;
-			for( std::vector<exo::ast::DecVar*>::iterator it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				llvm::Type* arg = this->getType( (*it)->type );
-				BOOST_LOG_TRIVIAL(trace) << "Argument " << (*it)->type->name << " $" << (*it)->name;
-				fArgs.push_back( arg );
+			// build up our argument list
+			std::vector<llvm::Type*> arguments;
+			for( auto &argument : decl->arguments->list ) {
+				arguments.push_back( this->getType( argument->type ) );
+				BOOST_LOG_TRIVIAL(trace) << "Argument "<< " $" << argument->type->name << " $" << argument->name;
 			}
 
-			llvm::Function* fun = llvm::Function::Create(
-					llvm::FunctionType::get( this->getType( decl->returnType ),	fArgs, decl->hasVaArg ),
+			// create a function block for our local variables
+			llvm::Function* function = llvm::Function::Create(
+					llvm::FunctionType::get( this->getType( decl->returnType ),	arguments, decl->hasVaArg ),
 					llvm::GlobalValue::InternalLinkage,
 					decl->name,
 					this->module.get()
 			);
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), decl->name, fun, 0 );
-
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), decl->name, function, 0 );
 			this->pushBlock( block, decl->name );
 
+			// create loads for the arguments passed to our function
 			int i = 0;
-			for( auto &arg : fun->args() ) {
-				llvm::Value* memory = builder.CreateAlloca( arg.getType() );
-				builder.CreateStore( &arg, memory );
-				this->setBlockSymbol( arg.getName(), memory );
-				i++;
+			for( auto &argument : function->args() ) {
+				llvm::Value* memory = builder.CreateAlloca( argument.getType() );
+				builder.CreateStore( &argument, memory );
+				this->setBlockSymbol( decl->arguments->list.at( i )->name, memory );
 			}
 
+			// generate our actual function statements
 			decl->stmts->Generate( this );
 
+			// sanitize function exit
 			llvm::TerminatorInst* retVal = block->getTerminator();
 			if( retVal == NULL || !llvm::isa<llvm::ReturnInst>(retVal) ) {
 				if( this->getType( decl->returnType )->isVoidTy() ) {
@@ -468,12 +466,13 @@ namespace exo
 				}
 			}
 
+			// pop our block, void local variables
 			this->popBlock();
 
-			return( fun );
+			return( function );
 		}
 
-		// ok
+
 		llvm::Value* Codegen::Generate( exo::ast::DecFunProto* decl )
 		{
 			BOOST_LOG_TRIVIAL(trace) << "Declaring function prototype \"" << decl->name << "\" in (" << this->getBlockName() << ")";
@@ -502,7 +501,7 @@ namespace exo
 			this->setBlockSymbol( decl->name, builder.CreateAlloca( this->getType( decl->type ) ) );
 
 			if( decl->expression ) {
-				boost::scoped_ptr<exo::ast::OpBinaryAssign> a( new exo::ast::OpBinaryAssign( new exo::ast::ExprVar( decl->name ), decl->expression ) );
+				std::unique_ptr<exo::ast::OpBinaryAssign> a( new exo::ast::OpBinaryAssign( new exo::ast::ExprVar( decl->name ), decl->expression ) );
 				a->Generate( this );
 			}
 
@@ -757,6 +756,7 @@ namespace exo
 			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
 
 			BOOST_LOG_TRIVIAL(trace) << "Generating if statement in (" << this->getBlockName() << ")";
+
 			this->pushBlock( ifBlock, "if" );
 			this->getBlockSymbols() = blockSymbols;
 			stmt->onTrue->Generate( this );
@@ -824,7 +824,7 @@ namespace exo
 			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
 		}
 
-		// ok
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
 		{
 			std::vector<exo::ast::Stmt*>::iterator it;
@@ -839,7 +839,7 @@ namespace exo
 
 
 
-		llvm::Value* Codegen::Generate( boost::shared_ptr<exo::ast::Tree> tree )
+		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
 		{
 			std::vector<llvm::Type*> fArgs;
 

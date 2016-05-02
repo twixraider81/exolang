@@ -1,3 +1,4 @@
-set args -s 1 -i src/tests/5.exo
+set args -e -i src/tests/3.exo
 b main
+b exo::jit::JIT::JIT
 r
