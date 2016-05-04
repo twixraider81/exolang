@@ -11,27 +11,6 @@ $k = 9;
 // nested expressions
 auto $k = 5 * ( 2 + 2 );
 
-
-
-class Object
-{
-	public	string	$typeName;
-
-	public null function __construct()
-	{
-		$this->typeName = "Object";
-	};
-
-	public null function __destruct()
-	{
-	};
-
-	public string function getTypeName()
-	{
-		return $this->typeName;
-	};
-};
-
 class Boolean extends Object
 {
 	public boolean $value;
@@ -178,7 +157,3 @@ function vaArg( ... )
 {
 	$1;
 }
-
-__FILE__
-__LINE__
-__HALT__

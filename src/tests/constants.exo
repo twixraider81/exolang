@@ -1,0 +1,7 @@
+__FILE__;
+__LINE__; __COLUMN__;
+__VERSION__;
+__TARGET__;
+__HALT__;
+
+int $i = 1;

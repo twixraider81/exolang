@@ -1,0 +1,18 @@
+class Object
+{
+	public	string	$typeName;
+
+	public null function __construct()
+	{
+		$this->typeName = "Object";
+	};
+
+	public null function __destruct()
+	{
+	};
+
+	public string function getTypeName()
+	{
+		return $this->typeName;
+	};
+};

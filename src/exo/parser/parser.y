@@ -540,6 +540,10 @@ constant(c) ::= T_LINE(l). {
 	POINTERCHECK(l);
 	c = new exo::ast::ConstInt( l->line_number() );
 }
+constant(c) ::= T_COLUMN(l). {
+	POINTERCHECK(l);
+	c = new exo::ast::ConstInt( l->column_number() );
+}
 constant(c) ::= T_TARGET. {
 	c = new exo::ast::ConstStr( ast->targetMachine );
 }
