@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree() : stmts( NULL )
+		Tree::Tree() : stmts( NULL ), fileName( "?" )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );

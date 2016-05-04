@@ -28,13 +28,13 @@
 		};
 	}
 	
-	template<typename type1, typename type2, typename type3>	void __lemonLog( const char* fmt, type1 msg1, type2 msg2, type3 msg3 ) {  }
-	template<typename type1, typename type2>					void __lemonLog( const char* fmt, type1 msg1, type2 msg2 ) {  }
-	template<typename type>										void __lemonLog( const char* fmt, type msg1 ) {  boost::format message( fmt ); message % msg1; __lemonLog( boost::str( message ) ); }
+	template<typename type1, typename type2, typename type3>	void __lemonLog( const char* fmt, type1 msg1, type2 msg2, type3 msg3 ) { boost::format message( fmt ); message % msg1 % msg2 % msg3; __lemonLog( boost::str( message ) ); }
+	template<typename type1, typename type2>					void __lemonLog( const char* fmt, type1 msg1, type2 msg2 ) { boost::format message( fmt ); message % msg1 % msg2; __lemonLog( boost::str( message ) ); }
+	template<typename type>										void __lemonLog( const char* fmt, type msg1 ) { boost::format message( fmt ); message % msg1; __lemonLog( boost::str( message ) ); }
 }
 
 %syntax_error {
-	EXO_THROW_EXCEPTION( UnexpectedToken, ( boost::format( "Unexpected \"%s\" on %i:%i" ) % TOKEN->type_id_name() % TOKEN->line_number() % TOKEN->column_number() ).str() );
+	EXO_THROW_EXCEPTION( UnexpectedToken, ( boost::format( "Unexpected %s in \"%s\" on line %i:%i" ) % TOKEN->type_id_name() % ast->fileName % TOKEN->line_number() % TOKEN->column_number() ).str() );
 }
 %stack_overflow {
 	EXO_THROW_EXCEPTION( StackOverflow, "Stack overflow." );

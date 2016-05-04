@@ -1,0 +1,2 @@
+float function sin( float $x );
+float function cos( float $x ),

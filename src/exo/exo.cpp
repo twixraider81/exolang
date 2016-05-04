@@ -121,7 +121,12 @@ int main( int argc, char **argv )
 		}
 
 	} catch( boost::exception& e ) {
-		EXO_LOG( fatal, boost::diagnostic_information( e ) );
+        if( std::string const *message = boost::get_error_info<exo::exceptions::ExceptionString>(e) ) {
+        	EXO_LOG( fatal, *message );
+        } else {
+        	EXO_LOG( fatal, boost::diagnostic_information( e ) );
+        }
+
 		retval = 1;
 	}  catch( std::exception& e ) {
 		EXO_LOG( fatal, e.what() );
