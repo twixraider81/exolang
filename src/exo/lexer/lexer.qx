@@ -127,9 +127,7 @@ mode DOUBLE_STRING:
 <exit:  EXO>
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
-	<<FAIL>>						{
-		EXO_THROW_EXCEPTION( UnknownToken, "Unknown token \"" + LEXEMESTR(Lexeme) + "\"" );
-	}
+	<<FAIL>>						{ self_accumulator_add(Lexeme, LexemeEnd); }
 
 	on_entry						{
 		self_accumulator_clear();
@@ -140,13 +138,15 @@ mode DOUBLE_STRING:
 		self_send(QUEX_TKN_T_QUOTE);
 	}
 
-	[\r\n\t\f]+						{ self_accumulator_add(Lexeme, LexemeEnd); }
-	"\\r"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
-	"\\n"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
-	"\\t"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
-	"\\f"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
-	"\\b"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
-	"\\e"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\r"							{ self_accumulator_add_character( '\r' ); } /* carriage return */
+	"\\n"							{ self_accumulator_add_character( '\n' ); } /* newline */
+	"\\t"							{ self_accumulator_add_character( '\t' ); } /* horizontal tab */
+	"\\v"							{ self_accumulator_add_character( '\v' ); } /* vertical tab */
+	"\\f"							{ self_accumulator_add_character( '\f' ); } /* form feed */
+	"\\b"							{ self_accumulator_add_character( '\b' ); } /* backspace */
+	"\\e"							{ self_accumulator_add_character( '\e' ); } /* escape */
+	"\\a"							{ self_accumulator_add_character( '\a' ); } /* alarm/beep */
+	"\\0"							{ self_accumulator_add_character( '\0' ); } /* null character */
 	"\\\""							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"\\\\"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
 	"\""							{ self << EXO; RETURN; }
@@ -159,9 +159,7 @@ mode SINGLE_STRING:
 <exit:  EXO>
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
-	<<FAIL>>						{
-		EXO_THROW_EXCEPTION( UnknownToken, "Unknown token \"" + LEXEMESTR(Lexeme) + "\"" );
-	}
+	<<FAIL>>						{ self_accumulator_add(Lexeme, LexemeEnd); }
 
 	on_entry						{
 		self_accumulator_clear();
@@ -172,8 +170,8 @@ mode SINGLE_STRING:
 		self_send(QUEX_TKN_T_QUOTE);
 	}
 
-	"\\'"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
-	"\\\\"							{ self_accumulator_add(LexemeBegin+1, LexemeEnd); }
+	"\\'"							{ self_accumulator_add(LexemeBegin, LexemeEnd); }
+	"\\\\"							{ self_accumulator_add(LexemeBegin, LexemeEnd); }
 	"'"								{ self << EXO; RETURN; }
 	.								{ self_accumulator_add(Lexeme, LexemeEnd); }
 }

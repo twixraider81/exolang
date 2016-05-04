@@ -24,10 +24,6 @@ namespace exo
 {
 	namespace jit
 	{
-		/*
-		 * RULE OF THUMB for LLVM. If there exists a get/create function, use it and there is no need to new/delete.
-		 * also some types share ownership and need not to be deleted, like module <-> execution engine
-		 */
 		Codegen::Codegen( std::string cname, std::string target ) : builder( llvm::getGlobalContext() ), name( cname ), entry( NULL )
 		{
 			module = llvm::make_unique<llvm::Module>( cname, llvm::getGlobalContext());
@@ -44,13 +40,6 @@ namespace exo
 
 		void Codegen::popBlock()
 		{
-			// no empty blocks?
-			/*
-			if( !blocks.top()->block->size() ) {
-				blocks.top()->block->eraseFromParent();
-			}
-			*/
-
 			if( blocks.top()->exitBlock == NULL ) {
 				blocks.pop();
 

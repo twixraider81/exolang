@@ -1,0 +1,37 @@
+int function puts( string $str );
+
+puts( "test\n" );
+puts( 'test\n
+' );
+
+puts( "test\ttest" );
+puts( 'test\ttest
+' );
+
+puts( "test\vtest" );
+puts( 'test\vtest
+' );
+
+puts( "test\r" );
+puts( 'test\r
+' );
+
+puts( "test\f" );
+puts( 'test\f
+' );
+
+puts( "test\b" );
+puts( 'test\b
+' );
+
+puts( "test\e" );
+puts( 'test\e
+' );
+
+puts( "test\a" );
+puts( 'test\a
+' );
+
+puts( "test\0" );
+puts( 'test\0
+' );
