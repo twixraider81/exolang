@@ -49,6 +49,12 @@ build/exolang -s 1 examples/helloworld.exo
 waf has a few extra commands at your disposal. Check:
 ./waf --help
 
+To start gdb and load a script
+./waf --gdb=src/tests/object.exo
+
+To start valgrind/memcheck and load a script
+./waf --memcheck=src/tests/object.exo
+
 Examples
 --------
 Take a look at the examples directory. It contains pointers on syntax and constructs while i am working on a proper documentation.

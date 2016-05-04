@@ -14,7 +14,7 @@
 
 import os, subprocess, sys, re, platform, pipes, pprint
 
-from waflib import Build, Context, Scripting, Utils, Task, TaskGen
+from waflib import Build, Options, Context, Scripting, Utils, Task, TaskGen
 from waflib.ConfigSet import ConfigSet
 from waflib.TaskGen import extension
 from waflib.Task import Task
@@ -33,6 +33,8 @@ def options( opt ):
 	opt.add_option( '--mode', action = 'store', default = 'release', help = 'the mode to compile in (release,debug)' )
 	opt.add_option( '--llvm', action = 'store', default = 'llvm-config', help = 'path to llvm-config' )
 	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug purposes only, it will make us leak!' )
+	opt.add_option( '--gdb', type="string", default='', dest='gdb', help = 'load the specified script and run it with gdb' )
+	opt.add_option( '--memcheck', type="string", default='', dest='memcheck', help = 'load the specified script and run it with valgrind memcheck' )
 
 # configure
 def configure( conf ):
@@ -104,24 +106,22 @@ def configure( conf ):
 	# header checks
 	conf.check_cxx( header_name = "fstream" )
 	conf.check_cxx( header_name = "iostream" )
+	conf.check_cxx( header_name = "sstream" )
 	conf.check_cxx( header_name = "cstdio" )
 	conf.check_cxx( header_name = "cstdint" )
 	conf.check_cxx( header_name = "string" )
 	conf.check_cxx( header_name = "cstring" )
+	conf.check_cxx( header_name = "cctype" )
 	conf.check_cxx( header_name = "cassert" )
 	conf.check_cxx( header_name = "cstdlib" )
 	conf.check_cxx( header_name = "exception" )
 	conf.check_cxx( header_name = "stdexcept" )
-	conf.check_cxx( header_name = "csignal" )
-	conf.check_cxx( header_name = "sstream" )
-	conf.check_cxx( header_name = "execinfo.h" )
-	conf.check_cxx( header_name = "unistd.h" )
+	conf.check_cxx( header_name = "map" )
 	conf.check_cxx( header_name = "vector" )
-	conf.check_cxx( header_name = "memory" )
 	conf.check_cxx( header_name = "stack" )
+	conf.check_cxx( header_name = "memory" )
 	conf.check_cxx( header_name = "iterator" )
 	conf.check_cxx( header_name = "algorithm" )
-	conf.check_cxx( header_name = "libunwind.h" )
 
 	conf.check_cxx( header_name = "boost/program_options.hpp" )
 	conf.check_cxx( header_name = "boost/exception/all.hpp" )
@@ -129,25 +129,35 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/log/core.hpp" )
 	conf.check_cxx( header_name = "boost/log/trivial.hpp" )
 	conf.check_cxx( header_name = "boost/log/expressions.hpp" )
-	#conf.check_cxx( header_name = "boost/filesystem.hpp" )
 	conf.check_cxx( header_name = "boost/lexical_cast.hpp" )
+	#conf.check_cxx( header_name = "boost/filesystem.hpp" )
 	conf.check_cxx( header_name = "boost/algorithm/string.hpp" )
-	#conf.check_cxx( header_name = "boost/locale.hpp" )
 	conf.check_cxx( header_name = "boost/format.hpp" )
-	conf.check_cxx( header_name = "boost/units/detail/utility.hpp" )
-	conf.check_cxx( header_name = "boost/algorithm/string.hpp" )
 
-	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
+
+	conf.check_cxx( header_name = "csignal" )
+	conf.check_cxx( header_name = "execinfo.h" )
+	conf.check_cxx( header_name = "unistd.h" )
+	conf.check_cxx( header_name = "libunwind.h" )
+	conf.check_cxx( header_name = "boost/units/detail/utility.hpp" )
+
+
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
-	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
+	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
+	#conf.check_cxx( header_name = "llvm/ExecutionEngine/MCJIT.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
 	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
+	conf.check_cxx( header_name = "llvm/IR/Verifier.h" )
+	#conf.check_cxx( header_name = "llvm/LinkAllPasses.h" )
+	conf.check_cxx( header_name = "llvm/Analysis/Passes.h" )
+	conf.check_cxx( header_name = "llvm/IR/IRPrintingPasses.h" )
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/Host.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
 	conf.check_cxx( header_name = "llvm/Support/FileSystem.h" )
-	conf.check_cxx( header_name = "llvm/Target/TargetLibraryInfo.h" )
+	conf.check_cxx( header_name = "llvm/Transforms/Scalar.h" )
+	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 
 	if conf.options.gc != 'disable':
 		conf.check_cxx( header_name = "gc/gc.h" )
@@ -177,10 +187,13 @@ def build( bld ):
 	libs += bld.env.LLVMLIBS[0].split( ' ' )
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
-# todo target
-def showtodo( ctx ):
-	"Show todos"
-	subprocess.call( 'grep -nHr -nHr "FIXME\|TODO" '  + SRCDIR, shell=True )
+	if Options.options.gdb and bld.env.GDB:
+		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --args ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.gdb
+		subprocess.call( cmd, shell=True )
+
+	if Options.options.memcheck and bld.env.VALGRIND:
+		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --track-origins=yes ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.memcheck
+		subprocess.call( cmd, shell=True )
 
 # (re)create parser
 def buildparser( ctx ):
@@ -191,27 +204,3 @@ def buildparser( ctx ):
 def buildlexer( ctx ):
 	"Recreate Lexer (needs quex binary)"
 	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/lexer -o lexer', shell=True )
-
-# show lexer/parser tokens
-def showtokens( ctx ):
-	"Show lexer/parser tokens"
-	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h --foreign-token-id-file-show', shell=True )
-
-# gdb target
-def gdb( ctx ):
-	"Start GDB and load executable"
-	print( ctx.cmd )
-	subprocess.call( 'gdb ' + BUILDDIR + '/exolang', shell=True )
-
-# memcheck target
-def memcheck( ctx ):
-	"Start Valgrind and do memcheck"
-	subprocess.call( 'valgrind --leak-check=full --track-origins=yes --show-leak-kinds=definite,possible --demangle=yes --db-attach=yes ' + BUILDDIR + '/exolang src/tests/1.exo', shell=True )
-def vmemcheck( ctx ):
-	"Start Valgrind and do VERBOSE memcheck"
-	subprocess.call( 'valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --demangle=yes --db-attach=yes -v ' + BUILDDIR + '/exolang src/tests/1.exo', shell=True )
-
-# callgrind target
-def callgrind( ctx ):
-	"Start Valgrind and do callgrind"
-	subprocess.call( 'valgrind --tool=callgrind --demangle=yes --db-attach=yes --callgrind-out-file=' + BUILDDIR + '/exolang.out ' + BUILDDIR + '/exolang src/tests/1.exo', shell=True )
