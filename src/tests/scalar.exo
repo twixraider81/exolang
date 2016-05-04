@@ -8,3 +8,4 @@ string $s	= __FILE__;
 str $v		= __VERSION__;
 string $t	= __TARGET__;
 float $g	= 32.4;
+string $z	= "Test";

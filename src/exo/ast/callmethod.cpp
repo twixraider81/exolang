@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		CallMethod::CallMethod( std::string n, Expr* e, ExprList* a ) : CallFun( n, a )
+		CallMethod::CallMethod( std::string n, Expr* e, ExprList* a ) : CallFun( n, a ), expression( e )
 		{
-			expression = e;
 		}
 
 		CallMethod::~CallMethod()

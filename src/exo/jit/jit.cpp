@@ -43,7 +43,7 @@ namespace exo
 
 		int JIT::Execute()
 		{
-			llvm::ExecutionEngine*	engine;
+			llvm::ExecutionEngine* jit;
 
 			// careful, this transfers module ownership
 			llvm::EngineBuilder builder( (std::move( generator->module )) );
@@ -67,15 +67,15 @@ namespace exo
 
 			std::string buffer = "";
 			builder.setErrorStr( &buffer );
-			engine = builder.create();
+			jit = builder.create();
 
-			if( !engine ) {
+			if( !jit ) {
 				EXO_THROW_EXCEPTION( LLVM, buffer );
 				return( -1 );
 			}
 
 			EXO_LOG( trace, "Running main." );
-			int( *jitMain )() = (int(*)())engine->getFunctionAddress( "main" );
+			int( *jitMain )() = (int(*)())jit->getFunctionAddress( "main" );
 			int retval = jitMain();
 			EXO_LOG( trace, "Finished." );
 			return( retval );

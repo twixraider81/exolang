@@ -19,10 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		OpBinary::OpBinary( Expr* a, Expr* b )
+		OpBinary::OpBinary( Expr* a, Expr* b ) : lhs( a ), rhs( b )
 		{
-			lhs = a;
-			rhs = b;
 		}
 
 		OpBinary::~OpBinary()

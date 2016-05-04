@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ConstFloat::ConstFloat( double v )
+		ConstFloat::ConstFloat( double v ) : value( v )
 		{
-			value = v;
 		}
 	}
 }

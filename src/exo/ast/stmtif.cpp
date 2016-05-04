@@ -19,10 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtIf::StmtIf( Expr* expr, StmtList* t, StmtList* f ) : StmtExpr( expr )
+		StmtIf::StmtIf( Expr* expr, StmtList* t, StmtList* f ) : StmtExpr( expr ), onTrue( t ), onFalse( f )
 		{
-			onTrue = t;
-			onFalse = f;
 		}
 
 		StmtIf::~StmtIf()

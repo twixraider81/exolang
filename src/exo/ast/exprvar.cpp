@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ExprVar::ExprVar( std::string vName )
+		ExprVar::ExprVar( std::string vName ) : name( vName )
 		{
-			name = vName;
 		}
 	}
 }

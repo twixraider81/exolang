@@ -69,7 +69,8 @@ namespace exo
 		{
 			public:
 				std::string			name;
-				std::stack<Block*>	blocks;
+
+				std::stack< std::shared_ptr<Block> >					blocks;
 				std::map< std::string, std::vector<std::string> >		propertyIndex;
 				std::map< std::string, std::vector<llvm::Type*> >		properties;
 				std::map< std::string, std::vector<std::string> >		methodIndex;

@@ -62,11 +62,11 @@ namespace exo
 				eblock = this->blocks.top()->exitBlock;
 			}
 
-			blocks.push( new Block() );
+			blocks.push( std::make_shared<Block>() );
 			blocks.top()->block = block;
 			blocks.top()->exitBlock = eblock;
 
-			// reset our new insert point
+			// reset our insert point
 			builder.SetInsertPoint( blocks.top()->block );
 
 			EXO_DEBUG_LOG( trace, "Switching to block \"" << block->getName().str() << "\", continue at exit block \"" << ( eblock == NULL ? "(entry)" : eblock->getName().str() ) << "\"" );
@@ -81,7 +81,7 @@ namespace exo
 		{
 			if( blocks.size() > 0 ) {
 				if( blocks.top()->exitBlock == NULL ) {
-					Block* currentBlock = blocks.top();
+					std::shared_ptr<Block> currentBlock = blocks.top();
 					llvm::BasicBlock* exitBlock = NULL;
 					blocks.pop();
 

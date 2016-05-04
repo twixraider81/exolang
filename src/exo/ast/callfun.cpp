@@ -19,10 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		CallFun::CallFun( std::string n, ExprList* a )
+		CallFun::CallFun( std::string n, ExprList* a ) : name( n ), arguments( a )
 		{
-			name = n;
-			arguments = a;
 		}
 
 		CallFun::~CallFun()

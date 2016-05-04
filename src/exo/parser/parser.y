@@ -46,6 +46,7 @@
 
 %token_prefix QUEX_TKN_
 %token_type { quex::Token* }
+%token_destructor { delete $$; }
 
 /* the extra argument ist unused at the moment */
 %extra_argument { exo::ast::Tree *ast }
@@ -503,7 +504,7 @@ expr(e) ::= T_DELETE expr(a). {
 	POINTERCHECK(a);
 	e = new exo::ast::OpUnaryDel( a );
 }
-/* FIXME: these leak */
+/* binary shorthand ops */
 expr(e) ::= expr(a) T_PLUS T_ASSIGN expr(b). {
 	POINTERCHECK(a);
 	POINTERCHECK(b);
@@ -539,10 +540,12 @@ constant(c) ::= T_FILE. {
 constant(c) ::= T_LINE(l). {
 	POINTERCHECK(l);
 	c = new exo::ast::ConstInt( l->line_number() );
+	delete l;
 }
 constant(c) ::= T_COLUMN(l). {
 	POINTERCHECK(l);
 	c = new exo::ast::ConstInt( l->column_number() );
+	delete l;
 }
 constant(c) ::= T_TARGET. {
 	c = new exo::ast::ConstStr( ast->targetMachine );

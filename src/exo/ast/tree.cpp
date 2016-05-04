@@ -14,6 +14,7 @@
  */
 
 #include "exo/ast/tree.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
@@ -44,36 +45,30 @@ namespace exo
 #else
 			::ParseFree( parser, free );
 #endif
+
+			if( stmts != NULL ) {
+				delete stmts;
+			}
 		}
 
 		void Tree::Parse( std::string fName, std::string target )
 		{
 			fileName = fName;
 			targetMachine = target;
+
+			if( !boost::filesystem::exists( fileName ) || !boost::filesystem::is_regular_file( fileName ) ) {
+				EXO_THROW_EXCEPTION( NotFound, ( boost::format( "File \"%s\" not found." ) % fileName ).str() );
+			}
+
 			EXO_LOG( debug, "Opening <" << fileName << ">" );
 
 			// this is a pointer to a region in the buffer, no need to alloc
-			quex::Token* currentToken = 0x0;
-			// safe token will be needed for tokens with text, as previous pointer will be bent. parser will free them
-			quex::Token* safeToken;
+			quex::Token* currentToken = NULL;
 
 			quex::lexer lexer( fileName );
 			lexer.receive( &currentToken );
 			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
-				switch( currentToken->type_id() ) {
-					case QUEX_TKN_S_INT:
-					case QUEX_TKN_S_FLOAT:
-					case QUEX_TKN_S_VAR:
-					case QUEX_TKN_S_ID:
-					case QUEX_TKN_S_STRING:
-						safeToken = new quex::Token( *currentToken );
-						::Parse( parser, safeToken->type_id(), safeToken, this );
-					break;
-
-					default:
-						::Parse( parser, currentToken->type_id(), currentToken, this );
-				}
-
+				::Parse( parser, currentToken->type_id(), new quex::Token( *currentToken ), this );
 				lexer.receive( &currentToken );
 			}
 

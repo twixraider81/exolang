@@ -79,7 +79,7 @@ def configure( conf ):
 		'-DQUEX_OPTION_LINE_NUMBER_COUNTING',
 		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING',
 		'-DQUEX_OPTION_SEND_AFTER_TERMINATION_ADMISSIBLE',
-		'-std=c++11'
+		'-std=c++14'
 	]
 	cxxflags += exoflags
 
@@ -192,7 +192,7 @@ def build( bld ):
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.memcheck and bld.env.VALGRIND:
-		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --track-origins=yes ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.memcheck
+		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.memcheck
 		subprocess.call( cmd, shell=True )
 
 # (re)create parser

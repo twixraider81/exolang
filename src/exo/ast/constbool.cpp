@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ConstBool::ConstBool( bool v )
+		ConstBool::ConstBool( bool v ) : value( v )
 		{
-			value = v;
 		}
 	}
 }

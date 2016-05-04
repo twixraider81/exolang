@@ -19,18 +19,15 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtFor::StmtFor( Expr* expr, DecList* init, ExprList* upd, StmtList* doBlock ) : StmtExpr( expr )
+		StmtFor::StmtFor( Expr* expr, DecList* init, ExprList* upd, StmtList* doBlock ) : StmtExpr( expr ), initialization( init ), update( upd ), block( doBlock )
 		{
-			initialization = init;
-			update = upd;
-			block = doBlock;
 		}
 
 		StmtFor::~StmtFor()
 		{
-			delete block;
 			delete initialization;
 			delete update;
+			delete block;
 		}
 	}
 }

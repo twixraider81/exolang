@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtExpr::StmtExpr( Expr* expr )
+		StmtExpr::StmtExpr( Expr* expr ) : expression( expr )
 		{
-			expression = expr;
 		}
 
 		StmtExpr::~StmtExpr()

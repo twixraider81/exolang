@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtWhile::StmtWhile( Expr* expr, StmtList* doBlock ) : StmtExpr( expr )
+		StmtWhile::StmtWhile( Expr* expr, StmtList* doBlock ) : StmtExpr( expr ), block( doBlock )
 		{
-			block = doBlock;
 		}
 
 		StmtWhile::~StmtWhile()

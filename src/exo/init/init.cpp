@@ -51,13 +51,6 @@ namespace exo
 			llvm::InitializeNativeTarget();
 			llvm::InitializeNativeTargetAsmPrinter();
 			llvm::InitializeNativeTargetAsmParser();
-			/*
-			llvm::InitializeAllTargetInfos();
-			llvm::InitializeAllTargets();
-			llvm::InitializeAllAsmPrinters();
-			llvm::InitializeAllAsmParsers();
-			llvm::InitializeAllTargetMCs();
-			*/
 
 			// register signal handler
 			exo::signals::registerHandlers();

@@ -96,6 +96,11 @@ namespace exo
 		class OutOfMemory : public virtual Exception {};
 
 		/**
+		 * Exception that will be thrown if something is expected but not found
+		 */
+		class NotFound : public virtual Exception {};
+
+		/**
 		 * Exception reporting a generic LLVM error message
 		 */
 		class LLVM: public virtual Exception {};

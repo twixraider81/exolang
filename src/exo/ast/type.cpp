@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		Type::Type( std::string tName )
+		Type::Type( std::string tName ) : name( tName )
 		{
-			name = tName;
 		}
 	}
 }

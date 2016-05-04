@@ -19,10 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		DecProp::DecProp( DecVar* d, ModAccess* a )
+		DecProp::DecProp( DecVar* d, ModAccess* a ) : access( a ), property( d )
 		{
-			access = a;
-			property = d;
 		}
 
 		DecProp::~DecProp()

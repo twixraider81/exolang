@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		OpUnary::OpUnary( Expr* a )
+		OpUnary::OpUnary( Expr* a ) : rhs( a )
 		{
-			rhs = a;
 		}
 
 		OpUnary::~OpUnary()

@@ -19,12 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFunProto::DecFunProto( std::string n, Type* rType, DecList* vArgs, bool va )
+		DecFunProto::DecFunProto( std::string n, Type* rType, DecList* vArgs, bool va ) : name( n ), returnType( rType ), arguments( vArgs ), hasVaArg( va )
 		{
-			name = n;
-			returnType = rType;
-			arguments = vArgs;
-			hasVaArg = va;
 		}
 
 		DecFunProto::~DecFunProto()

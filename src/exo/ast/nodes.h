@@ -413,6 +413,7 @@ namespace exo
 				std::vector<Stmt*> list;
 
 				StmtList();
+				virtual ~StmtList();
 
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};

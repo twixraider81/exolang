@@ -19,10 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		DecMethod::DecMethod( DecFun* m, ModAccess* a )
+		DecMethod::DecMethod( DecFun* m, ModAccess* a ) : access( a ), method( m )
 		{
-			access = a;
-			method = m;
 		}
 
 		DecMethod::~DecMethod()

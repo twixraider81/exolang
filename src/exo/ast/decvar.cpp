@@ -19,18 +19,12 @@ namespace exo
 {
 	namespace ast
 	{
-		DecVar::DecVar( std::string vName, Type* vType )
+		DecVar::DecVar( std::string vName, Type* vType, Expr* expr ) : name( vName ), type( vType ), expression( expr )
 		{
-			name = vName;
-			type = vType;
-			expression = NULL;
 		}
 
-		DecVar::DecVar( std::string vName, Type* vType, Expr* expr )
+		DecVar::DecVar( std::string vName, Type* vType ) : name( vName ), type( vType ), expression( NULL )
 		{
-			name = vName;
-			type = vType;
-			expression = expr;
 		}
 
 		DecVar::~DecVar()

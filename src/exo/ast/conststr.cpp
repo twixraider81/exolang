@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ConstStr::ConstStr( std::string v )
+		ConstStr::ConstStr( std::string v ) : value( v )
 		{
-			value = v;
 		}
 	}
 }

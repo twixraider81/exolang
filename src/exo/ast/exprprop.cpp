@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ExprProp::ExprProp( std::string pName, Expr* e ) : ExprVar( pName )
+		ExprProp::ExprProp( std::string pName, Expr* e ) : ExprVar( pName ), expression( e )
 		{
-			expression = e;
 		}
 
 		ExprProp::~ExprProp()
