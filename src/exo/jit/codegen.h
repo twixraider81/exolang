@@ -88,7 +88,7 @@ namespace exo
 			    ~Codegen();
 
 			    void 				popBlock();
-			    void 				pushBlock( llvm::BasicBlock* block, std::string name, llvm::BasicBlock* eblock = NULL );
+			    void 				pushBlock( llvm::BasicBlock* block, llvm::BasicBlock* eblock = NULL );
 			    llvm::BasicBlock*	getBlock();
 			    llvm::BasicBlock*	getBlockExit();
 			    std::string			getBlockName();

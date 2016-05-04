@@ -24,7 +24,7 @@
 		boost::algorithm::trim( msg );
 
 		if( msg.size() ) {
-			BOOST_LOG_TRIVIAL(trace) << msg;
+			EXO_DEBUG_LOG( trace, msg );
 		};
 	}
 	

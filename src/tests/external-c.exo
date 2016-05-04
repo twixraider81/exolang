@@ -1,0 +1,8 @@
+float function sin( float $x );
+float function cos( float $x );
+int function puts( string $str );
+int function printf( string $str ... );
+
+puts( "test\n" );
+printf( "sinus($g):\t%f - %f\n", 32.4, sin( 32.4 ) );
+printf( "cosinus($g):\t%f - %f\n", 32.4, cos( 32.4 ) );

@@ -51,7 +51,7 @@ namespace exo
 
 			// a bit ugly
 			if( optLevel < 0 || optLevel > 3 ) {
-				BOOST_LOG_TRIVIAL(warning) << "Invalid optimization level.";
+				EXO_LOG( warning, "Invalid optimization level." );
 				builder.setOptLevel( llvm::CodeGenOpt::None );
 			} else {
 				if( optLevel == 0 ) {
@@ -74,16 +74,16 @@ namespace exo
 				return( -1 );
 			}
 
-			BOOST_LOG_TRIVIAL(trace) << "Running main.";
+			EXO_LOG( trace, "Running main." );
 			int( *jitMain )() = (int(*)())engine->getFunctionAddress( "main" );
 			int retval = jitMain();
-			BOOST_LOG_TRIVIAL(trace) << "Finished.";
+			EXO_LOG( trace, "Finished." );
 			return( retval );
 		}
 
 		int JIT::Emit()
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Emitting LLVM IR.";
+			EXO_LOG( trace, "Emitting LLVM IR." );
 
 			std::string buffer;
 			llvm::raw_string_ostream bStream( buffer );

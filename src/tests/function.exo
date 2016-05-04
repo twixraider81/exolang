@@ -1,0 +1,6 @@
+int function test( int $e )
+{
+	return( $e + 1 );
+};
+
+int $a = test( 1 );

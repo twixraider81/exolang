@@ -1,0 +1,23 @@
+int function printf( string $str ... );
+
+int $a = 0;
+int $b = 5;
+
+while( $a < $b ) {
+	$a += 1;
+	printf( "%i\n", $a );
+};
+
+
+int $c = 0;
+while( true ) {
+	$c += 1;
+	printf( "% i\n", $c );
+
+	if( $c > 5 ) {
+		int $e = 20;
+		break;
+	};
+};
+
+int $d = 1000;

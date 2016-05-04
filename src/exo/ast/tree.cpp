@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree()
+		Tree::Tree() : stmts( NULL )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );
@@ -35,7 +35,6 @@ namespace exo
 			// will get rerouted via preprocessor to boost::log
 			::ParseTrace( stdout, (char*)banner.c_str() );
 #endif
-			stmts = NULL;
 		}
 
 		Tree::~Tree()
@@ -51,7 +50,7 @@ namespace exo
 		{
 			fileName = fName;
 			targetMachine = target;
-			BOOST_LOG_TRIVIAL(debug) <<  "Opening <" << fileName << ">";
+			EXO_LOG( debug, "Opening <" << fileName << ">" );
 
 			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = 0x0;

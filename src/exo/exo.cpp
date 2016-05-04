@@ -96,13 +96,13 @@ int main( int argc, char **argv )
 
 	// we are running, command line is parsed
 	if( !exo::init::Init::Startup( severity ) ) {
-		BOOST_LOG_TRIVIAL(fatal) << "Unable to complete initialization.";
+		EXO_LOG( fatal, "Unable to complete initialization." );
 		exit( 1 );
 	}
 
 	try {
 		if( !commandLine.count( "input" ) ) {
-			BOOST_LOG_TRIVIAL(fatal) << "No input file given.";
+			EXO_LOG( fatal, "No input file given." );
 			exit( 1 );
 		}
 
@@ -121,13 +121,13 @@ int main( int argc, char **argv )
 		}
 
 	} catch( boost::exception& e ) {
-		BOOST_LOG_TRIVIAL(fatal) << boost::diagnostic_information( e );
+		EXO_LOG( fatal, boost::diagnostic_information( e ) );
 		retval = 1;
 	}  catch( std::exception& e ) {
-		BOOST_LOG_TRIVIAL(fatal) << e.what();
+		EXO_LOG( fatal, e.what() );
 		retval = 1;
 	} catch( ... ) {
-		BOOST_LOG_TRIVIAL(fatal) << "Unknown exception caught.";
+		EXO_LOG( fatal, "Unknown exception caught." );
 		retval = 1;
 	}
 

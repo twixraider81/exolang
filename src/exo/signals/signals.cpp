@@ -46,7 +46,7 @@ namespace exo
 						demangled = name;
 					}
 
-					BOOST_LOG_TRIVIAL(error) << ( boost::format( "(%s), ip:%lx, sp:%lx" ) % demangled % ip % sp );
+					EXO_LOG( error, ( boost::format( "(%s), ip:%lx, sp:%lx" ) % demangled % ip % sp ) );
 				}
 
 				EXO_THROW_EXCEPTION( Segfault, "Segmentation fault!" );
@@ -55,7 +55,7 @@ namespace exo
 
 		void sigtermHandler( int signal, siginfo_t *si, void *arg )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Shutting down.";
+			EXO_LOG( trace, "Shutting down." );
 			exo::init::Init::Shutdown();
 		}
 
@@ -68,7 +68,7 @@ namespace exo
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
-				BOOST_LOG_TRIVIAL(warning) << "Failed to register segementation fault handler!";
+				EXO_LOG( warning, "Failed to register segementation fault handler!" );
 			}
 
 
@@ -78,7 +78,7 @@ namespace exo
 			sa.sa_flags = SA_SIGINFO;
 
 			if( sigaction( SIGTERM, &sa, NULL ) == -1 || sigaction( SIGINT, &sa, NULL ) == -1 || sigaction( SIGABRT, &sa, NULL ) == -1  ) {
-				BOOST_LOG_TRIVIAL(warning) << "Failed to register sigterm,sigint,sigabrt handler!";
+				EXO_LOG( warning, "Failed to register sigterm,sigint,sigabrt handler!" );
 			}
 		}
 	}

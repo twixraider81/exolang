@@ -1,0 +1,22 @@
+class testClass
+{
+	protected	int		$intVal;
+	public		float	$floatVal;
+	private		boolean	$bVal;
+
+	public int function getOne()
+	{
+		return 1;
+	};
+
+	public int function getTwo()
+	{
+		return 2;
+	};
+};
+
+testClass $i = new testClass();
+int $c = $i->getOne() + $i->getTwo();
+
+int function printf( string $str ... );
+printf( "%i\n", $c );

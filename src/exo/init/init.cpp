@@ -26,7 +26,7 @@ namespace exo
 		{
 			// a bit ugly
 			if( logLevel < 1 || logLevel > 6 ) {
-				BOOST_LOG_TRIVIAL(warning) << "Invalid log level.";
+				EXO_LOG( warning, "Invalid log level." );
 			} else {
 				if( logLevel == 1 ) {
 					boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::trace );

@@ -44,52 +44,81 @@ namespace exo
 
 		void Codegen::popBlock()
 		{
-			this->blocks.pop();
+			// no empty blocks?
+			/*
+			if( !blocks.top()->block->size() ) {
+				blocks.top()->block->eraseFromParent();
+			}
+			*/
 
-			// reset our insert point
-			if( this->blocks.size() > 0 ) {
-				BOOST_LOG_TRIVIAL(trace) << "Continuing at block \"" << this->blocks.top()->block->getName().str() << "\"";
-				this->builder.SetInsertPoint( this->blocks.top()->block );
+			if( blocks.top()->exitBlock == NULL ) {
+				blocks.pop();
+
+				// reset our insert point
+				if( blocks.size() > 0 ) {
+					EXO_DEBUG_LOG( trace, "Continuing at block \"" << blocks.top()->block->getName().str() << "\"" );
+					builder.SetInsertPoint( blocks.top()->block );
+				}
+			} else {
+				EXO_DEBUG_LOG( trace, "Continuing at exit block \"" << blocks.top()->exitBlock->getName().str() << "\"" );
+				builder.SetInsertPoint( blocks.top()->exitBlock );
+				blocks.pop();
 			}
 		}
 
-		void Codegen::pushBlock( llvm::BasicBlock* block, std::string name, llvm::BasicBlock* eblock )
+		void Codegen::pushBlock( llvm::BasicBlock* block, llvm::BasicBlock* eblock )
 		{
 			// keep track of exit/continue block in loops
 			if( eblock == NULL && this->blocks.size() > 0 ) {
 				eblock = this->blocks.top()->exitBlock;
 			}
 
-			this->blocks.push( new Block() );
-			this->blocks.top()->block = block;
-			this->blocks.top()->exitBlock = eblock;
-			this->blocks.top()->name = name;
+			blocks.push( new Block() );
+			blocks.top()->block = block;
+			blocks.top()->exitBlock = eblock;
 
 			// reset our new insert point
-			builder.SetInsertPoint( this->blocks.top()->block );
+			builder.SetInsertPoint( blocks.top()->block );
 
-			BOOST_LOG_TRIVIAL(trace) << "Switching to block \"" << block->getName().str() << "\"";
+			EXO_DEBUG_LOG( trace, "Switching to block \"" << block->getName().str() << "\", continue at exit block \"" << ( eblock == NULL ? "(entry)" : eblock->getName().str() ) << "\"" );
 		}
 
 		llvm::BasicBlock* Codegen::getBlock()
 		{
-			 return( this->blocks.top()->block );
+			return( blocks.top()->block );
 		}
 
 		llvm::BasicBlock* Codegen::getBlockExit()
 		{
-			 return( this->blocks.top()->exitBlock );
+			if( blocks.size() > 0 ) {
+				if( blocks.top()->exitBlock == NULL ) {
+					Block* currentBlock = blocks.top();
+					llvm::BasicBlock* exitBlock = NULL;
+					blocks.pop();
+
+					if( blocks.size() > 0 ) {
+						exitBlock = blocks.top()->block;
+					}
+
+					blocks.push( currentBlock );
+					return( exitBlock );
+				} else {
+					return( blocks.top()->exitBlock );
+				}
+			}
+
+			return NULL;
 		}
 
 		std::string Codegen::getBlockName()
 		{
-			 return( this->blocks.top()->name );
+			 return( blocks.top()->block->getName().str() );
 		}
 
 		llvm::Value* Codegen::getBlockSymbol( std::string name )
 		{
-			std::map<std::string,llvm::Value*>::iterator it = this->blocks.top()->symbols.find( name );
-			if( it == this->blocks.top()->symbols.end() ) {
+			std::map<std::string,llvm::Value*>::iterator it = blocks.top()->symbols.find( name );
+			if( it == blocks.top()->symbols.end() ) {
 				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + name );
 			}
 
@@ -98,28 +127,28 @@ namespace exo
 
 		void Codegen::setBlockSymbol( std::string name, llvm::Value* value )
 		{
-			std::map<std::string,llvm::Value*>::iterator it = this->blocks.top()->symbols.find( name );
-			if( it == this->blocks.top()->symbols.end() ) {
+			std::map<std::string,llvm::Value*>::iterator it = blocks.top()->symbols.find( name );
+			if( it == blocks.top()->symbols.end() ) {
 				value->setName( name );
-				this->blocks.top()->symbols.insert( std::pair<std::string,llvm::Value*>( name, value ) );
+				blocks.top()->symbols.insert( std::pair<std::string,llvm::Value*>( name, value ) );
 			} else {
-				this->blocks.top()->symbols[name] = value;
+				blocks.top()->symbols[name] = value;
 			}
 		}
 
 		void Codegen::delBlockSymbol( std::string name )
 		{
-			std::map<std::string,llvm::Value*>::iterator it = this->blocks.top()->symbols.find( name );
-			if( it == this->blocks.top()->symbols.end() ) {
+			std::map<std::string,llvm::Value*>::iterator it = blocks.top()->symbols.find( name );
+			if( it == blocks.top()->symbols.end() ) {
 				EXO_THROW_EXCEPTION( UnknownVar, "Unknown variable $" + name );
 			}
 
-			this->blocks.top()->symbols.erase( name );
+			blocks.top()->symbols.erase( name );
 		}
 
 		std::map<std::string,llvm::Value*>& Codegen::getBlockSymbols()
 		{
-			return( this->blocks.top()->symbols );
+			return( blocks.top()->symbols );
 		}
 
 
@@ -129,15 +158,15 @@ namespace exo
 		llvm::Type* Codegen::getType( exo::ast::Type* type )
 		{
 			if( type->name == "int" ) {
-				return( llvm::Type::getInt64Ty( this->module->getContext() ) );
+				return( llvm::Type::getInt64Ty( module->getContext() ) );
 			} else if( type->name == "float" ) {
-				return( llvm::Type::getDoubleTy( this->module->getContext() ) );
+				return( llvm::Type::getDoubleTy( module->getContext() ) );
 			} else if( type->name == "bool" ) {
-				return( llvm::Type::getInt1Ty( this->module->getContext() ) );
+				return( llvm::Type::getInt1Ty( module->getContext() ) );
 			} else if( type->name == "string" ) {
-				return( llvm::Type::getInt8PtrTy( this->module->getContext() ) );
+				return( llvm::Type::getInt8PtrTy( module->getContext() ) );
 			} else if( type->name == "null" ) {
-				return( llvm::Type::getVoidTy( this->module->getContext() ) );
+				return( llvm::Type::getVoidTy( module->getContext() ) );
 			}
 
 			llvm::Type* ltype = module->getTypeByName( EXO_CLASS( type->name ) );
@@ -151,32 +180,32 @@ namespace exo
 
 		int Codegen::getPropertyPosition( std::string className, std::string propName )
 		{
-			std::vector<std::string>::iterator it = std::find( this->propertyIndex[ EXO_CLASS( className ) ].begin(), this->propertyIndex[ EXO_CLASS( className ) ].end(), propName );
+			std::vector<std::string>::iterator it = std::find( propertyIndex[ EXO_CLASS( className ) ].begin(), propertyIndex[ EXO_CLASS( className ) ].end(), propName );
 
-			if( it == this->propertyIndex[ EXO_CLASS( className ) ].end() ) {
+			if( it == propertyIndex[ EXO_CLASS( className ) ].end() ) {
 				EXO_THROW_EXCEPTION( UnknownVar, "Unknown property \"" + propName  + "\"" );
 			}
 
-			return( std::distance( this->propertyIndex[ EXO_CLASS( className ) ].begin(), it ) );
+			return( std::distance( propertyIndex[ EXO_CLASS( className ) ].begin(), it ) );
 		}
 
 		int Codegen::getMethodPosition( std::string className, std::string methodName )
 		{
-			std::vector<std::string>::iterator it = std::find( this->methodIndex[ EXO_CLASS( className ) ].begin(), this->methodIndex[ EXO_CLASS( className ) ].end(), methodName );
+			std::vector<std::string>::iterator it = std::find( methodIndex[ EXO_CLASS( className ) ].begin(), methodIndex[ EXO_CLASS( className ) ].end(), methodName );
 
-			if( it == this->methodIndex[ EXO_CLASS( className ) ].end() ) {
+			if( it == methodIndex[ EXO_CLASS( className ) ].end() ) {
 				EXO_THROW_EXCEPTION( InvalidCall, "Unknown method \"" + methodName  + "\"" );
 			}
 
-			return( std::distance( this->methodIndex[ EXO_CLASS( className ) ].begin(), it ) );
+			return( std::distance( methodIndex[ EXO_CLASS( className ) ].begin(), it ) );
 		}
 
 		llvm::Function* Codegen::getCallee( std::string cName )
 		{
-			llvm::Function* callee = this->module->getFunction( cName );
+			llvm::Function* callee = module->getFunction( cName );
 
 			if( callee == 0 ) {
-				EXO_THROW_EXCEPTION( UnknownFunction, "Unable to lookup \"" + cName + "\"!" );
+				EXO_THROW_EXCEPTION( UnknownFunction, "Unknown function \"" + cName + "\"!" );
 			}
 
 			return( callee );
@@ -188,17 +217,17 @@ namespace exo
 		llvm::Value* Codegen::invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments )
 		{
 			std::string className = EXO_OBJECT_CLASSNAME( object );
-			int position = this->getMethodPosition( className, method );
-			BOOST_LOG_TRIVIAL(debug) << "Call to " << className << ":" << method << "@" << position << " in (" << this->getBlockName() << ")";
-			//llvm::Function* callee = this->methods[className][position];
+			int position = getMethodPosition( className, method );
+			EXO_LOG( debug, "Call to " << className << ":" << method << "@" << position << " in (" << getBlockName() << ")" );
+			//llvm::Function* callee = methods[className][position];
 			//callee->dump();
 
 			llvm::Value* idx[] = {
-				llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
-				llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
+				llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), 0 ),
+				llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), position )
 			};
 
-			llvm::GlobalValue* vtbl = this->module->getNamedGlobal( EXO_VTABLE( className ) );
+			llvm::GlobalValue* vtbl = module->getNamedGlobal( EXO_VTABLE( className ) );
 			llvm::LoadInst* callee = builder.CreateLoad( builder.CreateInBoundsGEP( vtbl, idx, method ) );
 
 			std::vector<llvm::Value*> args;
@@ -215,8 +244,8 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << call->name << "\" in (" << this->getBlockName() << ")";
-			llvm::Function* callee = this->getCallee( call->name );
+			EXO_LOG( debug, "Call to \"" << call->name << "\" in (" << getBlockName() << ")" );
+			llvm::Function* callee = getCallee( call->name );
 
 			if( callee->arg_size() != call->arguments->list.size() && !callee->isVarArg() ) {
 				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for \"" + call->name + "\"" );
@@ -242,22 +271,22 @@ namespace exo
 				EXO_THROW_EXCEPTION( InvalidCall, "Can only invoke method on an object." );
 			}
 
-			//return( this->invokeMethod( builder.CreateLoad( variable ), call->name, call->arguments->list ) );
+			//return( invokeMethod( builder.CreateLoad( variable ), call->name, call->arguments->list ) );
 
 			variable = builder.CreateLoad( variable );
 			std::string cName = variable->getType()->getPointerElementType()->getStructName();
 
-			int position = this->getMethodPosition( cName, call->name );
+			int position = getMethodPosition( cName, call->name );
 			llvm::Value* idx[] = {
-				llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
-				llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
+				llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), 0 ),
+				llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), position )
 			};
 
-			BOOST_LOG_TRIVIAL(debug) << "Call to \"" << cName << "->" << call->name << "\"@" << position << " in (" << this->getBlockName() << ")";
-			llvm::Value* vtbl = this->module->getNamedGlobal( EXO_VTABLE( cName ) );
+			EXO_LOG( debug, "Call to \"" << cName << "->" << call->name << "\"@" << position << " in (" << getBlockName() << ")" );
+			llvm::Value* vtbl = module->getNamedGlobal( EXO_VTABLE( cName ) );
 			llvm::Value* callee = builder.CreateLoad( builder.CreateInBoundsGEP( vtbl, idx, call->name ) );
 			//llvm::Function* method = llvm::dyn_cast<llvm::Function>( callee );
-			llvm::Function* method = this->methods[cName][position];
+			llvm::Function* method = methods[cName][position];
 
 			if( method->arg_size() != ( call->arguments->list.size() + 1 ) && !method->isVarArg() ) {
 				EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for \"" + cName + "->" + call->name + "\"!" );
@@ -267,7 +296,7 @@ namespace exo
 
 			llvm::Function::arg_iterator it = method->arg_begin();
 			if( EXO_OBJECT_CLASSNAME( it ) != EXO_OBJECT_CLASSNAME( variable ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Cast " << cName << " to " << std::string( EXO_OBJECT_CLASSNAME( it ) ) << " in (" << this->getBlockName() << ")";
+				EXO_LOG( trace, "Cast " << cName << " to " << std::string( EXO_OBJECT_CLASSNAME( it ) ) << " in (" << getBlockName() << ")" );
 				arguments.push_back( builder.CreateBitCast( variable, it->getType() ) );
 			} else {
 				arguments.push_back( variable );
@@ -288,9 +317,9 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating boolean \"" << val->value << "\" in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating boolean \"" << val->value << "\" in (" << getBlockName() << ")" );
 
-			llvm::Type* type = llvm::Type::getInt1Ty( this->module->getContext() );
+			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 
 			if( val->value ) {
@@ -304,8 +333,8 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating float \"" << val->value << "\" in (" << this->getBlockName() << ")";
-			llvm::Type* type = llvm::Type::getDoubleTy( this->module->getContext() );
+			EXO_DEBUG_LOG( trace, "Generating float \"" << val->value << "\" in (" << getBlockName() << ")" );
+			llvm::Type* type = llvm::Type::getDoubleTy( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			builder.CreateStore( llvm::ConstantFP::get( type, val->value ), memory );
 			return( memory );
@@ -314,8 +343,8 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating integer \"" << val->value << "\" in (" << this->getBlockName() << ")";
-			llvm::Type* type = llvm::Type::getInt64Ty( this->module->getContext() );
+			EXO_DEBUG_LOG( trace, "Generating integer \"" << val->value << "\" in (" << getBlockName() << ")" );
+			llvm::Type* type = llvm::Type::getInt64Ty( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			builder.CreateStore( llvm::ConstantInt::get( type, val->value ), memory );
 			return( memory );
@@ -324,8 +353,8 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating null in (" << this->getBlockName() << ")";
-			llvm::Type* type = llvm::Type::getInt1Ty( this->module->getContext() );
+			EXO_DEBUG_LOG( trace, "Generating null in (" << getBlockName() << ")" );
+			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			builder.CreateStore( llvm::Constant::getNullValue( type ), memory );
 			return( memory );
@@ -334,8 +363,8 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating string \"" << val->value << "\" in (" << this->getBlockName() << ")";
-			llvm::Type* type = llvm::Type::getInt8PtrTy( this->module->getContext() );
+			EXO_DEBUG_LOG( trace, "Generating string \"" << val->value << "\" in (" << getBlockName() << ")" );
+			llvm::Type* type = llvm::Type::getInt8PtrTy( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			llvm::Value* str = builder.CreateBitCast( builder.CreateGlobalString( val->value ), type );
 			builder.CreateStore( str, memory );
@@ -353,7 +382,7 @@ namespace exo
 		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
-			BOOST_LOG_TRIVIAL(debug) << "Declaring class \"" << decl->name << "\" in (" << this->getBlockName() << ")";
+			EXO_LOG( debug, "Declaring class \"" << decl->name << "\" in (" << getBlockName() << ")" );
 
 			// if we have a parent, do inherit properties and methods
 			if( decl->parent != "" ) {
@@ -364,22 +393,22 @@ namespace exo
 					EXO_THROW_EXCEPTION( UnknownClass, "Unknown parent class \"" + pName + "\"" );
 				}
 
-				this->properties[ EXO_CLASS( decl->name ) ]			= this->properties[ EXO_CLASS( pName ) ];
-				this->propertyIndex[ EXO_CLASS( decl->name ) ]		= this->propertyIndex[ EXO_CLASS( pName ) ];
-				this->methodIndex[ EXO_CLASS( decl->name ) ]		= this->methodIndex[ EXO_CLASS( pName ) ];
-				this->methods[ EXO_CLASS( decl->name ) ]			= this->methods[ EXO_CLASS( pName ) ];
-				this->vtblSignatures[ EXO_CLASS( decl->name ) ]		= this->vtblSignatures[ EXO_CLASS( pName ) ];
-				this->vtblInitializers[ EXO_CLASS( decl->name ) ]	= this->vtblInitializers[ EXO_CLASS( pName ) ];
+				properties[ EXO_CLASS( decl->name ) ]			= properties[ EXO_CLASS( pName ) ];
+				propertyIndex[ EXO_CLASS( decl->name ) ]		= propertyIndex[ EXO_CLASS( pName ) ];
+				methodIndex[ EXO_CLASS( decl->name ) ]		= methodIndex[ EXO_CLASS( pName ) ];
+				methods[ EXO_CLASS( decl->name ) ]			= methods[ EXO_CLASS( pName ) ];
+				vtblSignatures[ EXO_CLASS( decl->name ) ]		= vtblSignatures[ EXO_CLASS( pName ) ];
+				vtblInitializers[ EXO_CLASS( decl->name ) ]	= vtblInitializers[ EXO_CLASS( pName ) ];
 			}
 
 
 			// generate our properties
 			for( std::vector<exo::ast::DecProp*>::iterator it = decl->block->properties.begin(); it != decl->block->properties.end(); it++ ) {
-				BOOST_LOG_TRIVIAL(trace) << "Property " << (*it)->property->type->name << " $" << (*it)->property->name;
-				this->propertyIndex[ EXO_CLASS( decl->name ) ].push_back( (*it)->property->name );
-				this->properties[ EXO_CLASS( decl->name ) ].push_back( this->getType( (*it)->property->type ) );
+				EXO_LOG( trace, "Property " << (*it)->property->type->name << " $" << (*it)->property->name );
+				propertyIndex[ EXO_CLASS( decl->name ) ].push_back( (*it)->property->name );
+				properties[ EXO_CLASS( decl->name ) ].push_back( getType( (*it)->property->type ) );
 			}
-			llvm::StructType* classStruct = llvm::StructType::create( this->module->getContext(), this->properties[ EXO_CLASS( decl->name ) ], EXO_CLASS( decl->name ) );
+			llvm::StructType* classStruct = llvm::StructType::create( module->getContext(), properties[ EXO_CLASS( decl->name ) ], EXO_CLASS( decl->name ) );
 
 
 			// generate our methods & vtbl
@@ -391,8 +420,8 @@ namespace exo
 				// check if we are redeclaring
 				// TODO: this MUST check method signatures
 				bool reDeclare = false;
-				std::vector<std::string>::iterator it = std::find( this->methodIndex[ EXO_CLASS( decl->name ) ].begin(), this->methodIndex[ EXO_CLASS( decl->name ) ].end(), oName );
-				if( it != this->methodIndex[ EXO_CLASS( decl->name ) ].end() ) {
+				std::vector<std::string>::iterator it = std::find( methodIndex[ EXO_CLASS( decl->name ) ].begin(), methodIndex[ EXO_CLASS( decl->name ) ].end(), oName );
+				if( it != methodIndex[ EXO_CLASS( decl->name ) ].end() ) {
 					reDeclare = true;
 				}
 
@@ -403,52 +432,53 @@ namespace exo
 				// mark position & signature in our vtbl
 				llvm::Function* cMethod = module->getFunction( (*mit)->method->name );
 				if( reDeclare ) {
-					int mIndex = this->getMethodPosition( decl->name, oName );
-					this->methods[ EXO_CLASS( decl->name ) ][mIndex] = cMethod;
-					this->vtblSignatures[ EXO_CLASS( decl->name ) ][mIndex] =  cMethod->getFunctionType()->getPointerTo();
-					this->vtblInitializers[ EXO_CLASS( decl->name ) ][mIndex] = cMethod;
+					int mIndex = getMethodPosition( decl->name, oName );
+					methods[ EXO_CLASS( decl->name ) ][mIndex] = cMethod;
+					vtblSignatures[ EXO_CLASS( decl->name ) ][mIndex] =  cMethod->getFunctionType()->getPointerTo();
+					vtblInitializers[ EXO_CLASS( decl->name ) ][mIndex] = cMethod;
 				} else {
-					this->methodIndex[ EXO_CLASS( decl->name ) ].push_back( oName );
-					this->methods[ EXO_CLASS( decl->name ) ].push_back( cMethod );
-					this->vtblSignatures[ EXO_CLASS( decl->name ) ].push_back( cMethod->getFunctionType()->getPointerTo() );
-					this->vtblInitializers[ EXO_CLASS( decl->name ) ].push_back( cMethod );
+					methodIndex[ EXO_CLASS( decl->name ) ].push_back( oName );
+					methods[ EXO_CLASS( decl->name ) ].push_back( cMethod );
+					vtblSignatures[ EXO_CLASS( decl->name ) ].push_back( cMethod->getFunctionType()->getPointerTo() );
+					vtblInitializers[ EXO_CLASS( decl->name ) ].push_back( cMethod );
 				}
 			}
 
-			llvm::StructType* vtbl = llvm::StructType::create( module->getContext(), this->vtblSignatures[ EXO_CLASS( decl->name ) ], EXO_VTABLE_STRUCT( decl->name ) );
+			llvm::StructType* vtbl = llvm::StructType::create( module->getContext(), vtblSignatures[ EXO_CLASS( decl->name ) ], EXO_VTABLE_STRUCT( decl->name ) );
 			llvm::GlobalVariable* value = new llvm::GlobalVariable( *module, vtbl, false, llvm::GlobalValue::ExternalLinkage, 0, EXO_VTABLE( decl->name ) );
-			value->setInitializer( llvm::ConstantStruct::get( vtbl, this->vtblInitializers[ EXO_CLASS( decl->name ) ] ) );
+			value->setInitializer( llvm::ConstantStruct::get( vtbl, vtblInitializers[ EXO_CLASS( decl->name ) ] ) );
 			return( value );
 		}
 
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating function \"" << decl->name << "\" in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating function \"" << decl->name << "\" in (" << getBlockName() << ")" );
 
 			// build up our argument list
 			std::vector<llvm::Type*> arguments;
 			for( auto &argument : decl->arguments->list ) {
-				arguments.push_back( this->getType( argument->type ) );
-				BOOST_LOG_TRIVIAL(trace) << "Argument "<< " $" << argument->type->name << " $" << argument->name;
+				arguments.push_back( getType( argument->type ) );
+				EXO_DEBUG_LOG( trace, "Argument "<< " $" << argument->type->name << " $" << argument->name );
 			}
 
 			// create a function block for our local variables
 			llvm::Function* function = llvm::Function::Create(
-					llvm::FunctionType::get( this->getType( decl->returnType ),	arguments, decl->hasVaArg ),
+					llvm::FunctionType::get( getType( decl->returnType ),	arguments, decl->hasVaArg ),
 					llvm::GlobalValue::InternalLinkage,
 					decl->name,
-					this->module.get()
+					module.get()
 			);
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), decl->name, function, 0 );
-			this->pushBlock( block, decl->name );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->name, function, 0 );
+			pushBlock( block );
 
 			// create loads for the arguments passed to our function
 			int i = 0;
 			for( auto &argument : function->args() ) {
 				llvm::Value* memory = builder.CreateAlloca( argument.getType() );
 				builder.CreateStore( &argument, memory );
-				this->setBlockSymbol( decl->arguments->list.at( i )->name, memory );
+				setBlockSymbol( decl->arguments->list.at( i )->name, memory );
+				i++;
 			}
 
 			// generate our actual function statements
@@ -457,17 +487,17 @@ namespace exo
 			// sanitize function exit
 			llvm::TerminatorInst* retVal = block->getTerminator();
 			if( retVal == NULL || !llvm::isa<llvm::ReturnInst>(retVal) ) {
-				if( this->getType( decl->returnType )->isVoidTy() ) {
-					BOOST_LOG_TRIVIAL(trace) << "Generating void return in (" << getBlockName() << ")";
+				if( getType( decl->returnType )->isVoidTy() ) {
+					EXO_DEBUG_LOG( trace, "Generating void return in (" << getBlockName() << ")" );
 					builder.CreateRetVoid();
 				} else {
-					BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << getBlockName() << ")";
-					builder.CreateRet( llvm::Constant::getNullValue( this->getType( decl->returnType ) ) );
+					EXO_DEBUG_LOG( trace, "Generating null return in (" << getBlockName() << ")" );
+					builder.CreateRet( llvm::Constant::getNullValue( getType( decl->returnType ) ) );
 				}
 			}
 
 			// pop our block, void local variables
-			this->popBlock();
+			popBlock();
 
 			return( function );
 		}
@@ -475,20 +505,20 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::DecFunProto* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Declaring function prototype \"" << decl->name << "\" in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Declaring function prototype \"" << decl->name << "\" in (" << getBlockName() << ")" );
 
 			std::vector<llvm::Type*> fArgs;
 			for( std::vector<exo::ast::DecVar*>::iterator it = decl->arguments->list.begin(); it != decl->arguments->list.end(); it++ ) {
-				llvm::Type* arg = this->getType( (*it)->type );
-				BOOST_LOG_TRIVIAL(trace) << "Argument $" << (*it)->name;
+				llvm::Type* arg = getType( (*it)->type );
+				EXO_DEBUG_LOG( trace, "Argument $" << (*it)->name );
 				fArgs.push_back( arg );
 			}
 
 			llvm::Function* fun = llvm::Function::Create(
-				llvm::FunctionType::get( this->getType( decl->returnType ), fArgs, decl->hasVaArg ),
+				llvm::FunctionType::get( getType( decl->returnType ), fArgs, decl->hasVaArg ),
 				llvm::GlobalValue::ExternalLinkage,
 				decl->name,
-				this->module.get()
+				module.get()
 			);
 
 			return( fun );
@@ -497,15 +527,15 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::DecVar* decl )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Allocating " << decl->type->name << " $" << decl->name << " on stack in (" << this->getBlockName() << ")";
-			this->setBlockSymbol( decl->name, builder.CreateAlloca( this->getType( decl->type ) ) );
+			EXO_LOG( trace, "Allocating " << decl->type->name << " $" << decl->name << " on stack in (" << getBlockName() << ")" );
+			setBlockSymbol( decl->name, builder.CreateAlloca( getType( decl->type ) ) );
 
 			if( decl->expression ) {
 				std::unique_ptr<exo::ast::OpBinaryAssign> a( new exo::ast::OpBinaryAssign( new exo::ast::ExprVar( decl->name ), decl->expression ) );
 				a->Generate( this );
 			}
 
-			return( this->getBlockSymbol( decl->name ) );
+			return( getBlockSymbol( decl->name ) );
 		}
 
 
@@ -513,7 +543,7 @@ namespace exo
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
 		{
-			return( this->getBlockSymbol( expr->name ) );
+			return( getBlockSymbol( expr->name ) );
 		}
 
 		// FIXME: track if instance property is actually initialized
@@ -526,13 +556,13 @@ namespace exo
 			}
 
 			variable = builder.CreateLoad( variable );
-			int position = this->getPropertyPosition( EXO_OBJECT_CLASSNAME( variable ), expr->name );
+			int position = getPropertyPosition( EXO_OBJECT_CLASSNAME( variable ), expr->name );
 			llvm::Value* idx[] = {
-					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
-					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
+					llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), 0 ),
+					llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), position )
 			};
 
-			BOOST_LOG_TRIVIAL(trace) << "Load property \"" << std::string( EXO_OBJECT_CLASSNAME( variable ) ) << "->" << expr->name << "\"@" << position << " in (" << this->getBlockName() << ")";
+			EXO_LOG( trace, "Load property \"" << std::string( EXO_OBJECT_CLASSNAME( variable ) ) << "->" << expr->name << "\"@" << position << " in (" << getBlockName() << ")" );
 			return( builder.CreateInBoundsGEP( variable, idx, expr->name ) );
 		}
 
@@ -545,34 +575,34 @@ namespace exo
 			llvm::Value* result;
 
 			if( typeid(*op) == typeid( exo::ast::OpBinaryAdd ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating addition in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating addition in (" << getBlockName() << ")" );
 				result = builder.CreateAdd( lhs, rhs, "add" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinarySub ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating substraction in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating substraction in (" << getBlockName() << ")" );
 				result = builder.CreateSub( lhs, rhs, "sub" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryMul ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating multiplication in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating multiplication in (" << getBlockName() << ")" );
 				result = builder.CreateMul( lhs, rhs, "mul" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryDiv ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating division in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating division in (" << getBlockName() << ")" );
 				result = builder.CreateSDiv( lhs, rhs, "div" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLt ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating lower than comparison in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating lower than comparison in (" << getBlockName() << ")" );
 				result = builder.CreateICmpSLT( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLe ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating lower equal comparison in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating lower equal comparison in (" << getBlockName() << ")" );
 				result = builder.CreateICmpSLE( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryGe ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating greater equal comparison in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating greater equal comparison in (" << getBlockName() << ")" );
 				result = builder.CreateICmpSGE( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryGt ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating greater than comparison in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating greater than comparison in (" << getBlockName() << ")" );
 				result = builder.CreateICmpSGT( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryEq ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating is equal comparison in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating is equal comparison in (" << getBlockName() << ")" );
 				result = builder.CreateICmpEQ( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryEq ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating not equal comparison in (" << this->getBlockName() << ")";
+				EXO_DEBUG_LOG( trace, "Generating not equal comparison in (" << getBlockName() << ")" );
 				result = builder.CreateICmpNE( lhs, rhs, "cmp" );
 			} else {
 				EXO_THROW_EXCEPTION( InvalidOp, "Unknown binary operation." );
@@ -589,7 +619,7 @@ namespace exo
 			llvm::Value* variable = assign->lhs->Generate( this );
 			llvm::Value* value = builder.CreateLoad( assign->rhs->Generate( this ) );
 
-			BOOST_LOG_TRIVIAL(trace) << "Assign value type: " << value->getType()->getTypeID() << ", variable type: " << variable->getType()->getPointerElementType ()->getTypeID();
+			EXO_DEBUG_LOG( trace, "Assign value type: " << value->getType()->getTypeID() << ", variable type: " << variable->getType()->getPointerElementType ()->getTypeID() );
 			return( builder.CreateStore( value, variable ) );
 		}
 
@@ -604,14 +634,14 @@ namespace exo
 			llvm::Value* variable = op->rhs->Generate( this );
 
 			if( EXO_IS_OBJECT( variable ) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Deleting $" << var->name << " from heap in (" << this->getBlockName() << ")";
-				llvm::Function* gcfree = this->getCallee( EXO_DEALLOC );
+				EXO_LOG( trace, "Deleting $" << var->name << " from heap in (" << getBlockName() << ")" );
+				llvm::Function* gcfree = getCallee( EXO_DEALLOC );
 				std::vector<llvm::Value*> arguments;
-				arguments.push_back( builder.CreateBitCast( builder.CreateLoad( variable ), this->ptrType ) );
+				arguments.push_back( builder.CreateBitCast( builder.CreateLoad( variable ), ptrType ) );
 				builder.CreateCall( gcfree, arguments );
 			}
 
-			this->delBlockSymbol( var->name );
+			delBlockSymbol( var->name );
 
 			llvm::Value* retval = llvm::ConstantInt::getTrue( llvm::Type::getInt1Ty( module->getContext() ) );
 			llvm::Value* memory = builder.CreateAlloca( retval->getType() );
@@ -632,8 +662,8 @@ namespace exo
 				EXO_THROW_EXCEPTION( UnknownClass, "Unknown class \"" + init->name + "\"" );
 			}
 
-			BOOST_LOG_TRIVIAL(trace) << "Allocating memory for \"" << init->name << "\" on heap in (" << this->getBlockName() << ")";
-			llvm::Function* gcmalloc = this->getCallee( EXO_ALLOC );
+			EXO_LOG( trace, "Allocating memory for \"" << init->name << "\" on heap in (" << getBlockName() << ")" );
+			llvm::Function* gcmalloc = getCallee( EXO_ALLOC );
 
 			std::vector<llvm::Value*> arguments;
 			arguments.push_back( llvm::ConstantExpr::getSizeOf( type ) );
@@ -642,18 +672,18 @@ namespace exo
 			builder.CreateStore( value, memory );
 
 			// call constructor TODO: merge with CallMethod
-			std::vector<std::string>::iterator it = std::find( this->methodIndex[ EXO_CLASS( init->name ) ].begin(), this->methodIndex[ EXO_CLASS( init->name ) ].end(), "__construct" );
-			if( it != this->methodIndex[ EXO_CLASS( init->name ) ].end() ) {
-				int position = this->getMethodPosition( init->name, "__construct" );
+			std::vector<std::string>::iterator it = std::find( methodIndex[ EXO_CLASS( init->name ) ].begin(), methodIndex[ EXO_CLASS( init->name ) ].end(), "__construct" );
+			if( it != methodIndex[ EXO_CLASS( init->name ) ].end() ) {
+				int position = getMethodPosition( init->name, "__construct" );
 				llvm::Value* idx[] = {
-					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), 0 ),
-					llvm::ConstantInt::get( llvm::Type::getInt32Ty( this->module->getContext() ), position )
+					llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), 0 ),
+					llvm::ConstantInt::get( llvm::Type::getInt32Ty( module->getContext() ), position )
 				};
 
-				BOOST_LOG_TRIVIAL(debug) << "Call to \"" << init->name << "->__construct()\"@" << position << " in (" << this->getBlockName() << ")";
-				llvm::Value* vtbl = this->module->getNamedGlobal( EXO_VTABLE( init->name ) );
+				EXO_LOG( debug, "Call to \"" << init->name << "->__construct()\"@" << position << " in (" << getBlockName() << ")" );
+				llvm::Value* vtbl = module->getNamedGlobal( EXO_VTABLE( init->name ) );
 				llvm::Value* callee = builder.CreateLoad( builder.CreateInBoundsGEP( vtbl, idx, init->name ) );
-				llvm::Function* method = this->methods[init->name][position];
+				llvm::Function* method = methods[init->name][position];
 
 				if( method->arg_size() != ( init->arguments->list.size() + 1 ) && !method->isVarArg() ) {
 					EXO_THROW_EXCEPTION( InvalidCall, "Expected arguments mismatch for \"" + init->name + "->__construct()\"!" );
@@ -662,7 +692,7 @@ namespace exo
 				std::vector<llvm::Value*> arguments;
 				llvm::Function::arg_iterator ait = method->arg_begin();
 				if( EXO_OBJECT_CLASSNAME( ait ) != init->name ) {
-					BOOST_LOG_TRIVIAL(trace) << "Cast " << init->name << " to " << std::string( EXO_OBJECT_CLASSNAME( ait ) ) << " in (" << this->getBlockName() << ")";
+					EXO_LOG( debug, "Cast " << init->name << " to " << std::string( EXO_OBJECT_CLASSNAME( ait ) ) << " in (" << getBlockName() << ")" );
 					arguments.push_back( builder.CreateBitCast( value, ait->getType() ) );
 				} else {
 					arguments.push_back( value );
@@ -678,73 +708,95 @@ namespace exo
 			return( memory );
 		}
 
-
-
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtBreak* stmt )
 		{
-			llvm::BasicBlock* exitBlock = this->getBlockExit();
+			llvm::BasicBlock* exitBlock = getBlockExit();
 			if( exitBlock == NULL ) {
-				EXO_THROW_EXCEPTION( InvalidBreak, "Can not break in (" + this->getBlockName() + ")" );
+				EXO_THROW_EXCEPTION( InvalidBreak, "Can not break in (" + getBlockName() + ")" );
 			}
 
-			BOOST_LOG_TRIVIAL(trace) << "Generating break statement in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating break statement in (" << getBlockName() << ")" );
 			return( builder.CreateBr( exitBlock ) );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtFor* stmt )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating for statement in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating for statement in (" << getBlockName() << ")" );
 
-			llvm::BasicBlock* forBlock = llvm::BasicBlock::Create( this->module->getContext(), "for", this->getBlock()->getParent(), 0 );
-			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
+			// setup basic blocks for loop statments and exit
+			llvm::Function* scope = getBlock()->getParent();
+			llvm::BasicBlock* forBlock = llvm::BasicBlock::Create( module->getContext(), "for", scope );
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( module->getContext(), "continue" );
 
-			// (re)declare loop variables, for that we need parent symbols
-			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
-			for( std::vector<exo::ast::DecVar*>::iterator it = stmt->initialization->list.begin(); it != stmt->initialization->list.end(); it++ ) {
-				(*it)->Generate( this );
+			// store parent scope variables
+			std::map<std::string,llvm::Value*>& blockSymbols = getBlockSymbols();
+
+			// initialize loop variables
+			for( auto &statement : stmt->initialization->list ) {
+				statement->Generate( this );
 			}
 			builder.CreateBr( forBlock );
 
 			// keep track of our exit/continue block
-			this->pushBlock( forBlock, "for", contBlock );
-			this->getBlockSymbols() = blockSymbols;
+			pushBlock( forBlock, contBlock );
+			getBlockSymbols() = blockSymbols;
 
+			// generate our for loop statements
 			llvm::Value* condition = stmt->expression->Generate( this );
 			stmt->block->Generate( this );
 
-			// calculate update expressions on loop end
-			for( std::vector<exo::ast::Expr*>::iterator it = stmt->update->list.begin(); it != stmt->update->list.end(); it++ ) {
-				(*it)->Generate( this );
+			// update loop variables
+			for( auto &statement : stmt->update->list ) {
+				// flow might have been altered by i.e. a break
+				if( getBlock()->getTerminator() == NULL ) {
+					statement->Generate( this );
+				}
 			}
 
-			// flow might have been altered
-			if( this->getBlock()->getTerminator() == NULL ) {
+			// flow might have been altered by i.e. a break
+			if( getBlock()->getTerminator() == NULL ) {
+				// branch into loop again
 				builder.CreateCondBr( builder.CreateLoad( condition ), forBlock, contBlock );
 			}
 
-			this->popBlock();
-			this->builder.SetInsertPoint( contBlock );
+			popBlock();
+
+			scope->getBasicBlockList().push_back( contBlock );
+			pushBlock( contBlock );
+			getBlockSymbols() = blockSymbols;
+
 			return( condition );
 		}
 
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating expression statement in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating expression statement in (" << getBlockName() << ")" );
+
 			return( stmt->expression->Generate( this ) );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
 		{
-			llvm::BasicBlock* ifBlock = llvm::BasicBlock::Create( this->module->getContext(), "if", this->getBlock()->getParent(), 0 );
+			EXO_DEBUG_LOG( trace, "Generating if statement in (" << getBlockName() << ")" );
+
+			// setup basic blocks for if, else and exit
+			llvm::Function* scope = getBlock()->getParent();
+			llvm::BasicBlock* ifBlock = llvm::BasicBlock::Create( module->getContext(), "if", scope );
 			llvm::BasicBlock* elseBlock;
 			if( stmt->onFalse != NULL ) {
-				elseBlock = llvm::BasicBlock::Create( this->module->getContext(), "else", this->getBlock()->getParent(), 0 );
+				elseBlock = llvm::BasicBlock::Create( module->getContext(), "else" );
 			}
-			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( module->getContext(), "continue" );
 
+			// evaluate our if expression
 			llvm::Value* condition = stmt->expression->Generate( this );
+
+			// store parent scope variables
+			std::map<std::string,llvm::Value*>& blockSymbols = getBlockSymbols();
 
 			// if we have no else block, we can directly branch to exit/continue block
 			if( stmt->onFalse == NULL ) {
@@ -753,85 +805,103 @@ namespace exo
 				builder.CreateCondBr( builder.CreateLoad( condition ), ifBlock, elseBlock );
 			}
 
-			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
-
-			BOOST_LOG_TRIVIAL(trace) << "Generating if statement in (" << this->getBlockName() << ")";
-
-			this->pushBlock( ifBlock, "if" );
-			this->getBlockSymbols() = blockSymbols;
+			// generate our if statements, inherit parent scope variables
+			pushBlock( ifBlock );
+			getBlockSymbols() = blockSymbols;
 			stmt->onTrue->Generate( this );
 
-			// flow might have been altered
-			if( this->getBlock()->getTerminator() == NULL ) {
+			// flow might have been altered by i.e. a break
+			if( getBlock()->getTerminator() == NULL ) {
 				builder.CreateBr( contBlock );
 			}
 
-			this->popBlock();
+			popBlock();
 
+			// generate our else statements
 			if( stmt->onFalse != NULL ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating else statement in (" << this->getBlockName() << ")";
-				this->pushBlock( elseBlock, "else" );
-				this->getBlockSymbols() = blockSymbols;
+				EXO_DEBUG_LOG( trace, "Generating else statement in (" << getBlockName() << ")" );
+
+				scope->getBasicBlockList().push_back( elseBlock );
+				pushBlock( elseBlock );
+				getBlockSymbols() = blockSymbols;
 				stmt->onFalse->Generate( this );
 
-				// flow might have been altered
-				if( this->getBlock()->getTerminator() == NULL ) {
+				// flow might have been altered by i.e. a break
+				if( getBlock()->getTerminator() == NULL ) {
 					builder.CreateBr( contBlock );
 				}
 
-				this->popBlock();
+				popBlock();
 			}
 
-			this->builder.SetInsertPoint( contBlock );
+			scope->getBasicBlockList().push_back( contBlock );
+			pushBlock( contBlock );
+			getBlockSymbols() = blockSymbols;
+
 			return( condition );
 		}
 
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtWhile* stmt )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating while statement in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating while statement in (" << getBlockName() << ")" );
 
-			llvm::BasicBlock* whileBlock = llvm::BasicBlock::Create( this->module->getContext(), "while", this->getBlock()->getParent(), 0 );
-			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( this->module->getContext(), "continue", this->getBlock()->getParent(), 0 );
+			// setup basic blocks for condition check, while loop and exit
+			llvm::Function* scope = getBlock()->getParent();
+			llvm::BasicBlock* conditionBlock = llvm::BasicBlock::Create( module->getContext(), "while", scope );
+			llvm::BasicBlock* whileBlock = llvm::BasicBlock::Create( module->getContext(), "loop" );
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( module->getContext(), "continue" );
 
-			// check condition at the start of the loop
+			// branch into check condition
+			builder.CreateBr( conditionBlock );
+
+			// store & inherit parent scope variables
+			std::map<std::string,llvm::Value*>& blockSymbols = getBlockSymbols();
+			pushBlock( conditionBlock );
+			getBlockSymbols() = blockSymbols;
+
+			// check if we (still) execute our while loop
 			llvm::Value* condition = stmt->expression->Generate( this );
 			builder.CreateCondBr( builder.CreateLoad( stmt->expression->Generate( this ) ), whileBlock, contBlock );
 
-			std::map<std::string,llvm::Value*>& blockSymbols = this->getBlockSymbols();
-
+			// execute main loop
+			scope->getBasicBlockList().push_back( whileBlock );
 			// keep track of our exit/continue block
-			this->pushBlock( whileBlock, "while", contBlock );
-			this->getBlockSymbols() = blockSymbols;
-
+			pushBlock( whileBlock, contBlock );
+			getBlockSymbols() = blockSymbols;
 			stmt->block->Generate( this );
 
-			// flow might have been altered
-			if( this->getBlock()->getTerminator() == NULL ) {
-				// recheck condition at the end of loop
-				condition = stmt->expression->Generate( this );
-				builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
+			// flow might have been altered (i.e. break)
+			if( getBlock()->getTerminator() == NULL ) {
+				// branch into check condition to see if we enter loop another time
+				builder.CreateBr( conditionBlock );
 			}
 
-			this->popBlock();
-			this->builder.SetInsertPoint( contBlock );
+			popBlock();
+
+			scope->getBasicBlockList().push_back( contBlock );
+			pushBlock( contBlock );
+			getBlockSymbols() = blockSymbols;
+
 			return( condition );
 		}
 
 		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
-			BOOST_LOG_TRIVIAL(trace) << "Generating return statement in (" << this->getBlockName() << ")";
+			EXO_DEBUG_LOG( trace, "Generating return statement in (" << getBlockName() << ")" );
+
 			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
 		}
 
-
+		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
 		{
-			std::vector<exo::ast::Stmt*>::iterator it;
-			llvm::Value *last = NULL;
+			EXO_DEBUG_LOG( trace, "Generating " << stmts->list.size() << " statement(s) in (" << getBlockName() << ")" );
 
-			for( it = stmts->list.begin(); it != stmts->list.end(); it++ ) {
-				last = (*it)->Generate( this );
+			llvm::Value *last = NULL;
+			for( auto &stmt : stmts->list ) {
+				last = stmt->Generate( this );
 			}
 
 			return( last );
@@ -846,27 +916,27 @@ namespace exo
 			/*
 			 * register essential externals
 			 */
-			fArgs.push_back( this->intType );
-			llvm::Function::Create( llvm::FunctionType::get( this->ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_ALLOC, this->module.get() );
+			fArgs.push_back( intType );
+			llvm::Function::Create( llvm::FunctionType::get( ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_ALLOC, module.get() );
 
 			fArgs.clear();
-			fArgs.push_back( this->ptrType );
-			llvm::Function::Create( llvm::FunctionType::get( this->voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, this->module.get() );
+			fArgs.push_back( ptrType );
+			llvm::Function::Create( llvm::FunctionType::get( voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, module.get() );
 
 			/*
 			 * this is main()
 			 */
-			this->entry = llvm::Function::Create( llvm::FunctionType::get( this->intType, false ), llvm::GlobalValue::InternalLinkage, this->name, this->module.get() );
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( this->module->getContext(), "entry", this->entry, 0 );
+			entry = llvm::Function::Create( llvm::FunctionType::get( intType, false ), llvm::GlobalValue::InternalLinkage, name, module.get() );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), name, entry, 0 );
 
-			pushBlock( block, this->name );
+			pushBlock( block );
 
 			Generate( tree->stmts );
 
 			llvm::TerminatorInst* retVal = block->getTerminator();
 			if( retVal == NULL || !llvm::isa<llvm::ReturnInst>(retVal) ) {
-				BOOST_LOG_TRIVIAL(trace) << "Generating null return in (" << this->name << ")";
-				retVal = this->builder.CreateRet( llvm::ConstantInt::get( this->intType, 0 ) );
+				EXO_DEBUG_LOG( trace, "Generating null return in (" << name << ")" );
+				retVal = builder.CreateRet( llvm::ConstantInt::get( intType, 0 ) );
 			}
 
 			popBlock();
