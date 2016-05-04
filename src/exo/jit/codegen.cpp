@@ -931,7 +931,9 @@ namespace exo
 
 			pushBlock( block );
 
-			Generate( tree->stmts );
+			if( tree->stmts != NULL ) {
+				Generate( tree->stmts );
+			}
 
 			llvm::TerminatorInst* retVal = block->getTerminator();
 			if( retVal == NULL || !llvm::isa<llvm::ReturnInst>(retVal) ) {

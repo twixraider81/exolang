@@ -68,9 +68,11 @@
 %right		T_NEW T_DELETE.
 
 
-/* a program is build out of statements. */
+/* a program is build out of statements. or is empty */
 program ::= stmts(s). {
 	ast->stmts = s;
+}
+program ::= . {
 }
 
 
