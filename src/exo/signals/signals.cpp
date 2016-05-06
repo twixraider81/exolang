@@ -67,7 +67,7 @@ namespace exo
 			sa.sa_sigaction = sigsegHandler;
 			sa.sa_flags = SA_SIGINFO;
 
-			if( sigaction( SIGSEGV, &sa, NULL ) == -1 ) {
+			if( sigaction( SIGSEGV, &sa, nullptr ) == -1 ) {
 				EXO_LOG( warning, "Failed to register segementation fault handler!" );
 			}
 
@@ -77,7 +77,7 @@ namespace exo
 			sa.sa_sigaction = sigtermHandler;
 			sa.sa_flags = SA_SIGINFO;
 
-			if( sigaction( SIGTERM, &sa, NULL ) == -1 || sigaction( SIGINT, &sa, NULL ) == -1 || sigaction( SIGABRT, &sa, NULL ) == -1  ) {
+			if( sigaction( SIGTERM, &sa, nullptr ) == -1 || sigaction( SIGINT, &sa, nullptr ) == -1 || sigaction( SIGABRT, &sa, nullptr ) == -1  ) {
 				EXO_LOG( warning, "Failed to register sigterm,sigint,sigabrt handler!" );
 			}
 		}

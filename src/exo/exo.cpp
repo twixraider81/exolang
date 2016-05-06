@@ -106,13 +106,13 @@ int main( int argc, char **argv )
 			exit( 1 );
 		}
 
-		std::unique_ptr<exo::ast::Tree> ast( new exo::ast::Tree() );
+		std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>();
 		ast->Parse( input, target );
 
-		std::unique_ptr<exo::jit::Codegen> generator( new exo::jit::Codegen( "main", target ) );
+		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( "main", target );
 		generator->Generate( ast.get() );
 
-		std::unique_ptr<exo::jit::JIT> jit( new exo::jit::JIT( generator.get(), optimize ) );
+		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( generator.get(), optimize );
 
 		if( !commandLine.count( "emit" ) ) {
 			retval = jit->Execute();

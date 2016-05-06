@@ -367,6 +367,7 @@ namespace exo
 		 * %__vtbl_%className { a global instance of the vtbl structure with approriate method pointers }
 		 * %className { a structure with all own + inherited properties }
 		 * TODO: how do we overwrite methods & properties in a proper way?
+		 * FIXME: get rid of globalvariable
 		 */
 		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
 		{
