@@ -74,10 +74,15 @@ namespace exo
 				return( -1 );
 			}
 
+			jit->finalizeObject();
+
 			EXO_LOG( trace, "Running main." );
 			int( *jitMain )() = (int(*)())jit->getFunctionAddress( "main" );
 			int retval = jitMain();
 			EXO_LOG( trace, "Finished." );
+
+			delete jit;
+
 			return( retval );
 		}
 
@@ -88,7 +93,7 @@ namespace exo
 			std::string buffer;
 			llvm::raw_string_ostream bStream( buffer );
 
-			generator->module->print( bStream, NULL );
+			generator->module->print( bStream, nullptr );
 
 			std::cout << bStream.str();
 

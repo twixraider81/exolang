@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		OpBinaryMul::OpBinaryMul( Expr* a, Expr* b ) : OpBinary( a, b )
+		OpBinaryMul::OpBinaryMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) )
 		{
 		}
 	}

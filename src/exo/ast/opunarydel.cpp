@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		OpUnaryDel::OpUnaryDel( Expr* a ) : OpUnary( a )
+		OpUnaryDel::OpUnaryDel( std::unique_ptr<Expr> e ) : OpUnary( std::move(e) )
 		{
 		}
 	}

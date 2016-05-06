@@ -20,7 +20,7 @@
  * POINTERCHECK is a little assert MACRO to check for null pointers. Should use nullptr instead?
  */
 #ifdef EXO_DEBUG
-# define POINTERCHECK(p)			if(p == NULL) BOOST_LOG_TRIVIAL(error) << "Invalid pointer! In " << __FILE__ << " on " << __LINE__
+# define POINTERCHECK(p)			if(p == nullptr) BOOST_LOG_TRIVIAL(error) << "Invalid pointer! In " << __FILE__ << " on " << __LINE__
 # define EXO_DEBUG_LOG(lvl, ...)	BOOST_LOG_TRIVIAL(lvl) << __VA_ARGS__;
 #else
 # define POINTERCHECK(p)

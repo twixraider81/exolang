@@ -19,13 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFun::DecFun( std::string n, Type* rType, DecList* vArgs, StmtList* cBlock, bool va ) : DecFunProto( n, rType, vArgs, va ), stmts( cBlock )
+		DecFun::DecFun( std::string n, std::unique_ptr<Type> t, std::unique_ptr<DecList> a, std::unique_ptr<StmtList> b, bool va ) :
+				DecFunProto( std::move(n), std::move(t), std::move(a), va ),
+				stmts( std::move(b) )
 		{
-		}
-
-		DecFun::~DecFun()
-		{
-			delete stmts;
 		}
 	}
 }

@@ -48,7 +48,7 @@ done
 
 
 # check for required tools
-TOOLS="curl gcc cc tar unzip python make bison flex cmake ninja"
+TOOLS="curl gcc g++ cc tar unzip python make bison flex cmake ninja"
 for TOOL in $TOOLS; do
 	if ! which "$TOOL"; then
 		echo "$TOOL not found; exiting"
@@ -84,9 +84,13 @@ cd "$TMPDIR"
 if ! test -f "$BINDIR/lemon/lemon"; then
 	mkdir -p "$BINDIR/lemon"
 	cd "$BINDIR/lemon"
-	test -d "lempar.c" || curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=404ea3dc27dbeed343f0e61b1d36e97b9f5f0fb6"
-	test -d "lemon.c" || curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=cfbfe061a4b2766512f6b484882eee2c86a14506"
-	gcc -o lemon lemon.c
+	#test -d "lempar.c" || curl -v -L -o "lempar.c" "https://www.sqlite.org/src/raw/tool/lempar.c?name=404ea3dc27dbeed343f0e61b1d36e97b9f5f0fb6"
+	#test -d "lemon.c" || curl -v -L -o "lemon.c" "https://www.sqlite.org/src/raw/tool/lemon.c?name=cfbfe061a4b2766512f6b484882eee2c86a14506"
+	#gcc -o lemon lemon.c
+
+	test -d "lempar.cpp" || curl -v -L -o "lempar.cpp" "https://raw.githubusercontent.com/ksherlock/lemon--/master/lempar.cpp"
+	test -d "lemon.c" || curl -v -L -o "lemon.c" "https://raw.githubusercontent.com/ksherlock/lemon--/master/lemon.c"
+	g++ -std=c++14 -Wno-write-strings -DLEMONPLUSPLUS=1 -o lemon lemon.c
 
 	if [ "$KEEP" == "0" ]; then
 		rm -f lemon.c

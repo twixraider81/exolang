@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		OpBinaryGt::OpBinaryGt( Expr* a, Expr* b ) : OpBinary( a, b )
+		OpBinaryGt::OpBinaryGt( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) )
 		{
 		}
 	}

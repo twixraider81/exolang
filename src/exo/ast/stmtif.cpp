@@ -19,17 +19,12 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtIf::StmtIf( Expr* expr, StmtList* t, StmtList* f ) : StmtExpr( expr ), onTrue( t ), onFalse( f )
+		StmtIf::StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<StmtList> t, std::unique_ptr<StmtList> f ) : StmtExpr( std::move( e ) ), onTrue( std::move( t ) ), onFalse( std::move( f ) )
 		{
 		}
 
-		StmtIf::~StmtIf()
+		StmtIf::StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<StmtList> t ) : StmtExpr( std::move( e ) ), onTrue( std::move( t ) )
 		{
-			delete onTrue;
-
-			if( onFalse != NULL ) {
-				delete onFalse;
-			}
 		}
 	}
 }

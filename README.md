@@ -41,19 +41,28 @@ After the build is complete, the binary will reside under build/exolang. To run 
 build/exolang examples/helloworld.exo
 
 You can check the available command line options via:
+
 build/exolang -h
 
 I.e. run a script and get verbose trace:
+
 build/exolang -s 1 examples/helloworld.exo
 
 waf has a few extra commands at your disposal. Check:
+
 ./waf --help
 
 To start gdb and load a script
+
 ./waf --gdb=src/tests/object.exo
 
 To start valgrind/memcheck and load a script
+
 ./waf --memcheck=src/tests/object.exo
+
+To run all test scripts
+
+./waf --runtests
 
 Examples
 --------
@@ -62,6 +71,8 @@ Take a look at the examples directory. It contains pointers on syntax and constr
 Thanks & 3rd Party licenses
 ---------------------------
 Lemon parser generator	- <http://www.hwaci.com/sw/lemon/>
+
+ksherlock Lemon C++ Updates	- <https://github.com/ksherlock/lemon-->
 
 Quex lexer generator	- <http://quex.sourceforge.net/>
 

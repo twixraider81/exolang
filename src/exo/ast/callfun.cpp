@@ -19,13 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		CallFun::CallFun( std::string n, ExprList* a ) : name( n ), arguments( a )
+		CallFun::CallFun( std::string n, std::unique_ptr<ExprList> a ) : name( n ), arguments( std::move(a) )
 		{
-		}
-
-		CallFun::~CallFun()
-		{
-			delete arguments;
 		}
 	}
 }

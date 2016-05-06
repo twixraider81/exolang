@@ -45,6 +45,7 @@ namespace exo
 
 		class OpBinary;
 		class OpBinaryAssign;
+		class OpBinaryAssignShort;
 
 		class OpUnaryDel;
 		class OpUnaryNew;
@@ -89,7 +90,7 @@ namespace exo
 			    ~Codegen();
 
 			    void 				popBlock();
-			    void 				pushBlock( llvm::BasicBlock* block, llvm::BasicBlock* eblock = NULL );
+			    void 				pushBlock( llvm::BasicBlock* block, llvm::BasicBlock* eblock = nullptr );
 			    llvm::BasicBlock*	getBlock();
 			    llvm::BasicBlock*	getBlockExit();
 			    std::string			getBlockName();
@@ -123,6 +124,7 @@ namespace exo
 
 			    llvm::Value* Generate( exo::ast::OpBinary* op );
 			    llvm::Value* Generate( exo::ast::OpBinaryAssign* op );
+			    llvm::Value* Generate( exo::ast::OpBinaryAssignShort* op );
 
 			    llvm::Value* Generate( exo::ast::OpUnaryDel* op );
 			    llvm::Value* Generate( exo::ast::OpUnaryNew* op );

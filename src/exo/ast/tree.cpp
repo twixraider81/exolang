@@ -13,14 +13,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/ast/tree.h"
 #include "exo/ast/nodes.h"
+#include "exo/lexer/lexer"
+
+/* lemon doesn't define its protos */
+void* ParseAlloc( void *(*mallocProc)(size_t) );
+void  ParseFree( void *p, void (*freeProc)(void*) );
+void  Parse( void *yyp, int yymajor, std::unique_ptr<quex::Token> yyminor, exo::ast::Tree* ast );
+void  ParseTrace( FILE *stream, char* zPrefix );
 
 namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree() : stmts( NULL ), fileName( "?" )
+		Tree::Tree() : stmts( std::make_unique<exo::ast::StmtList>() ), fileName( "?" )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );
@@ -28,7 +34,7 @@ namespace exo
 			parser = ::ParseAlloc( malloc );
 #endif
 
-			if( parser == NULL ) {
+			if( parser == nullptr ) {
 				EXO_THROW_EXCEPTION( OutOfMemory, "Out of memory." );
 			}
 
@@ -45,10 +51,6 @@ namespace exo
 #else
 			::ParseFree( parser, free );
 #endif
-
-			if( stmts != NULL ) {
-				delete stmts;
-			}
 		}
 
 		void Tree::Parse( std::string fName, std::string target )
@@ -63,16 +65,16 @@ namespace exo
 			EXO_LOG( debug, "Opening <" << fileName << ">" );
 
 			// this is a pointer to a region in the buffer, no need to alloc
-			quex::Token* currentToken = NULL;
+			quex::Token* currentToken = nullptr;
 
 			quex::lexer lexer( fileName );
 			lexer.receive( &currentToken );
 			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
-				::Parse( parser, currentToken->type_id(), new quex::Token( *currentToken ), this );
+				::Parse( parser, currentToken->type_id(), std::make_unique<quex::Token>( *currentToken ), this );
 				lexer.receive( &currentToken );
 			}
 
-			::Parse( parser, 0, currentToken, this );
+			::Parse( parser, 0, nullptr, this );
 		}
 	}
 }

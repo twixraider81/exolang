@@ -19,17 +19,12 @@ namespace exo
 {
 	namespace ast
 	{
-		DecClass::DecClass( std::string n, std::string p, ClassBlock* b ) : name( n ), block( b ), parent( p )
+		DecClass::DecClass( std::string n, std::string p, std::unique_ptr<ClassBlock> b ) : name( n ), block( std::move(b) ), parent( p )
 		{
 		}
 
-		DecClass::DecClass( std::string n, ClassBlock* b ) : name( n ), block( b ), parent( "" )
+		DecClass::DecClass( std::string n, std::unique_ptr<ClassBlock> b ) : name( n ), block( std::move(b) ), parent( "" )
 		{
-		}
-
-		DecClass::~DecClass()
-		{
-			delete block;
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		OpBinaryNeq::OpBinaryNeq( Expr* a, Expr* b ) : OpBinary( a, b )
+		OpBinaryNeq::OpBinaryNeq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) )
 		{
 		}
 	}

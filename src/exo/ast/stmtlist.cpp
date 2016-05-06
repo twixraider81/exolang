@@ -22,9 +22,5 @@ namespace exo
 		StmtList::StmtList()
 		{
 		}
-
-		StmtList::~StmtList()
-		{
-		}
 	}
 }

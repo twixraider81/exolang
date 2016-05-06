@@ -19,13 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		CallMethod::CallMethod( std::string n, Expr* e, ExprList* a ) : CallFun( n, a ), expression( e )
+		CallMethod::CallMethod( std::string n, std::unique_ptr<Expr> e, std::unique_ptr<ExprList> a ) : CallFun( n, std::move(a) ), expression( std::move(e) )
 		{
-		}
-
-		CallMethod::~CallMethod()
-		{
-			delete expression;
 		}
 	}
 }

@@ -19,14 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		DecMethod::DecMethod( DecFun* m, ModAccess* a ) : access( a ), method( m )
+		DecMethod::DecMethod( std::unique_ptr<DecFun> m, std::unique_ptr<ModAccess> a ) : access( std::move(a) ), method( std::move(m) )
 		{
-		}
-
-		DecMethod::~DecMethod()
-		{
-			delete method;
-			delete access;
 		}
 	}
 }

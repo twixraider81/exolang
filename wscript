@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, sys, re, platform, pipes, pprint
+import os, subprocess, sys, re, platform, pipes, pprint, glob
 
 from waflib import Build, Options, Context, Scripting, Utils, Task, TaskGen
 from waflib.ConfigSet import ConfigSet
@@ -35,6 +35,7 @@ def options( opt ):
 	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug purposes only, it will make us leak!' )
 	opt.add_option( '--gdb', type="string", default='', dest='gdb', help = 'load the specified script and run it with gdb' )
 	opt.add_option( '--memcheck', type="string", default='', dest='memcheck', help = 'load the specified script and run it with valgrind memcheck' )
+	opt.add_option( '--runtests', action='store_true', default='', dest='runtests', help = 'run all test scripts' )
 
 # configure
 def configure( conf ):
@@ -195,10 +196,18 @@ def build( bld ):
 		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.memcheck
 		subprocess.call( cmd, shell=True )
 
+	if Options.options.runtests:
+		for file in glob.glob( SRCDIR + "tests/*.exo"):
+			try:
+				subprocess.check_output( [BUILDDIR + '/exolang', '-i', os.path.abspath( file ) ] )
+				print "\033[90mPassed: " + file
+			except subprocess.CalledProcessError as e:
+				print "\033[91mFailed: " + file
+
 # (re)create parser
 def buildparser( ctx ):
 	"Recreate Parser (needs lemon binary)"
-	subprocess.call( BINDIR + 'lemon/lemon -l -s ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.y; mv -f ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.c ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.cpp; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h', shell=True )
+	subprocess.call( BINDIR + 'lemon/lemon -T' + BINDIR + 'lemon/lempar.cpp -l -s ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.y; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h', shell=True )
 
 # (re)create lexer
 def buildlexer( ctx ):

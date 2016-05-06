@@ -19,13 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtExpr::StmtExpr( Expr* expr ) : expression( expr )
+		StmtExpr::StmtExpr( std::unique_ptr<Expr> e ) : expression( std::move( e ) )
 		{
-		}
-
-		StmtExpr::~StmtExpr()
-		{
-			delete expression;
 		}
 	}
 }

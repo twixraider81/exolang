@@ -15,7 +15,7 @@
 
 // include internal stuff
 #include "exo/exo.h"
-#include "exo/ast/tree.h"
+#include "exo/ast/nodes.h"
 #include "exo/jit/jit.h"
 #include "exo/jit/codegen.h"
 #include "exo/init/init.h"
