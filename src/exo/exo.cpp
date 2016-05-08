@@ -108,7 +108,7 @@ int main( int argc, char **argv )
 
 		boost::filesystem::path absolutePath( input );
 		boost::filesystem::path fileName = absolutePath.filename();
-		std::string moduleName = fileName.stem().string();
+		std::string moduleName = "exo-module-" + fileName.stem().string();
 
 		// create our target information
 		std::unique_ptr<exo::jit::Target> target = std::make_unique<exo::jit::Target>( archName, cpuName, optimizeLvl );
