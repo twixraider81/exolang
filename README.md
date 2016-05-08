@@ -3,28 +3,57 @@ exolang
 
 Goal
 ----
-The aim is to develop a jiting/compiling rapid prototyping "script" language.
-It will be jit-compiled via LLVM.
+The aim for exolang is to develop into a jiting/compiling rapid prototyping "script" language, using LLVM for its code generation.
 
-Prerequisites
+
+Quickstart
+-----
+After the build is complete, the binary will reside under build/exolang.
+You can check the all command line options via:
+
+./build/exolang -h
+
+
+
+Here are some examples:
+
+Run the helloworld script:
+
+./build/exolang examples/helloworld.exo
+
+Run the helloworld script and get a debug trace:
+
+./build/exolang -l2 examples/helloworld.exo
+
+Compile the script, and display the resulting LLVM IR:
+
+./build/exolang -e -i examples/helloworld.exo
+
+Compile the script with the LLVM C++ Backend (will result in C++ Code as helloworld.s):
+
+./build/exolang -t cpp -S -i examples/helloworld.exo 
+
+
+Build prerequisites
 -------------
-I develop on a Debian system. In order to install the prerequisites there, it's suffice to do:
+I develop on a Debian system. In order to install the prerequisites there, it should be suffice to do:
 
 apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind libunwind8-dev libedit-dev swig ninja-build
 
-You will need atleast boost 1.54. Next call the bootstrap script:
-
-./bootstrap.sh
-
-This will to build the lemon parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
-The bootstrap script can also build LLVM with RTTI, do do that use bootstrap as follows.
+Next call the bootstrap script:
 
 ./bootstrap.sh -vl
+
+This will attempt to build the lemon-- parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
+As we need a fairly recent LLVM build, the bootstrap script will also build LLVM with RTTI. This will take quite some time.
+
+./bootstrap.sh
 
 - -c : force cleanup (delete downloaded folders)
 - -l : build llvm
 - -v : verbose, print what the script is doing
 - -k : keep, keep downloaded and temorary files
+
 
 Building
 --------
@@ -35,19 +64,6 @@ Next configure the build. For now since it's under heavy development:
 After that start the build process via:
 
 ./waf buildparser buildlexer build
-
-Usage
------
-After the build is complete, the binary will reside under build/exolang. To run a script do for example:
-build/exolang examples/helloworld.exo
-
-You can check the available command line options via:
-
-build/exolang -h
-
-I.e. run a script and get verbose trace:
-
-build/exolang -l1 examples/helloworld.exo
 
 waf has a few extra commands at your disposal. Check:
 
@@ -65,9 +81,11 @@ To run all test scripts
 
 ./waf --runtests
 
+
 Examples
 --------
-Take a look at the examples directory. It contains pointers on syntax and constructs while i am working on a proper documentation.
+Take a look at the examples subdirectory.
+
 
 Thanks & 3rd Party licenses
 ---------------------------
