@@ -37,7 +37,7 @@ namespace exo
 			//passManager.add( llvm::createCFGSimplificationPass() );
 
 			llvm::legacy::FunctionPassManager fpassManager( module.get() );
-			fpassManager.add( llvm::createVerifierPass() );
+			//fpassManager.add( llvm::createVerifierPass() );
 
 			llvm::PassManagerBuilder builder;
 			builder.OptLevel = target->codeGenOpt; // FIXME: this should be uint
@@ -61,7 +61,7 @@ namespace exo
 
 		int JIT::Execute( std::string fName )
 		{
-			std::string buffer = "";
+			std::string buffer;
 			llvm::raw_string_ostream bStream( buffer );
 
 			if( !target->targetMachine->getTarget().hasJIT() ) {
@@ -70,6 +70,12 @@ namespace exo
 
 			passManager.run( *module );
 			if( llvm::verifyModule( *module, &bStream ) ) {
+#ifdef EXO_DEBUG
+				std::string moduleContents;
+				llvm::raw_string_ostream mStream( moduleContents );
+				module->print( mStream, nullptr, false, true );
+				EXO_DEBUG_LOG( trace, mStream.str() );
+#endif
 				EXO_THROW_EXCEPTION( LLVM, bStream.str() );
 			}
 
