@@ -1,5 +1,0 @@
-int function printf( string $str ... );
-
-for( int $i = 0; $i < 500000; $i += 1 ) {
-	printf( "%d ", $i );
-};
