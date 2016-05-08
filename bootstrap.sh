@@ -172,6 +172,10 @@ if [ ! -f "waf" ]; then
 fi
 
 
+# i need this for my IDE, ugh
+test -d "$BINDIR/usr-include" || ln -s "/usr/include" "$BINDIR/usr-include"
+
+
 if [ "$KEEP" == "0" ]; then
 	rm -vrf "$TMPDIR"
 fi
