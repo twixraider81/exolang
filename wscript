@@ -203,7 +203,7 @@ def build( bld ):
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.runtests:
-		for file in glob.glob( SRCDIR + "tests/*.exo"):
+		for file in sorted(glob.glob( SRCDIR + "tests/*.exo")):
 			try:
 				subprocess.check_output( [BUILDDIR + '/exolang', '-i', os.path.abspath( file ) ] )
 				print "\033[90mPassed: " + file
