@@ -26,7 +26,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree() : stmts( std::make_unique<exo::ast::StmtList>() ), fileName( "?" )
+		Tree::Tree() : stmts( std::make_unique<exo::ast::StmtList>() ), fileName( "?" ), currentLineNo( 0 ), currentColumnNo( 0 )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );
@@ -40,7 +40,7 @@ namespace exo
 
 #ifndef NDEBUG
 			// will get rerouted via preprocessor to boost::log
-			::ParseTrace( stdout, (char*)banner.c_str() );
+			::ParseTrace( stdout, (char*)"" );
 #endif
 		}
 
@@ -70,6 +70,8 @@ namespace exo
 			quex::lexer lexer( fileName );
 			lexer.receive( &currentToken );
 			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
+				this->currentLineNo = currentToken->line_number();
+				this->currentColumnNo = currentToken->column_number();
 				::Parse( parser, currentToken->type_id(), std::make_unique<quex::Token>( *currentToken ), this );
 				lexer.receive( &currentToken );
 			}

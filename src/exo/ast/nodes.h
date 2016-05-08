@@ -27,9 +27,12 @@ namespace exo
 		class Node
 		{
 			public:
-				Node() { };
-				virtual ~Node() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { EXO_THROW_EXCEPTION( UnexpectedNode, "Unknown AST node." ); return( nullptr ); }
+				long long lineNo;
+				long long columnNo;
+
+				Node();
+				virtual ~Node();
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx );
 		};
 
 		class Expr : public virtual Node { };
@@ -434,10 +437,10 @@ namespace exo
 
 		class Tree
 		{
-			private:
-				std::string		banner;
-
 			public:
+				long long currentLineNo;
+				long long currentColumnNo;
+
 				void*			parser;
 				std::string		fileName;
 				std::string		targetMachine;
