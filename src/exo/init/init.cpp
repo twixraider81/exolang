@@ -48,9 +48,10 @@ namespace exo
 			GC_enable_incremental();
 #endif
 			// initialize llvm
-			llvm::InitializeNativeTarget();
-			llvm::InitializeNativeTargetAsmPrinter();
-			llvm::InitializeNativeTargetAsmParser();
+			llvm::InitializeAllTargets();
+			llvm::InitializeAllTargetMCs();
+			llvm::InitializeAllAsmPrinters();
+			llvm::InitializeAllAsmParsers();
 
 			// register signal handler
 			exo::signals::registerHandlers();

@@ -22,80 +22,135 @@ namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( exo::jit::Codegen* g, int optimize ) : generator( g ), optLevel( optimize )
+		JIT::JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t ) : module( std::move(m) ), target( std::move(t) )
 		{
-			passManager.add( new llvm::TargetLibraryInfoWrapperPass( llvm::Triple( generator->module->getTargetTriple() )  ));
-			passManager.add( llvm::createAlwaysInlinerPass() );
-			passManager.add( llvm::createPromoteMemoryToRegisterPass() );
-			passManager.add( llvm::createLICMPass() );
-			passManager.add( llvm::createLoopVectorizePass() );
-			passManager.add( llvm::createEarlyCSEPass() );
-			passManager.add( llvm::createInstructionCombiningPass() );
-			passManager.add( llvm::createReassociatePass() );
-			passManager.add( llvm::createGVNPass() );
-			passManager.add( llvm::createCFGSimplificationPass() );
-			passManager.run( *generator->module );
+			passManager.add( new llvm::TargetLibraryInfoWrapperPass(  target->targetMachine->getTargetTriple() ) );
+			passManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
+			//passManager.add( llvm::createAlwaysInlinerPass() );
+			//passManager.add( llvm::createPromoteMemoryToRegisterPass() );
+			//passManager.add( llvm::createLICMPass() );
+			//passManager.add( llvm::createLoopVectorizePass() );
+			//passManager.add( llvm::createEarlyCSEPass() );
+			//passManager.add( llvm::createInstructionCombiningPass() );
+			//passManager.add( llvm::createReassociatePass() );
+			//passManager.add( llvm::createGVNPass() );
+			//passManager.add( llvm::createCFGSimplificationPass() );
+
+			llvm::legacy::FunctionPassManager fpassManager( module.get() );
+			fpassManager.add( llvm::createVerifierPass() );
+
+			llvm::PassManagerBuilder builder;
+			builder.OptLevel = target->codeGenOpt; // FIXME: this should be uint
+			builder.SizeLevel = 0;
+			builder.Inliner = llvm::createAlwaysInlinerPass();
+			builder.LoopVectorize = true;
+			//builder.populateFunctionPassManager( fpassManager );
+			//builder.populateModulePassManager( passManager );
+
+			fpassManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
+			fpassManager.doInitialization();
+			for( auto &f : *module ) {
+				fpassManager.run( f );
+			}
+			fpassManager.doFinalization();
 		}
 
 		JIT::~JIT()
 		{
 		}
 
-		int JIT::Execute()
+		int JIT::Execute( std::string fName )
 		{
-			llvm::ExecutionEngine* jit;
+			std::string buffer = "";
+			llvm::raw_string_ostream bStream( buffer );
 
-			// careful, this transfers module ownership
-			llvm::EngineBuilder builder( (std::move( generator->module )) );
-			builder.setEngineKind( llvm::EngineKind::JIT );
-
-			// a bit ugly
-			if( optLevel < 0 || optLevel > 3 ) {
-				EXO_LOG( warning, "Invalid optimization level." );
-				builder.setOptLevel( llvm::CodeGenOpt::None );
-			} else {
-				if( optLevel == 0 ) {
-					builder.setOptLevel( llvm::CodeGenOpt::None );
-				} else if( optLevel == 1 ) {
-					builder.setOptLevel( llvm::CodeGenOpt::Less );
-				} else if( optLevel == 2 ) {
-					builder.setOptLevel( llvm::CodeGenOpt::Default );
-				} else if( optLevel == 3 ) {
-					builder.setOptLevel( llvm::CodeGenOpt::Aggressive );
-				}
+			if( !target->targetMachine->getTarget().hasJIT() ) {
+				EXO_THROW_EXCEPTION( LLVM, "Unable to create JIT." );
 			}
 
-			std::string buffer = "";
-			builder.setErrorStr( &buffer );
-			jit = builder.create();
+			passManager.run( *module );
+			if( llvm::verifyModule( *module, &bStream ) ) {
+				EXO_THROW_EXCEPTION( LLVM, bStream.str() );
+			}
 
-			if( !jit ) {
+			// careful, this transfers module ownership
+			llvm::EngineBuilder builder( std::move(module) );
+			builder.setEngineKind( llvm::EngineKind::JIT );
+			builder.setErrorStr( &buffer );
+
+			llvm::ExecutionEngine* jit = builder.create( target->targetMachine.get() );
+
+			if( jit == nullptr ) {
 				EXO_THROW_EXCEPTION( LLVM, buffer );
-				return( -1 );
 			}
 
 			jit->finalizeObject();
 
-			EXO_LOG( trace, "Running main." );
-			int( *jitMain )() = (int(*)())jit->getFunctionAddress( "main" );
-			int retval = jitMain();
+			EXO_LOG( trace, "Executing \"" + fName + "\"." );
+			int( *entry )() = (int(*)())jit->getFunctionAddress( fName );
+			int retval = entry();
 			EXO_LOG( trace, "Finished." );
-
-			delete jit;
 
 			return( retval );
 		}
 
-		int JIT::Emit()
+		// FIXME: need rtti here
+		int JIT::Emit( int type, std::string fileName )
 		{
-			EXO_LOG( trace, "Emitting LLVM IR." );
+			llvm::SmallString<128> buffer;
+			std::unique_ptr<llvm::raw_svector_ostream> bStream = std::make_unique<llvm::raw_svector_ostream>( buffer );
+			llvm::raw_pwrite_stream* oStream = bStream.get();
 
-			std::string buffer;
-			llvm::raw_string_ostream bStream( buffer );
+			/* TODO: if we have an actual file, use raw_fd_ostream
+			fStream = std::make_unique<llvm::raw_fd_ostream>( absoluteFile.c_str(), err, llvm::sys::fs::F_None );
+			oStream = fStream.get();
+			*/
 
-			generator->module->print( bStream, nullptr );
+			if( type < 0 || type > 2 ) {
+				EXO_LOG( error, "Unsupported file type." );
+				return( 1 );
+			}
 
-			std::cout << bStream.str();
+			if( type ) {
+				target->targetMachine->Options.MCOptions.AsmVerbose = true;
+
+				llvm::TargetMachine::CodeGenFileType fType;
+				if( type == 1 ) {
+					fType = llvm::TargetMachine::CodeGenFileType::CGFT_AssemblyFile;
+				} else if( type == 2  ) {
+					fType = llvm::TargetMachine::CodeGenFileType::CGFT_ObjectFile;
+				}
+
+				if( target->targetMachine->addPassesToEmitFile( passManager, *oStream, fType, true ) ) {
+					EXO_THROW_EXCEPTION( LLVM, "Unable to assemble source." );
+				}
+
+				passManager.run( *module );
+			} else {
+				module->print( *oStream, nullptr );
+			}
+
+
+			if( !fileName.size() ) {
+				EXO_LOG( trace, "Emitting." );
+				std::cout << bStream->str().str();
+			} else {
+				boost::filesystem::path absoluteFile( fileName );
+				std::error_code err;
+
+				if( type == 0 ) { // emit llvm ir
+					absoluteFile.replace_extension( ".ll" );
+				} else if( type == 1 ) { // emit assembly
+					absoluteFile.replace_extension( ".s" );
+				} else if( type == 2  ) { // emit object
+					absoluteFile.replace_extension( ".obj" );
+				}
+
+				EXO_LOG( trace, "Emitting \"" + absoluteFile.string() + "\"." );
+
+				boost::filesystem::ofstream outFile( absoluteFile );
+				outFile << bStream->str().str();
+			}
 
 			return( 1 );
 		}

@@ -13,30 +13,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef JIT_H_
-#define JIT_H_
+#ifndef TARGET_H_
+#define TARGET_H_
 
 #include "exo/jit/llvm.h"
-#include "exo/jit/target.h"
 
 namespace exo
 {
 	namespace jit
 	{
-		class JIT
+		class Target
 		{
-			std::unique_ptr<llvm::Module>	module;
-			std::unique_ptr<Target>			target;
-			llvm::legacy::PassManager		passManager;
-
 			public:
-				JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t );
-				~JIT();
+				std::unique_ptr<llvm::TargetMachine>	targetMachine;
+				llvm::CodeGenOpt::Level					codeGenOpt;
 
-				int Execute( std::string fName );
-				int Emit( int type = 0, std::string fileName = "" );
+				Target( std::string archName, std::string cpuName, int optimizeLvl );
+				~Target();
+
+				std::unique_ptr<llvm::Module>	createModule( std::string moduleName );
+				std::string						getName();
 		};
 	}
 }
 
-#endif /* JIT_H_ */
+#endif /* TARGET_H_ */

@@ -69,8 +69,6 @@ namespace exo
 		class Codegen
 		{
 			public:
-				std::string			name;
-
 				std::stack< std::shared_ptr<Block> >					blocks;
 				std::map< std::string, std::vector<std::string> >		propertyIndex;
 				std::map< std::string, std::vector<llvm::Type*> >		properties;
@@ -79,14 +77,14 @@ namespace exo
 				std::map< std::string, std::vector<llvm::Type*> >		vtblSignatures;
 				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
 
-				llvm::Function*		entry;
+				llvm::Function*					entry;
 				std::unique_ptr<llvm::Module>	module;
 			    llvm::IRBuilder<>				builder;
 				llvm::Type* 		intType;
 				llvm::Type* 		ptrType;
 				llvm::Type* 		voidType;
 
-			    Codegen( std::string cname, std::string target );
+			    Codegen( std::unique_ptr<llvm::Module> m );
 			    ~Codegen();
 
 			    void 				popBlock();

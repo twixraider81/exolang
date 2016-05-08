@@ -23,11 +23,8 @@ namespace exo
 {
 	namespace jit
 	{
-		Codegen::Codegen( std::string cname, std::string target ) : builder( llvm::getGlobalContext() ), name( cname ), entry( nullptr )
+		Codegen::Codegen( std::unique_ptr<llvm::Module> m ) : module( std::move(m) ), builder( llvm::getGlobalContext() ), entry( nullptr )
 		{
-			module = std::make_unique<llvm::Module>( cname, llvm::getGlobalContext());
-			module->setTargetTriple( target );
-
 			intType = module->getDataLayout().getIntPtrType( module->getContext() );
 			ptrType = intType->getPointerTo();
 			voidType = llvm::Type::getVoidTy( module->getContext() );
@@ -883,7 +880,7 @@ namespace exo
 			llvm::Value* condition = stmt->expression->Generate( this );
 			builder.CreateCondBr( builder.CreateLoad( condition ), whileBlock, contBlock );
 
-			// execute main loop
+			// execute while loop
 			scope->getBasicBlockList().push_back( whileBlock );
 			// keep track of our exit/continue block
 			pushBlock( whileBlock, contBlock );
@@ -941,11 +938,9 @@ namespace exo
 			fArgs.push_back( ptrType );
 			llvm::Function::Create( llvm::FunctionType::get( voidType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, module.get() );
 
-			/*
-			 * this is main()
-			 */
-			entry = llvm::Function::Create( llvm::FunctionType::get( intType, false ), llvm::GlobalValue::InternalLinkage, name, module.get() );
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), name, entry, 0 );
+			// module function entry, names as the module
+			entry = llvm::Function::Create( llvm::FunctionType::get( intType, false ), llvm::GlobalValue::InternalLinkage, module->getName(), module.get() );
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), module->getName(), entry, 0 );
 
 			pushBlock( block );
 
@@ -955,7 +950,7 @@ namespace exo
 
 			llvm::TerminatorInst* retVal = block->getTerminator();
 			if( retVal == nullptr || !llvm::isa<llvm::ReturnInst>(retVal) ) {
-				EXO_DEBUG_LOG( trace, "Generating null return in (" << name << ")" );
+				EXO_DEBUG_LOG( trace, "Generating null return in (" << module->getName().str() << ")" );
 				retVal = builder.CreateRet( llvm::ConstantInt::get( intType, 0 ) );
 			}
 

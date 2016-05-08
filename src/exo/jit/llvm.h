@@ -26,8 +26,9 @@
 #include <llvm/IR/Verifier.h>
 
 #include <llvm/LinkAllPasses.h>
-#include <llvm/Analysis/Passes.h>
-#include <llvm/IR/IRPrintingPasses.h>
+#include <llvm/Analysis/TargetLibraryInfo.h>
+#include <llvm/Analysis/TargetTransformInfo.h>
+#include <llvm/MC/SubtargetFeature.h>
 
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Host.h>
@@ -36,6 +37,7 @@
 #include <llvm/Support/FileSystem.h>
 
 #include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/IPO/PassManagerBuilder.h>
 
 #include <llvm/IR/IRBuilder.h>
 

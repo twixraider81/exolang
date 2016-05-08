@@ -49,12 +49,17 @@ def configure( conf ):
 	# read llvm-config
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--version'], stdout = subprocess.PIPE )
 	llvmversion = process.communicate()[0].strip()
-	conf.msg( 'llvm version:', llvmversion, 'GREEN' )
+	conf.msg( 'LLVM version:', llvmversion, 'GREEN' )
 	llvmversionNo = int( llvmversion.replace( ".", '' ) )
+	if llvmversionNo < 380:
+		conf.fatal( 'atleast LLVM 3.8.0 is required' );
 
-	if llvmversionNo < 370:
-		conf.fatal( 'atleast llvm 3.7.0 is required' );
-	
+	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--has-rtti'], stdout = subprocess.PIPE )
+	rtti = process.communicate()[0].strip()
+	conf.msg( 'LLVM RTTI:', rtti, 'GREEN' )
+	if rtti == "NO":
+		conf.fatal( 'LLVM build with RTTI is required' );
+
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cppflags'], stdout = subprocess.PIPE )
 	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
 	conf.msg( 'llvm-config cppflags:', cxxflags, 'CYAN' )	
@@ -66,7 +71,6 @@ def configure( conf ):
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--libs'], stdout = subprocess.PIPE )
 	llvmlibs = ''.join(process.communicate()[0].strip().replace( "\n", '' ).replace( "-l", '' ))
 	conf.env.append_value( 'LLVMLIBS', llvmlibs )
-	exit
 
 	# construct compiler/linker flags
 	cxxflags = cxxflags.split( ' ' )
@@ -150,14 +154,16 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
 	conf.check_cxx( header_name = "llvm/IR/Verifier.h" )
 	#conf.check_cxx( header_name = "llvm/LinkAllPasses.h" )
-	conf.check_cxx( header_name = "llvm/Analysis/Passes.h" )
-	conf.check_cxx( header_name = "llvm/IR/IRPrintingPasses.h" )
+	conf.check_cxx( header_name = "llvm/Analysis/TargetLibraryInfo.h" )
+	conf.check_cxx( header_name = "llvm/Analysis/TargetTransformInfo.h" )
+	conf.check_cxx( header_name = "llvm/MC/SubtargetFeature.h" )
 	conf.check_cxx( header_name = "llvm/Support/raw_ostream.h" )
 	conf.check_cxx( header_name = "llvm/Support/Host.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetRegistry.h" )
 	conf.check_cxx( header_name = "llvm/Support/TargetSelect.h" )
 	conf.check_cxx( header_name = "llvm/Support/FileSystem.h" )
 	conf.check_cxx( header_name = "llvm/Transforms/Scalar.h" )
+	conf.check_cxx( header_name = "llvm/Transforms/IPO/PassManagerBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 
 	if conf.options.gc != 'disable':
@@ -189,11 +195,11 @@ def build( bld ):
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
 	if Options.options.gdb and bld.env.GDB:
-		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --args ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.gdb
+		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --eval-command="r" --args ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.gdb
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.memcheck and bld.env.VALGRIND:
-		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -s1 -i ' + Options.options.memcheck
+		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.memcheck
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.runtests:

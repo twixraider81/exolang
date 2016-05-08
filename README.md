@@ -14,12 +14,13 @@ apt-get install llvm llvm-dev libc++-dev libboost-all-dev libgc-dev gdb valgrind
 
 You will need atleast boost 1.54. Next call the bootstrap script:
 
-./bootstrap.sh )
+./bootstrap.sh
 
 This will to build the lemon parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
-The bootstrap script can also build a LLVM under ./bin, do do that use bootstrap as follows.
+The bootstrap script can also build LLVM with RTTI, do do that use bootstrap as follows.
 
-./bootstrap.sh -vkl
+./bootstrap.sh -vl
+
 - -c : force cleanup (delete downloaded folders)
 - -l : build llvm
 - -v : verbose, print what the script is doing
@@ -46,7 +47,7 @@ build/exolang -h
 
 I.e. run a script and get verbose trace:
 
-build/exolang -s 1 examples/helloworld.exo
+build/exolang -l1 examples/helloworld.exo
 
 waf has a few extra commands at your disposal. Check:
 

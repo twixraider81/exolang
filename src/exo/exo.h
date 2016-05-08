@@ -54,6 +54,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 
