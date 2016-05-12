@@ -16,94 +16,200 @@
 #ifndef EXCEPTIONS_H_
 #define EXCEPTIONS_H_
 
-/**
- * A macro to enable easy throwing of boost::exceptions with a customized exception message
- */
-#define EXO_THROW_EXCEPTION(e,m) BOOST_THROW_EXCEPTION( exo::exceptions::e() << exo::exceptions::ExceptionString( m ) )
+#define EXO_THROW_MSG(m)			BOOST_THROW_EXCEPTION( exo::exceptions::SafeException() << exo::exceptions::Message( m ) )
+#define EXO_THROW(e)				BOOST_THROW_EXCEPTION( exo::exceptions::e )
 
 namespace exo
 {
 	namespace exceptions
 	{
 		/**
-		 * Structure to hold the customized exception message
+		 * Structure to a generic exception message
 		 */
-		typedef boost::error_info<struct tag_error_description, std::string> ExceptionString;
+		typedef boost::error_info<struct tag_error_description, std::string> Message;
 
 		/**
-		 * Base exception that will be thrown, holds what
+		 * Structure to hold a parser token name
 		 */
-		class Exception : public virtual boost::exception, public virtual std::exception {};
+		typedef boost::error_info<struct tag_error_description, std::string> TokenName;
+
+		/**
+		 * Structure to hold a variable name
+		 */
+		typedef boost::error_info<struct tag_error_description, std::string> VariableName;
+
+		/**
+		 * Structure to hold a function/method name
+		 */
+		typedef boost::error_info<struct tag_error_description, std::string> FunctionName;
+
+		/**
+		 * Structure to hold a class name
+		 */
+		typedef boost::error_info<struct tag_error_description, std::string> ClassName;
+
+		/**
+		 * Structure to hold a property name
+		 */
+		typedef boost::error_info<struct tag_error_description, std::string> PropertyName;
+
+		/**
+		 * Structure to hold a ressouce name
+		 */
+		typedef boost::error_info<struct tag_error_description, std::string> RessouceName;
+
+		/**
+		 * Generic unspecified safe exception
+		 */
+		struct SafeException : public virtual boost::exception, public virtual std::exception
+		{
+			public: virtual const char* what() const noexcept;
+		};
+
+		/**
+		 * Generic unspecified unsafe (may throw bad_alloc or not have all type_infos) exception
+		 */
+		struct UnsafeException : public virtual boost::exception, public virtual std::exception
+		{
+			protected: std::string msg = "";
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown via our segmentation fault handler
 		 */
-		class Segfault : public virtual Exception {};
+		struct Segfault : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
 
 		/**
 		 * Exception that will be thrown from lemon/parse in case the stack was overblown
 		 */
-		class StackOverflow : public virtual Exception {};
+		struct StackOverflow : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
 
 		/**
 		 * Exception that will be thrown from quex/lexer
 		 */
-		class UnknownToken : public virtual Exception {};
+		struct UnknownToken : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown from lemon/parse in case it received something unexpected. a.k.a. syntax error
 		 */
-		class UnexpectedToken : public virtual Exception {};
+		struct UnexpectedToken : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown if we try to build an unknown/unsupported AST node
 		 */
-		class UnexpectedNode : public virtual Exception {};
+		struct UnexpectedNode : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an undefined variable.
 		 */
-		class UnknownVar : public virtual Exception {};
+		struct UnknownVar : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an undefined function.
 		 */
-		class UnknownFunction : public virtual Exception {};
+		struct UnknownFunction : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an undefined struct.
 		 */
-		class UnknownClass : public virtual Exception {};
+		struct UnknownClass : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an undefined struct.
+		 */
+		struct UnknownProperty : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
 		 */
-		class InvalidCall : public virtual Exception {};
+		struct InvalidCall : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an undefined method.
+		 */
+		struct InvalidMethod : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
+		 */
+		struct ArgumentsMismatch : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid operator/operation.
 		 */
-		class InvalidOp : public virtual Exception {};
+		struct InvalidOp : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid expression.
+		 */
+		struct InvalidExpr : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
 
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid break.
 		 */
-		class InvalidBreak : public virtual Exception {};
+		struct InvalidBreak : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
 
 		/**
 		 * Exception that will be thrown in case we ran out of memory
 		 */
-		class OutOfMemory : public virtual Exception {};
+		struct OutOfMemory : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
 
 		/**
 		 * Exception that will be thrown if something is expected but not found
 		 */
-		class NotFound : public virtual Exception {};
-
-		/**
-		 * Exception reporting a generic LLVM error message
-		 */
-		class LLVM: public virtual Exception {};
+		struct NotFound : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
 	}
 }
 

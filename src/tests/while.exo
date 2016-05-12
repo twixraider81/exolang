@@ -3,12 +3,14 @@ int function printf( string $str ... );
 int $a = 0;
 int $b = 5;
 
+printf( "%i\n", $e );
+
 while( $a < $b ) {
 	$a += 1;
 	printf( "%i\n", $a );
 };
 
-
+/*
 int $c = 0;
 while( true ) {
 	$c += 1;
@@ -19,5 +21,6 @@ while( true ) {
 		break;
 	};
 };
+*/
 
 int $d = 1000;

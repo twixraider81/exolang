@@ -103,6 +103,7 @@ namespace exo
 			    llvm::Function*	getCallee( std::string className );
 			    llvm::Value* 	invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments );
 
+
 			    llvm::Value* Generate( exo::ast::CallFun* call );
 			    llvm::Value* Generate( exo::ast::CallMethod* call );
 
@@ -136,6 +137,8 @@ namespace exo
 			    llvm::Value* Generate( exo::ast::StmtWhile* stmt );
 
 			    llvm::Value* Generate( exo::ast::Tree* tree );
+
+			    std::string printValue( llvm::Value* value );
 		};
 	}
 }

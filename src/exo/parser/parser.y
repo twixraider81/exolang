@@ -23,11 +23,13 @@
 	#define EXO_TRACK_NODE(n)									n->lineNo = ast->currentLineNo; n->columnNo = ast->currentColumnNo;
 
 	void __lemonLog( std::string msg ) {
+#ifdef EXO_DEBUG
 		boost::algorithm::trim( msg );
 
 		if( msg.size() ) {
 			EXO_DEBUG_LOG( trace, msg );
 		};
+#endif
 	}
 	
 	template<typename type1, typename type2, typename type3>	void __lemonLog( const char* fmt, type1 msg1, type2 msg2, type3 msg3 ) { boost::format message( fmt ); message % msg1 % msg2 % msg3; __lemonLog( boost::str( message ) ); }
@@ -36,10 +38,10 @@
 }
 
 %syntax_error {
-	EXO_THROW_EXCEPTION( UnexpectedToken, ( boost::format( "Unexpected %s in \"%s\" on line %i:%i" ) % TOKEN->type_id_name() % ast->fileName % TOKEN->line_number() % TOKEN->column_number() ).str() );
+	EXO_THROW( UnexpectedToken()<< boost::errinfo_file_name( ast->fileName ) << boost::errinfo_at_line( TOKEN->line_number() ) << exo::exceptions::TokenName( TOKEN->type_id_name() ) );
 }
 %stack_overflow {
-	EXO_THROW_EXCEPTION( StackOverflow, "Stack overflow." );
+	EXO_THROW( StackOverflow() );
 }
 
 

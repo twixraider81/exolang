@@ -35,7 +35,7 @@ namespace exo
 			}
 
 			if( target == nullptr ) {
-				EXO_THROW_EXCEPTION( LLVM, errorMsg );
+				EXO_THROW_MSG( errorMsg );
 			}
 
 			llvm::SubtargetFeatures subtargetFeatures;

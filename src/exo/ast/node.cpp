@@ -29,7 +29,7 @@ namespace exo
 
 		llvm::Value* Node::Generate( exo::jit::Codegen* ctx )
 		{
-			EXO_THROW_EXCEPTION( UnexpectedNode, "Unknown AST node." );
+			EXO_THROW( UnexpectedNode() );
 			return( nullptr );
 		}
 	}

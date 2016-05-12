@@ -49,7 +49,7 @@ namespace exo
 					EXO_LOG( error, ( boost::format( "(%s), ip:%lx, sp:%lx" ) % demangled % ip % sp ) );
 				}
 
-				EXO_THROW_EXCEPTION( Segfault, "Segmentation fault!" );
+				EXO_THROW( Segfault() );
 			}
 		}
 

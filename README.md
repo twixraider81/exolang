@@ -45,7 +45,7 @@ Next call the bootstrap script:
 ./bootstrap.sh -vl
 
 This will attempt to build the lemon-- parser generator, fetch the quex lexer in order to rebuild the lexer/parser code and download the waf build tool.
-As we need a fairly recent LLVM build, the bootstrap script will also build LLVM with RTTI. This will take quite some time.
+As we need a fairly recent LLVM build, the bootstrap script will also build LLVM with RTTI enabled (needed by the boost libraries). This will take quite some time.
 
 ./bootstrap.sh
 - -c : force cleanup (delete downloaded folders)

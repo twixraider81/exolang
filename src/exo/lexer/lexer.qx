@@ -36,7 +36,7 @@ mode EXO:
 {
 	<<EOF>>							=> QUEX_TKN_TERMINATION;
 	<<FAIL>>						{
-		EXO_THROW_EXCEPTION( UnknownToken, "Unknown token \"" + LEXEMESTR(Lexeme) + "\"" );
+		EXO_THROW( UnknownToken() << exo::exceptions::TokenName( LEXEMESTR(Lexeme) ) );
 	}
 
 	on_skip_range_open				{

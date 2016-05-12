@@ -41,4 +41,6 @@
 
 #include <llvm/IR/IRBuilder.h>
 
+#include <llvm/Bitcode/ReaderWriter.h>
+
 #endif /* LLVM_H_ */

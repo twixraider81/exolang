@@ -47,6 +47,7 @@ int main( int argc, char **argv )
 		( "emit-llvm,e",	boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit LLVM IR (to stdout if empty)" )
 		( "emit-assembly,S",boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit target assembly code (as inputfile.s if empty)" )
 		( "emit-object,o",	boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit target object code (as inputfile.obj if empty)" )
+		( "emit-bitcode,b",	boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit LLVM bitcode (as inputfile.bc if empty)" )
 		( "log-severity,l", boost::program_options::value<int>(&severity)->default_value(4),	"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
 		( "optimize,O", 	boost::program_options::value<int>(&optimizeLvl)->default_value(2),	"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
 		( "target,t", 		boost::program_options::value<std::string>(&archName)->default_value( nativeTriple.str() ),	"Set target" )
@@ -138,16 +139,27 @@ int main( int argc, char **argv )
 			}
 
 			retval = jit->Emit( 2, emitFile );
+		} else if( commandLine.count( "emit-bitcode" ) ) {
+			if( !emitFile.size() ) {
+				emitFile = fileName.string();
+			}
+
+			retval = jit->Emit( 3, emitFile );
 		} else {
 			retval = jit->Execute( moduleName );
 		}
+	} catch( exo::exceptions::UnsafeException& e ) {
+		try{
+			EXO_LOG( fatal, e.what() );
+		} catch( std::exception& n ) {
+			EXO_LOG( fatal, n.what() );
+		}
+		retval = 1;
+	} catch( exo::exceptions::SafeException& e ) {
+		EXO_LOG( fatal, e.what() );
+		retval = 1;
 	} catch( boost::exception& e ) {
-        if( std::string const *message = boost::get_error_info<exo::exceptions::ExceptionString>(e) ) {
-        	EXO_LOG( fatal, *message );
-        } else {
-        	EXO_LOG( fatal, boost::diagnostic_information( e ) );
-        }
-
+		EXO_LOG( fatal, boost::diagnostic_information( e ) );
 		retval = 1;
 	}  catch( std::exception& e ) {
 		EXO_LOG( fatal, e.what() );

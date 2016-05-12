@@ -35,7 +35,7 @@ namespace exo
 #endif
 
 			if( parser == nullptr ) {
-				EXO_THROW_EXCEPTION( OutOfMemory, "Out of memory." );
+				EXO_THROW( OutOfMemory() );
 			}
 
 #ifndef NDEBUG
@@ -59,7 +59,7 @@ namespace exo
 			targetMachine = target;
 
 			if( !boost::filesystem::exists( fileName ) || !boost::filesystem::is_regular_file( fileName ) ) {
-				EXO_THROW_EXCEPTION( NotFound, ( boost::format( "File \"%s\" not found." ) % fileName ).str() );
+				EXO_THROW( NotFound() << exo::exceptions::RessouceName( fileName ) );
 			}
 
 			EXO_LOG( debug, "Opening <" << fileName << ">" );

@@ -65,7 +65,7 @@ namespace exo
 			llvm::raw_string_ostream bStream( buffer );
 
 			if( !target->targetMachine->getTarget().hasJIT() ) {
-				EXO_THROW_EXCEPTION( LLVM, "Unable to create JIT." );
+				EXO_THROW_MSG( "Unable to create JIT." );
 			}
 
 			passManager.run( *module );
@@ -76,7 +76,7 @@ namespace exo
 				module->print( mStream, nullptr, false, true );
 				EXO_DEBUG_LOG( trace, mStream.str() );
 #endif
-				EXO_THROW_EXCEPTION( LLVM, bStream.str() );
+				EXO_THROW_MSG( bStream.str() );
 			}
 
 			// careful, this transfers module ownership
@@ -87,7 +87,7 @@ namespace exo
 			llvm::ExecutionEngine* jit = builder.create( target->targetMachine.get() );
 
 			if( jit == nullptr ) {
-				EXO_THROW_EXCEPTION( LLVM, buffer );
+				EXO_THROW_MSG( buffer );
 			}
 
 			jit->finalizeObject();
@@ -100,57 +100,56 @@ namespace exo
 			return( retval );
 		}
 
-		// FIXME: need rtti here
+		// llvm streams are pure evil
 		int JIT::Emit( int type, std::string fileName )
 		{
 			llvm::SmallString<128> buffer;
 			std::unique_ptr<llvm::raw_svector_ostream> bStream = std::make_unique<llvm::raw_svector_ostream>( buffer );
 			llvm::raw_pwrite_stream* oStream = bStream.get();
+			std::string extension;
 
-			/* TODO: if we have an actual file, use raw_fd_ostream
-			fStream = std::make_unique<llvm::raw_fd_ostream>( absoluteFile.c_str(), err, llvm::sys::fs::F_None );
-			oStream = fStream.get();
-			*/
+			switch( type ) {
+				case 3: // emit bc
+					extension = ".bc";
+					llvm::WriteBitcodeToFile( module.get(), *oStream );
+				break;
 
-			if( type < 0 || type > 2 ) {
-				EXO_LOG( error, "Unsupported file type." );
-				return( 1 );
+				case 2: // emit obj
+				case 1: // emit asm
+					target->targetMachine->Options.MCOptions.AsmVerbose = true;
+
+					llvm::TargetMachine::CodeGenFileType fType;
+					if( type == 1 ) {
+						fType = llvm::TargetMachine::CodeGenFileType::CGFT_AssemblyFile;
+						extension = ".s";
+					} else if( type == 2  ) {
+						fType = llvm::TargetMachine::CodeGenFileType::CGFT_ObjectFile;
+						extension = ".obj";
+					}
+
+					if( target->targetMachine->addPassesToEmitFile( passManager, *oStream, fType, true ) ) {
+						EXO_THROW_MSG( "Unable to assemble source." );
+					}
+
+					passManager.run( *module );
+				break;
+
+				case 0:
+					extension = ".ll";
+					module->print( *oStream, nullptr );
+				break;
+
+				default:
+					EXO_LOG( error, "Unsupported file type." );
+					return( 1 );
 			}
-
-			if( type ) {
-				target->targetMachine->Options.MCOptions.AsmVerbose = true;
-
-				llvm::TargetMachine::CodeGenFileType fType;
-				if( type == 1 ) {
-					fType = llvm::TargetMachine::CodeGenFileType::CGFT_AssemblyFile;
-				} else if( type == 2  ) {
-					fType = llvm::TargetMachine::CodeGenFileType::CGFT_ObjectFile;
-				}
-
-				if( target->targetMachine->addPassesToEmitFile( passManager, *oStream, fType, true ) ) {
-					EXO_THROW_EXCEPTION( LLVM, "Unable to assemble source." );
-				}
-
-				passManager.run( *module );
-			} else {
-				module->print( *oStream, nullptr );
-			}
-
 
 			if( !fileName.size() ) {
 				EXO_LOG( trace, "Emitting." );
 				std::cout << bStream->str().str();
 			} else {
-				boost::filesystem::path absoluteFile( fileName );
-				std::error_code err;
-
-				if( type == 0 ) { // emit llvm ir
-					absoluteFile.replace_extension( ".ll" );
-				} else if( type == 1 ) { // emit assembly
-					absoluteFile.replace_extension( ".s" );
-				} else if( type == 2  ) { // emit object
-					absoluteFile.replace_extension( ".obj" );
-				}
+				boost::filesystem::path absoluteFile = boost::filesystem::absolute( boost::filesystem::path( fileName ) );
+				absoluteFile.replace_extension( extension );
 
 				EXO_LOG( trace, "Emitting \"" + absoluteFile.string() + "\"." );
 
