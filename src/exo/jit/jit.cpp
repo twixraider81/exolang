@@ -24,30 +24,21 @@ namespace exo
 	{
 		JIT::JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t ) : module( std::move(m) ), target( std::move(t) )
 		{
-			passManager.add( new llvm::TargetLibraryInfoWrapperPass(  target->targetMachine->getTargetTriple() ) );
-			passManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
-			//passManager.add( llvm::createAlwaysInlinerPass() );
-			//passManager.add( llvm::createPromoteMemoryToRegisterPass() );
-			//passManager.add( llvm::createLICMPass() );
-			//passManager.add( llvm::createLoopVectorizePass() );
-			//passManager.add( llvm::createEarlyCSEPass() );
-			//passManager.add( llvm::createInstructionCombiningPass() );
-			//passManager.add( llvm::createReassociatePass() );
-			//passManager.add( llvm::createGVNPass() );
-			//passManager.add( llvm::createCFGSimplificationPass() );
-
 			llvm::legacy::FunctionPassManager fpassManager( module.get() );
-			//fpassManager.add( llvm::createVerifierPass() );
+
+			passManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
+			fpassManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
 
 			llvm::PassManagerBuilder builder;
 			builder.OptLevel = target->codeGenOpt; // FIXME: this should be uint
 			builder.SizeLevel = 0;
-			builder.Inliner = llvm::createAlwaysInlinerPass();
+			builder.Inliner = llvm::createFunctionInliningPass();
 			builder.LoopVectorize = true;
-			//builder.populateFunctionPassManager( fpassManager );
-			//builder.populateModulePassManager( passManager );
+			builder.SLPVectorize = true;
 
-			fpassManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
+			builder.populateFunctionPassManager( fpassManager );
+			builder.populateModulePassManager( passManager );
+
 			fpassManager.doInitialization();
 			for( auto &f : *module ) {
 				fpassManager.run( f );
@@ -79,25 +70,58 @@ namespace exo
 				EXO_THROW_MSG( bStream.str() );
 			}
 
-			// careful, this transfers module ownership
-			llvm::EngineBuilder builder( std::move(module) );
-			builder.setEngineKind( llvm::EngineKind::JIT );
-			builder.setErrorStr( &buffer );
 
-			llvm::ExecutionEngine* jit = builder.create( target->targetMachine.get() );
+			llvm::Function* entry = module->getFunction( fName );
+
+			if( entry == nullptr ) {
+				EXO_THROW( InvalidCall() << exo::exceptions::FunctionName( fName ) );
+			}
+
+
+			llvm::RTDyldMemoryManager* memMgr( new llvm::SectionMemoryManager() );
+
+			// careful, alot of ownership is transferred from here on
+			llvm::EngineBuilder builder( std::move(module) );
+			builder.setErrorStr( &buffer );
+			builder.setEngineKind( llvm::EngineKind::JIT );
+			builder.setMCJITMemoryManager( std::unique_ptr<llvm::RTDyldMemoryManager>( memMgr ) );
+
+			/*
+			builder.setRelocationModel( llvm::Reloc::Default );
+			builder.setCodeModel( llvm::CodeModel::JITDefault );
+			builder.setOptLevel( target->codeGenOpt );
+			llvm::TargetOptions options = target->targetMachine->Options;
+			options.FloatABIType = llvm::FloatABI::Default;
+			builder.setTargetOptions( options );
+			*/
+
+			std::unique_ptr<llvm::ExecutionEngine> jit( builder.create( target->targetMachine.release() ) );
 
 			if( jit == nullptr ) {
 				EXO_THROW_MSG( buffer );
 			}
 
+			jit->RegisterJITEventListener( llvm::JITEventListener::createOProfileJITEventListener() );
+			jit->RegisterJITEventListener( llvm::JITEventListener::createIntelJITEventListener() );
+
+			jit->DisableLazyCompilation( false );
+
 			jit->finalizeObject();
 
+			jit->runStaticConstructorsDestructors( false );
+
 			EXO_LOG( trace, "Executing \"" + fName + "\"." );
-			int( *entry )() = (int(*)())jit->getFunctionAddress( fName );
-			int retval = entry();
+
+			static_cast<llvm::SectionMemoryManager*>(memMgr)->invalidateInstructionCache();
+
+			std::vector<llvm::GenericValue> arguments;
+			llvm::GenericValue retval = jit->runFunction( entry, arguments );
+
 			EXO_LOG( trace, "Finished." );
 
-			return( retval );
+			jit->runStaticConstructorsDestructors( true );
+
+			return( retval.IntVal.getSExtValue() );
 		}
 
 		// llvm streams are pure evil
