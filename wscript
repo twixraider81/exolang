@@ -203,11 +203,11 @@ def build( bld ):
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
 	if Options.options.gdb and bld.env.GDB:
-		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --eval-command="r" --args ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.gdb
+		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --eval-command="r" --args ' + BUILDDIR + '/exolang -i ' + Options.options.gdb
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.memcheck and bld.env.VALGRIND:
-		cmd = bld.env.VALGRIND[0] + ' --tool=memcheck --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.memcheck
+		cmd = bld.env.VALGRIND[0] + ' --tool=memcheck --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite,possible --track-origins=yes ' + BUILDDIR + '/exolang -i ' + Options.options.memcheck
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.callgrind and bld.env.VALGRIND:
