@@ -35,6 +35,7 @@ def options( opt ):
 	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug purposes only, it will make us leak!' )
 	opt.add_option( '--gdb', type="string", default='', dest='gdb', help = 'load the specified script and run it with gdb' )
 	opt.add_option( '--memcheck', type="string", default='', dest='memcheck', help = 'load the specified script and run it with valgrind memcheck' )
+	opt.add_option( '--callgrind', type="string", default='', dest='callgrind', help = 'load the specified script and run it with valgrind callgrind' )
 	opt.add_option( '--runtests', action='store_true', default='', dest='runtests', help = 'run all test scripts' )
 
 # configure
@@ -56,13 +57,17 @@ def configure( conf ):
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--has-rtti'], stdout = subprocess.PIPE )
 	rtti = process.communicate()[0].strip()
-	conf.msg( 'LLVM RTTI:', rtti, 'GREEN' )
+	conf.msg( 'LLVM RTTI:', rtti, 'CYAN' )
 	if rtti == "NO":
 		conf.fatal( 'LLVM build with RTTI is required' );
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cppflags'], stdout = subprocess.PIPE )
+	cppflags = process.communicate()[0].strip().replace( "\n", '' )
+	conf.msg( 'llvm-config cppflags:', cppflags, 'CYAN' )
+
+	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cxxflags'], stdout = subprocess.PIPE )
 	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
-	conf.msg( 'llvm-config cppflags:', cxxflags, 'CYAN' )	
+	conf.msg( 'llvm-config cxxflags:', cxxflags, 'CYAN' )
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--ldflags'], stdout = subprocess.PIPE )
 	ldflags = process.communicate()[0].strip().replace( "\n", '' )
@@ -73,7 +78,7 @@ def configure( conf ):
 	conf.env.append_value( 'LLVMLIBS', llvmlibs )
 
 	# construct compiler/linker flags
-	cxxflags = cxxflags.split( ' ' )
+	cppflags = cppflags.split( ' ' )
 	ldflags = ldflags.split( ' ' )
 
 	if conf.env.GOLD:
@@ -86,22 +91,22 @@ def configure( conf ):
 		'-DQUEX_OPTION_SEND_AFTER_TERMINATION_ADMISSIBLE',
 		'-std=c++14'
 	]
-	cxxflags += exoflags
+	cppflags += exoflags
 
 	if conf.options.mode == 'release':
-		cxxflags += [ '-O3', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_DISABLED', '-DNDEBUG' ]
+		cppflags += [ '-O3', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_DISABLED', '-DNDEBUG' ]
 	elif conf.options.mode == 'debug':
-		cxxflags += [ '-O0', '-g', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DEXO_DEBUG' ]
+		cppflags += [ '-O0', '-g', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DEXO_DEBUG' ]
 
 
 	if conf.options.gc == 'disable':
-		cxxflags += [ '-DEXO_GC_DISABLE' ]
+		cppflags += [ '-DEXO_GC_DISABLE' ]
 		conf.msg( 'garbage collector', 'disabled', 'RED' )
 	else:
 		conf.msg( 'garbage collector', 'enabled', 'GREEN' )
 
 
-	conf.env.append_value( 'CXXFLAGS', cxxflags )
+	conf.env.append_value( 'CXXFLAGS', cppflags )
 	conf.env.append_value( 'LINKFLAGS',ldflags  )
 
 
@@ -149,11 +154,9 @@ def configure( conf ):
 
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
-	#conf.check_cxx( header_name = "llvm/ExecutionEngine/MCJIT.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
 	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
 	conf.check_cxx( header_name = "llvm/IR/Verifier.h" )
-	#conf.check_cxx( header_name = "llvm/LinkAllPasses.h" )
 	conf.check_cxx( header_name = "llvm/Analysis/TargetLibraryInfo.h" )
 	conf.check_cxx( header_name = "llvm/Analysis/TargetTransformInfo.h" )
 	conf.check_cxx( header_name = "llvm/MC/SubtargetFeature.h" )
@@ -165,6 +168,8 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Transforms/Scalar.h" )
 	conf.check_cxx( header_name = "llvm/Transforms/IPO/PassManagerBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
+	conf.check_cxx( header_name = "llvm/Bitcode/ReaderWriter.h" )
+
 
 	if conf.options.gc != 'disable':
 		conf.check_cxx( header_name = "gc/gc.h" )
@@ -199,7 +204,11 @@ def build( bld ):
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.memcheck and bld.env.VALGRIND:
-		cmd = bld.env.VALGRIND[0] + ' --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.memcheck
+		cmd = bld.env.VALGRIND[0] + ' --tool=memcheck --demangle=yes --error-limit=yes --leak-check=full --show-leak-kinds=definite --track-origins=yes ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.memcheck
+		subprocess.call( cmd, shell=True )
+
+	if Options.options.callgrind and bld.env.VALGRIND:
+		cmd = bld.env.VALGRIND[0] + ' --tool=callgrind --demangle=yes --error-limit=yes --callgrind-out-file=' + Options.options.callgrind + '.out ' + BUILDDIR + '/exolang -i ' + Options.options.callgrind
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.runtests:
