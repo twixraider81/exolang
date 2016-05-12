@@ -1,13 +1,13 @@
 int function printf( string $str ... );
 
-for( int $i = 0; $i < 5; $i += 1 ) {
-	printf( "%i ", $i );
+for( int $i = 1; $i < 10; $i += 1 ) {
+	printf( "%i\n", $i );
 
-	if( $i > 2 ) {
+	if( $i >= 5 ) {
 		break;
 	};
 };
 
-for( int $i = 0, int $j = 25; $i < 25; $i += 1, $j -= 1 ) {
-	printf( "%i:%i ", $i, $j );
+for( int $i = 6, int $j = 10; $i < 10; $i += 1, $j -= 1 ) {
+	printf( "%i:%i\n", $i, $j );
 };

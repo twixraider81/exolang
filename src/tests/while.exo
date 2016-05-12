@@ -3,24 +3,20 @@ int function printf( string $str ... );
 int $a = 0;
 int $b = 5;
 
-printf( "%i\n", $e );
-
 while( $a < $b ) {
 	$a += 1;
 	printf( "%i\n", $a );
 };
 
-/*
-int $c = 0;
+int $c = 5;
 while( true ) {
 	$c += 1;
-	printf( "% i\n", $c );
+	printf( "%i\n", $c );
 
-	if( $c > 5 ) {
-		int $e = 20;
+	if( $c >= 10 ) {
 		break;
 	};
 };
-*/
 
-int $d = 1000;
+int $d = 11;
+printf( "%i\n", $d );
