@@ -13,38 +13,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STACK_H_
-#define STACK_H_
+#ifndef STACKENTRY_H_
+#define STACKENTRY_H_
 
 #include "exo/exo.h"
-#include "exo/jit/stackentry.h"
+#include "exo/jit/llvm.h"
 
 namespace exo
 {
 	namespace jit
 	{
-		class Stack
+		class StackEntry
 		{
-			private:
-				std::stack< std::shared_ptr<StackEntry> >	entries;
-
 			public:
-				Stack();
-				~Stack();
+				llvm::BasicBlock*					block;
+				llvm::BasicBlock*					exit;
+				std::map<std::string,llvm::Value*>	symbols;
 
-				llvm::BasicBlock*	Push( llvm::BasicBlock* block, llvm::BasicBlock* exit = nullptr );
-				llvm::BasicBlock*	Pop();
-				llvm::BasicBlock*	Join( llvm::BasicBlock* block );
-				llvm::BasicBlock*	Block();
-				llvm::BasicBlock*	Exit();
+				StackEntry( llvm::BasicBlock* b, llvm::BasicBlock* e );
+				~StackEntry();
 
-				std::string 		blockName();
-
-				llvm::Value*		getSymbol( std::string name );
-				void				setSymbol( std::string name, llvm::Value* value );
-				void				delSymbol( std::string name );
+				llvm::Value* getSymbol( std::string name );
+				void setSymbol( std::string name, llvm::Value* value );
+				void delSymbol( std::string name );
 		};
 	}
 }
 
-#endif /* STACK_H_ */
+#endif /* STACKENTRY_H_ */
