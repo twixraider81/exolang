@@ -154,6 +154,9 @@ def configure( conf ):
 
 	conf.check_cxx( header_name = "llvm/IR/DerivedTypes.h" )
 	conf.check_cxx( header_name = "llvm/ExecutionEngine/ExecutionEngine.h" )
+	conf.check_cxx( header_name = "llvm/ExecutionEngine/SectionMemoryManager.h" )
+	conf.check_cxx( header_name = "llvm/ExecutionEngine/JITEventListener.h" )
+	conf.check_cxx( header_name = "llvm/ExecutionEngine/GenericValue.h" )
 	conf.check_cxx( header_name = "llvm/IR/Module.h" )
 	conf.check_cxx( header_name = "llvm/IR/LegacyPassManager.h" )
 	conf.check_cxx( header_name = "llvm/IR/Verifier.h" )
