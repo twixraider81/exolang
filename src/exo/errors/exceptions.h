@@ -148,6 +148,14 @@ namespace exo
 		};
 
 		/**
+		 * Exception that will be thrown in case of an unknown primtive
+		 */
+		struct UnknownPrimitive : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
+
+		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
 		 */
 		struct InvalidCall : public virtual UnsafeException
