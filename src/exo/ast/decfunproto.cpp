@@ -19,7 +19,11 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFunProto::DecFunProto( std::string n, std::unique_ptr<Type> t, std::unique_ptr<DecList> a, bool va ) : name( n ), returnType( std::move(t) ), arguments( std::move(a) ), hasVaArg( va )
+		DecFunProto::DecFunProto( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DecList> a, bool va ) :
+				id( std::move( i ) ),
+				returnType( std::move( r ) ),
+				arguments( std::move( a ) ),
+				hasVaArg( va )
 		{
 		}
 	}

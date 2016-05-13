@@ -58,6 +58,9 @@ namespace exo
 			fileName = fName;
 			targetMachine = target;
 
+			// as base we take the filename we, the extension( should be .exo ) and replace path delimiters ( / ) with namespace delimiters
+			moduleName = boost::replace_all_copy( boost::filesystem::change_extension( boost::filesystem::path( fileName ).string(), "" ).string(), "/", "::" );
+
 			if( !boost::filesystem::exists( fileName ) || !boost::filesystem::is_regular_file( fileName ) ) {
 				EXO_THROW( NotFound() << exo::exceptions::RessouceName( fileName ) );
 			}
@@ -67,16 +70,22 @@ namespace exo
 			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = nullptr;
 
-			quex::lexer lexer( fileName );
-			lexer.receive( &currentToken );
-			while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
-				this->currentLineNo = currentToken->line_number();
-				this->currentColumnNo = currentToken->column_number();
-				::Parse( parser, currentToken->type_id(), std::make_unique<quex::Token>( *currentToken ), this );
+			try {
+				quex::lexer lexer( fileName );
 				lexer.receive( &currentToken );
-			}
+				while( currentToken->type_id() != QUEX_TKN_TERMINATION ) {
+					currentLineNo = currentToken->line_number();
+					currentColumnNo = currentToken->column_number();
 
-			::Parse( parser, 0, nullptr, this );
+					::Parse( parser, currentToken->type_id(), std::make_unique<quex::Token>( *currentToken ), this );
+					lexer.receive( &currentToken );
+				}
+
+				::Parse( parser, 0, nullptr, this );
+			} catch( boost::exception &exception ) {
+				exception << boost::errinfo_file_name( fileName ) << boost::errinfo_file_name( fileName ) << boost::errinfo_at_line( currentLineNo );
+				throw;
+			}
 		}
 	}
 }

@@ -2,4 +2,5 @@ __FILE__;
 __LINE__; __COLUMN__;
 __VERSION__;
 __TARGET__;
+__MODULE__;
 __HALT__;

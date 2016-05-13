@@ -107,9 +107,8 @@ int main( int argc, char **argv )
 			exit( 1 );
 		}
 
-		boost::filesystem::path absolutePath( input );
-		boost::filesystem::path fileName = absolutePath.filename();
-		std::string moduleName = "exo-module-" + fileName.stem().string();
+		// extract filename from path/fileinfo
+		boost::filesystem::path fileName = boost::filesystem::path( input ).filename();
 
 		// create our target information
 		std::unique_ptr<exo::jit::Target> target = std::make_unique<exo::jit::Target>( archName, cpuName, optimizeLvl );
@@ -119,11 +118,11 @@ int main( int argc, char **argv )
 		ast->Parse( input, target->getName() );
 
 		// generate llvm ir code
-		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move( target->createModule( moduleName ) ) );
+		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move( target->createModule( ast->moduleName ) ) );
 		generator->Generate( ast.get() );
 
 		// create jit and eventually execute our module
-		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( std::move(generator->module), std::move(target) );
+		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( std::move( generator->module ), std::move(target) );
 
 		if( commandLine.count( "emit-llvm" ) ) {
 			retval = jit->Emit( 0, emitFile );
@@ -146,7 +145,7 @@ int main( int argc, char **argv )
 
 			retval = jit->Emit( 3, emitFile );
 		} else {
-			retval = jit->Execute( moduleName );
+			retval = jit->Execute( ast->moduleName );
 		}
 	} catch( exo::exceptions::UnsafeException& e ) {
 		try{

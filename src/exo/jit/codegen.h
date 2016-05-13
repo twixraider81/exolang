@@ -36,6 +36,7 @@ namespace exo
 		class ConstNull;
 		class ConstStr;
 
+		class DecMod;
 		class DecClass;
 		class DecFun;
 		class DecFunProto;
@@ -59,8 +60,10 @@ namespace exo
 		class StmtList;
 		class StmtWhile;
 
-		class Tree;
+		class Id;
 		class Type;
+
+		class Tree;
 	}
 
 	namespace jit
@@ -101,6 +104,7 @@ namespace exo
 				llvm::Value* Generate( exo::ast::ConstNull* val );
 				llvm::Value* Generate( exo::ast::ConstStr* val );
 
+				llvm::Value* Generate( exo::ast::DecMod* dec );
 				llvm::Value* Generate( exo::ast::DecClass* dec );
 				llvm::Value* Generate( exo::ast::DecFun* dec );
 				llvm::Value* Generate( exo::ast::DecFunProto* dec );

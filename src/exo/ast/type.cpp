@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Type::Type( std::string tName ) : name( tName )
+		Type::Type( std::unique_ptr<Id> i, bool p ) : id( std::move( i ) ), isPrimitive( p )
 		{
 		}
 	}

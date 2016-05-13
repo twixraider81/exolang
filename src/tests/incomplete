@@ -5,6 +5,11 @@ auto $g = 3 * $a;
 auto $h = ( 4 / 2 );
 string $i = '';
 
+std::$test;
+src::tests::scalar::$a;
+
+$t();
+
 // unknown variable usage creates an auto type
 $k = 9;
 

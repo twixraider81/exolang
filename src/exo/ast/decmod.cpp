@@ -19,9 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFun::DecFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DecList> a, std::unique_ptr<StmtList> b, bool va ) :
-				DecFunProto( std::move( i ), std::move( r ), std::move( a ), va ),
-				stmts( std::move( b ) )
+		DecMod::DecMod( std::unique_ptr<Id> i ) : id( std::move( i ) )
 		{
 		}
 	}

@@ -93,10 +93,14 @@ stmts(s) ::= stmts(a) stmt(b) T_SEMICOLON. {
 
 
 /*
- * statement can be a variable declaration, function (proto) declaration, class declaration, delete statement, a return statement, if/while/for/break flow or an expression.
+ * statement can be a module-, variable-, function(proto)-, class-declaration, delete-, return-, if-, while-, for-, break-statement or an expression.
  * statements are terminated by a semicolon
  */
 %type stmt { std::unique_ptr<exo::ast::Stmt> }
+stmt(s) ::= moddec(v). {
+	s = std::move(v);
+	EXO_TRACK_NODE(s);
+}
 stmt(s) ::= vardec(v). {
 	s = std::move(v);
 	EXO_TRACK_NODE(s);
@@ -136,6 +140,15 @@ stmt(s) ::= stmtbreak(b). {
 stmt(s) ::= expr(e). {
 	s = std::make_unique<exo::ast::StmtExpr>( std::move(e) );
 	EXO_TRACK_NODE(s);
+}
+
+
+/* a module declaration is a module identifier */
+%type moddec { std::unique_ptr<exo::ast::DecMod> }
+moddec(m) ::= T_MODULE id(i). {
+	ast->moduleName = i->inNamespace + i->name;
+	m = std::make_unique<exo::ast::DecMod>( std::move(i) );
+	EXO_TRACK_NODE(m);
 }
 
 
@@ -192,38 +205,50 @@ stmtbreak(i) ::= T_BREAK. {
 }
 
 
-/* a type may be a null, bool, integer, float, string or auto or a classname */
+/* an identifier has an optional namespace */
+%type id { std::unique_ptr<exo::ast::Id> }
+id(i) ::= S_NS(n) S_ID(s). {
+	i = std::make_unique<exo::ast::Id>( TOKENSTR(s), TOKENSTR(n) );
+	EXO_TRACK_NODE(i);
+}
+id(i) ::= S_ID(s). {
+	i = std::make_unique<exo::ast::Id>( TOKENSTR(s) );
+	EXO_TRACK_NODE(i);
+}
+
+
+/* a type may be a primitive bool, integer, float, string, auto, callable, null or an identifier for a complex */
 %type type { std::unique_ptr<exo::ast::Type> }
 type(t) ::= T_TBOOL. {
-	t = std::make_unique<exo::ast::Type>( "bool" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "bool" ), true );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TINT. {
-	t = std::make_unique<exo::ast::Type>( "int" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "int" ), true );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TFLOAT. {
-	t = std::make_unique<exo::ast::Type>( "float" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "float" ), true );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TSTRING. {
-	t = std::make_unique<exo::ast::Type>( "string" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "string" ), true );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TAUTO. {
-	t = std::make_unique<exo::ast::Type>( "auto" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "auto" ), true );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TCALLABLE. {
-	t = std::make_unique<exo::ast::Type>( "callable" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "callable" ), true );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_VNULL. {
-	t = std::make_unique<exo::ast::Type>( "null" );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true );
 	EXO_TRACK_NODE(t);
 }
-type(t) ::= S_ID(i). {
-	t = std::make_unique<exo::ast::Type>( TOKENSTR(i) );
+type(t) ::= id(i). {
+	t = std::make_unique<exo::ast::Type>( std::move(i) );
 	EXO_TRACK_NODE(t);
 }
 
@@ -262,21 +287,21 @@ vardeclist(e) ::= vardeclist(l) T_COMMA vardec(d). {
  * optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype
  */
 %type funproto { std::unique_ptr<exo::ast::DecFunProto> }
-funproto(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_RANGLE. {
-	f = std::make_unique<exo::ast::DecFunProto>( TOKENSTR(i), std::move(t), std::move(l), false );
+funproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_RANGLE. {
+	f = std::make_unique<exo::ast::DecFunProto>( std::move(i), std::move(t), std::move(l), false );
 	EXO_TRACK_NODE(f);
 }
-funproto(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE. {
-	f = std::make_unique<exo::ast::DecFunProto>( TOKENSTR(i), std::move(t), std::move(l), true );
+funproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE. {
+	f = std::make_unique<exo::ast::DecFunProto>( std::move(i), std::move(t), std::move(l), true );
 	EXO_TRACK_NODE(f);
 }
 %type fundec { std::unique_ptr<exo::ast::DecFun> }
-fundec(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_RANGLE block(b). {
-	f = std::make_unique<exo::ast::DecFun>( TOKENSTR(i), std::move(t), std::move(l), std::move(b), false );
+fundec(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_RANGLE block(b). {
+	f = std::make_unique<exo::ast::DecFun>( std::move(i), std::move(t), std::move(l), std::move(b), false );
 	EXO_TRACK_NODE(f);
 }
-fundec(f) ::= type(t) T_FUNCTION S_ID(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE block(b). {
-	f = std::make_unique<exo::ast::DecFun>( TOKENSTR(i), std::move(t), std::move(l), std::move(b), true );
+fundec(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE block(b). {
+	f = std::make_unique<exo::ast::DecFun>( std::move(i), std::move(t), std::move(l), std::move(b), true );
 	EXO_TRACK_NODE(f);
 }
 
@@ -299,20 +324,20 @@ propertydec(p) ::= access(a) vardec(v) T_SEMICOLON. {
 
 /* a class declaration is a class keyword, followed by an identifier, optionally an extend with a classname, and and associated class block */
 %type classdec { std::unique_ptr<exo::ast::DecClass> }
-classdec(c) ::= T_CLASS S_ID(i) T_EXTENDS S_ID(p) T_LBRACKET classblock(b) T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( TOKENSTR(i), TOKENSTR(p), std::move(b) );
+classdec(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET classblock(b) T_RBRACKET. {
+	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::move(p), std::move(b) );
 	EXO_TRACK_NODE(c);
 }
-classdec(c) ::= T_CLASS S_ID(i) T_EXTENDS S_ID(p) T_LBRACKET T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( TOKENSTR(i), TOKENSTR(p), std::make_unique<exo::ast::ClassBlock>() );
+classdec(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET T_RBRACKET. {
+	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::move(p), std::make_unique<exo::ast::ClassBlock>() );
 	EXO_TRACK_NODE(c);
 }
-classdec(c) ::= T_CLASS S_ID(i) T_LBRACKET classblock(b) T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( TOKENSTR(i), std::move(b) );
+classdec(c) ::= T_CLASS id(i) T_LBRACKET classblock(b) T_RBRACKET. {
+	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::move(b) );
 	EXO_TRACK_NODE(c);
 }
-classdec(c) ::= T_CLASS S_ID(i) T_LBRACKET T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( TOKENSTR(i), std::make_unique<exo::ast::ClassBlock>() );
+classdec(c) ::= T_CLASS id(i) T_LBRACKET T_RBRACKET. {
+	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::make_unique<exo::ast::ClassBlock>() );
 	EXO_TRACK_NODE(c);
 }
 
@@ -361,12 +386,12 @@ exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 
 /* an expression may be an function call, method call, property, variable (expression), constant, binary (add, ... assignment) operation, delimited/grouped by brackets */
 %type expr { std::unique_ptr<exo::ast::Expr> }
-expr(e) ::= S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
-	e = std::make_unique<exo::ast::CallFun>( TOKENSTR(i), std::move(a) );
+expr(e) ::= id(i) T_LANGLE exprlist(a) T_RANGLE. {
+	e = std::make_unique<exo::ast::CallFun>( std::move(i), std::move(a) );
 	EXO_TRACK_NODE(e);
 }
 expr(e) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
-	e = std::make_unique<exo::ast::CallMethod>( TOKENSTR(i), std::move(v), std::move(a) );
+	e = std::make_unique<exo::ast::CallMethod>( std::make_unique<exo::ast::Id>( TOKENSTR(i) ), std::move(v), std::move(a) );
 	EXO_TRACK_NODE(e);
 }
 expr(e) ::= expr(v) T_PTR S_ID(i). {
@@ -460,23 +485,23 @@ expr(e) ::= T_LANGLE expr(a) T_RANGLE. {
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */
 %type constant { std::unique_ptr<exo::ast::Expr> }
-constant(c) ::= T_FILE. {
+constant(c) ::= T_CONST_FILE. {
 	c = std::make_unique<exo::ast::ConstStr>( ast->fileName );
 	EXO_TRACK_NODE(c);
 }
-constant(c) ::= T_LINE(l). {
+constant(c) ::= T_CONST_LINE(l). {
 	c = std::make_unique<exo::ast::ConstInt>( l->line_number() );
 	EXO_TRACK_NODE(c);
 }
-constant(c) ::= T_COLUMN(l). {
+constant(c) ::= T_CONST_COLUMN(l). {
 	c = std::make_unique<exo::ast::ConstInt>( l->column_number() );
 	EXO_TRACK_NODE(c);
 }
-constant(c) ::= T_TARGET. {
+constant(c) ::= T_CONST_TARGET. {
 	c = std::make_unique<exo::ast::ConstStr>( ast->targetMachine );
 	EXO_TRACK_NODE(c);
 }
-constant(c) ::= T_VERSION. {
+constant(c) ::= T_CONST_VERSION. {
 	c = std::make_unique<exo::ast::ConstStr>( EXO_VERSION );
 	EXO_TRACK_NODE(c);
 }
@@ -490,6 +515,10 @@ constant(c) ::= T_VTRUE. {
 }
 constant(c) ::= T_VFALSE. {
 	c = std::make_unique<exo::ast::ConstBool>( false );
+	EXO_TRACK_NODE(c);
+}
+constant(c) ::= T_CONST_MODULE. {
+	c = std::make_unique<exo::ast::ConstStr>( ast->moduleName );
 	EXO_TRACK_NODE(c);
 }
 constant(c) ::= number(n). {
