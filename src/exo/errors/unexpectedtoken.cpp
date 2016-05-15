@@ -23,18 +23,24 @@ namespace exo
 	{
 		const char* UnexpectedToken::what()
 		{
+			msg = "Unexpected ";
+
 			if( const std::string *tokenName = boost::get_error_info<exo::exceptions::TokenName>( *this ) ) {
-				msg.append( "Unexpected " ).append( *tokenName );
-
-				if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
-					msg.append( " in " ).append( *fileName );
-				}
-
-				if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
-					msg.append( ":" ).append( std::to_string( *lineNo ) );
-				}
+				msg.append( *tokenName );
 			} else {
-				msg = "Unexpected token";
+				msg.append( "token" );
+			}
+
+			if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
+				msg.append( " in " ).append( *fileName );
+			}
+
+			if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
+				msg.append( "#" ).append( std::to_string( *lineNo ) );
+			}
+
+			if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
+				msg.append( ":" ).append( std::to_string( *colNo ) );
 			}
 
 			return( msg.c_str() );

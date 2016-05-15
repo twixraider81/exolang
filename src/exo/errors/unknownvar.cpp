@@ -33,6 +33,10 @@ namespace exo
 				if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
 					msg.append( ":" ).append( std::to_string( *lineNo ) );
 				}
+
+				if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
+					msg.append( "#" ).append( std::to_string( *colNo ) );
+				}
 			} else {
 				msg = "Unknown variable";
 			}

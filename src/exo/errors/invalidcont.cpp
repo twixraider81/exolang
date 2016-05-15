@@ -13,14 +13,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exo/ast/nodes.h"
+#include "exo/exo.h"
+
+#include "exo/errors/exceptions.h"
 
 namespace exo
 {
-	namespace ast
+	namespace exceptions
 	{
-		DecMethod::DecMethod( std::unique_ptr<DecFun> m, std::unique_ptr<ModAccess> a ) : access( std::move(a) ), method( std::move(m) )
+		const char* InvalidCont::what() const noexcept
 		{
-		}
+			return( "Can not continue" );
+		};
 	}
 }

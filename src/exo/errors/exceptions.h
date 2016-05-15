@@ -34,6 +34,11 @@ namespace exo
 		typedef boost::error_info<struct tag_error_description, std::string> TokenName;
 
 		/**
+		 * Structure to hold a Column Number
+		 */
+		typedef boost::error_info<struct tag_error_description, long long> ColumnNo;
+
+		/**
 		 * Structure to hold a variable name
 		 */
 		typedef boost::error_info<struct tag_error_description, std::string> VariableName;
@@ -199,6 +204,14 @@ namespace exo
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid break.
 		 */
 		struct InvalidBreak : public virtual SafeException
+		{
+			public: virtual const char* what() const noexcept;
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid continue.
+		 */
+		struct InvalidCont : public virtual SafeException
 		{
 			public: virtual const char* what() const noexcept;
 		};
