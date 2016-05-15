@@ -19,7 +19,10 @@ namespace exo
 {
 	namespace ast
 	{
-		ModAccess::ModAccess()
+		ModAccess::ModAccess() :
+			isPublic( false ),
+			isPrivate( false ),
+			isProtected( true )
 		{
 		}
 	}

@@ -7,6 +7,9 @@ if( $a < $b ) {
 	printf( "$a < $b\n" );
 } else {
 	$b = 3;
-};
+}
 
 int $c = 3;
+
+if( $b < $a ) printf( "$b > $a\n" );
+else printf( "$b > $a\n" );

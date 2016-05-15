@@ -8,6 +8,4 @@ for( int $i = 1; $i < 10; $i += 1 ) {
 	};
 };
 
-for( int $i = 6, int $j = 10; $i < 10; $i += 1, $j -= 1 ) {
-	printf( "%i:%i\n", $i, $j );
-};
+for( int $i = 6, int $j = 10; $i < 10; $i += 1, $j -= 1 ) printf( "%i:%i\n", $i, $j );

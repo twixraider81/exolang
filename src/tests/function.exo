@@ -1,6 +1,11 @@
-int function test( int $e )
+int function test1( int $e )
 {
 	return( $e + 1 );
 };
+int $a = test1( 1 );
 
-int $a = test( 1 );
+public int function test2( int $e )
+{
+	return( $e + 1 );
+};
+int $b = test2( 1 );

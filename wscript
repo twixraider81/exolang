@@ -224,10 +224,10 @@ def build( bld ):
 
 # (re)create parser
 def buildparser( ctx ):
-	"Recreate Parser (needs lemon binary)"
+	"Recreate parser (needs lemon binary)"
 	subprocess.call( BINDIR + 'lemon/lemon -T' + BINDIR + 'lemon/lempar.cpp -l -s ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.y; echo "#define QUEX_TKN_TERMINATION 0b00000000\n#define QUEX_TKN_UNINITIALIZED 0b10000000" >> ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h', shell=True )
 
 # (re)create lexer
 def buildlexer( ctx ):
-	"Recreate Lexer (needs quex binary)"
+	"Recreate lexer (needs quex binary)"
 	subprocess.call( 'QUEX_PATH=' + BINDIR + 'quex python ' + BINDIR + 'quex/quex-exe.py -i ' + os.path.abspath( SRCDIR ) + '/exo/lexer/lexer.qx --foreign-token-id-file ' + os.path.abspath( SRCDIR ) + '/exo/parser/parser.h --odir ' + os.path.abspath( SRCDIR ) + '/exo/lexer -o lexer', shell=True )

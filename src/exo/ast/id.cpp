@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		Id::Id( std::string n, std::string ns ) : name( n ), inNamespace( ns )
+		Id::Id( std::string n, std::string ns ) :
+			name( n ),
+			inNamespace( ns )
 		{
 		}
 	}

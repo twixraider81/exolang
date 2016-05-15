@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		ExprProp::ExprProp( std::string pName, std::unique_ptr<Expr> e ) : ExprVar( pName ), expression( std::move(e) )
+		ExprProp::ExprProp( std::string pName, std::unique_ptr<Expr> e ) :
+			ExprVar( pName ),
+			expression( std::move(e) )
 		{
 		}
 	}

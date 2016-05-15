@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		OpBinary::OpBinary( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : lhs( std::move(a) ), rhs( std::move(b) )
+		OpBinary::OpBinary( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) :
+			lhs( std::move(a) ),
+			rhs( std::move(b) )
 		{
 		}
 	}

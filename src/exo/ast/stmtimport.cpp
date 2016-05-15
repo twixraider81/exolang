@@ -19,9 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ExprCallMethod::ExprCallMethod( std::unique_ptr<Id> i, std::unique_ptr<Expr> e, std::unique_ptr<ExprList> a ) :
-			ExprCallFun( std::move( i ), std::move( a ) ),
-			expression( std::move( e ) )
+		StmtImport::StmtImport( std::unique_ptr<ConstStr> l ) :
+			library( std::move(l) )
 		{
 		}
 	}

@@ -24,7 +24,7 @@
 
 	void __lemonLog( std::string msg ) {
 #ifdef EXO_DEBUG
-		boost::algorithm::trim( msg );
+		boost::algorithm::trim_right( msg );
 
 		if( msg.size() ) {
 			EXO_DEBUG_LOG( trace, msg );
@@ -38,7 +38,16 @@
 }
 
 %syntax_error {
-	EXO_THROW( UnexpectedToken()<< boost::errinfo_file_name( ast->fileName ) << boost::errinfo_at_line( TOKEN->line_number() ) << exo::exceptions::TokenName( TOKEN->type_id_name() ) );
+	exo::exceptions::UnexpectedToken e;
+	e << boost::errinfo_file_name( ast->fileName );
+
+	if( TOKEN != nullptr ) { /* can trigger at EOF */
+		e << boost::errinfo_at_line( TOKEN->line_number() );
+		e << exo::exceptions::ColumnNo( TOKEN->column_number() );
+		e << exo::exceptions::TokenName( TOKEN->type_id_name() );
+	}
+
+	BOOST_THROW_EXCEPTION( e );
 }
 %stack_overflow {
 	EXO_THROW( StackOverflow() );
@@ -57,16 +66,15 @@
 
 
 /* token precedences */
-%nonassoc	T_RANGLE.
+%nonassoc	T_IF.
 %nonassoc	T_ELSE.
-%nonassoc	S_ID.
-%right		T_TBOOL T_TINT T_TFLOAT T_TSTRING T_TAUTO T_TCALLABLE.
-%right		T_ASSIGN.
-%left		T_EQ T_NE.
-%left		T_LT T_LE T_GT T_GE.
-%left		T_PLUS T_MINUS.
-%left		T_MUL T_DIV.
-%left		T_PTR.
+%left		T_ASSIGN.
+%left		T_EQ T_NE T_LT T_LE T_GT T_GE.
+%left		T_PLUS.
+%nonassoc	T_MINUS.
+%left		T_MUL.
+%nonassoc	T_DIV.
+%right		T_PTR.
 %right		T_NEW T_DELETE.
 
 
@@ -75,133 +83,271 @@ program ::= stmts(s). {
 	ast->stmts = std::move(s);
 }
 program ::= . {
-}
-
-
-/* statements are a single statement followed by ; and other statements */
-%type stmts { std::unique_ptr<exo::ast::StmtList> }
-stmts(a) ::= stmt(b) T_SEMICOLON. {
-	a = std::make_unique<exo::ast::StmtList>();
-	a->list.push_back( std::move(b) );
-	EXO_TRACK_NODE(a);
-}
-stmts(s) ::= stmts(a) stmt(b) T_SEMICOLON. {
-	a->list.push_back( std::move(b) );
-	s = std::move(a);
-	EXO_TRACK_NODE(s);
+	ast->stmts = std::make_unique<exo::ast::StmtBlock>();
 }
 
 
 /*
- * statement can be a module-, variable-, function(proto)-, class-declaration, delete-, return-, if-, while-, for-, break-statement or an expression.
+ * a block is empty (i.e. protofunctions, class blocks ), a collection of statements delimited by brackets or a single statement
+ * a statement block is terminated by a semocolon
+ */
+%type stmtblock { std::unique_ptr<exo::ast::StmtBlock> }
+stmtblock(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
+	b = std::move(s);
+}
+stmtblock(b) ::= T_LBRACKET T_RBRACKET. {
+	b = std::make_unique<exo::ast::StmtBlock>();
+	EXO_TRACK_NODE(b);
+}
+
+
+%type stmts { std::unique_ptr<exo::ast::StmtBlock> }
+stmts(a) ::= stmt(b). {
+	a = std::make_unique<exo::ast::StmtBlock>();
+	a->list.push_back( std::move(b) );
+	EXO_TRACK_NODE(a);
+}
+stmts(s) ::= stmts(a) stmt(b). {
+	a->list.push_back( std::move(b) );
+	s = std::move(a);
+}
+
+
+/*
+ * statement can be a declaration-, delete-, return-, if-, while-, for-, break, use-, import-, continue-statement or an expression.
  * statements are terminated by a semicolon
  */
 %type stmt { std::unique_ptr<exo::ast::Stmt> }
-stmt(s) ::= moddec(v). {
-	s = std::move(v);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= vardec(v). {
-	s = std::move(v);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= funproto(f). {
-	s = std::move(f);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= fundec(f). {
-	s = std::move(f);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= classdec(c). {
-	s = std::move(c);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= T_RETURN expr(e). {
-	s = std::make_unique<exo::ast::StmtReturn>( std::move(e) );
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= stmtif(i). {
-	s = std::move(i);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= stmtwhile(w). {
-	s = std::move(w);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= stmtfor(f). {
-	s = std::move(f);
-	EXO_TRACK_NODE(s);
-}
-stmt(s) ::= stmtbreak(b). {
+stmt(s) ::= stmtblock(b). { /* no implicit termination needed */
 	s = std::move(b);
-	EXO_TRACK_NODE(s);
 }
-stmt(s) ::= expr(e). {
+stmt(s) ::= stmtbreak(b) T_SEMICOLON. {
+	s = std::move(b);
+}
+stmt(s) ::= stmtcont(c) T_SEMICOLON. {
+	s = std::move(c);
+}
+stmt(s) ::= decl(d) T_SEMICOLON. {
+	s = std::move(d);
+}
+stmt(s) ::= expr(e) T_SEMICOLON. {
 	s = std::make_unique<exo::ast::StmtExpr>( std::move(e) );
 	EXO_TRACK_NODE(s);
 }
-
-
-/* a module declaration is a module identifier */
-%type moddec { std::unique_ptr<exo::ast::DecMod> }
-moddec(m) ::= T_MODULE id(i). {
-	ast->moduleName = i->inNamespace + i->name;
-	m = std::make_unique<exo::ast::DecMod>( std::move(i) );
-	EXO_TRACK_NODE(m);
+stmt(s) ::= stmtfor(f). { /* ends with a statement */
+	s = std::move(f);
+}
+stmt(s) ::= stmtif(i). { /* ends with a statement */
+	s = std::move(i);
+}
+stmt(s) ::= stmtimport(v) T_SEMICOLON. {
+	s = std::move(v);
+}
+stmt(s) ::= T_RETURN expr(e) T_SEMICOLON. {
+	s = std::make_unique<exo::ast::StmtReturn>( std::move(e) );
+	EXO_TRACK_NODE(s);
+}
+stmt(s) ::= stmtuse(u) T_SEMICOLON. {
+	s = std::move(u);
+}
+stmt(s) ::= stmtwhile(w). { /* ends with a statement */
+	s = std::move(w);
 }
 
-
-/* a block is empty (i.e. protofunctions, class blocks ), a collection of statements delimited by brackets or a single statement */
-%type block { std::unique_ptr<exo::ast::StmtList> }
-block(b) ::= T_LBRACKET T_RBRACKET. {
-	b = std::make_unique<exo::ast::StmtList>();
+/* break is a simple keyword */
+%type stmtbreak { std::unique_ptr<exo::ast::StmtBreak> }
+stmtbreak(b) ::= T_BREAK. {
+	b = std::make_unique<exo::ast::StmtBreak>();
 	EXO_TRACK_NODE(b);
 }
-block(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
-	b = std::move(s);
-	EXO_TRACK_NODE(b);
-}
-block(b) ::= stmt(s). {
-	b = std::make_unique<exo::ast::StmtList>();
-	b->list.push_back( std::move(s) );
-	EXO_TRACK_NODE(b);
+
+/* continue is a simple keyword */
+%type stmtcont { std::unique_ptr<exo::ast::StmtCont> }
+stmtcont(c) ::= T_CONTINUE. {
+	c = std::make_unique<exo::ast::StmtCont>();
+	EXO_TRACK_NODE(c);
 }
 
+/* a for block has a variable declaration list, followed by an expression condition, an expression update list and an asscoiated block */
+%type stmtfor { std::unique_ptr<exo::ast::StmtFor> }
+stmtfor(f) ::= T_FOR T_LANGLE declvarlist(l) T_SEMICOLON expr(c) T_SEMICOLON exprlist(u) T_RANGLE stmt(b). {
+	f = std::make_unique<exo::ast::StmtFor>( std::move(c), std::move(l), std::move(u), std::move(b) );
+	EXO_TRACK_NODE(f);
+}
 
-/* an if or if else block */
+/* an if or if-else block */
 %type stmtif { std::unique_ptr<exo::ast::StmtIf> }
-stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t). {
+stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE stmt(t). {
 	i = std::make_unique<exo::ast::StmtIf>( std::move(e), std::move(t) );
 	EXO_TRACK_NODE(i);
 }
-stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE block(t) T_ELSE block(f). {
+stmtif(i) ::= T_IF T_LANGLE expr(e) T_RANGLE stmt(t) T_ELSE stmt(f). {
 	i = std::make_unique<exo::ast::StmtIf>( std::move(e), std::move(t), std::move(f) );
 	EXO_TRACK_NODE(i);
 }
 
+/* a import declaration has a string identifier */
+%type stmtimport { std::unique_ptr<exo::ast::StmtImport> }
+stmtimport(i) ::= T_IMPORT string(s). {
+	i = std::make_unique<exo::ast::StmtImport>( std::move(s) );
+	EXO_TRACK_NODE(i);
+}
+
+/* a use declaration has a module identifier */
+%type stmtuse { std::unique_ptr<exo::ast::StmtUse> }
+stmtuse(u) ::= T_USE id(i). {
+	u = std::make_unique<exo::ast::StmtUse>( std::move(i) );
+	EXO_TRACK_NODE(u);
+}
 
 /* a while has a condition which is checked block and an asscoiated block */
 %type stmtwhile { std::unique_ptr<exo::ast::StmtWhile> }
-stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE block(b). {
+stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE stmt(b). {
 	i = std::make_unique<exo::ast::StmtWhile>( std::move(e), std::move(b) );
 	EXO_TRACK_NODE(i);
 }
 
 
-/* a for block has a variable declaration list, followed by an expression condition, an expression update list and an asscoiated block */
-%type stmtfor { std::unique_ptr<exo::ast::StmtFor> }
-stmtfor(f) ::= T_FOR T_LANGLE vardeclist(l) T_SEMICOLON expr(c) T_SEMICOLON exprlist(u) T_RANGLE block(b). {
-	f = std::make_unique<exo::ast::StmtFor>( std::move(c), std::move(l), std::move(u), std::move(b) );
+/*
+ * a declaration can be a class-, function prototype-, function-, module-, variable-, variable-list- declaration
+ * a declaration is basically a statement.
+ */
+%type decl { std::unique_ptr<exo::ast::Decl> }
+decl(d) ::= declclass(c). {
+	d = std::move(c);
+}
+decl(d) ::= declfunproto(f). {
+	d = std::move(f);
+}
+decl(d) ::= declfun(f). {
+	d = std::move(f);
+}
+decl(d) ::= declmod(m). {
+	d = std::move(m);
+}
+decl(d) ::= declvarlist(v). { /* also catches variable declarations */
+	d = std::move(v);
+}
+
+/* a block declaration contains the declarations properties and methods. (only used by class declarations for now) */
+%type declblock { std::unique_ptr<exo::ast::DeclBlock> }
+declblock(b) ::= declprop(d) T_SEMICOLON. {
+	b = std::make_unique<exo::ast::DeclBlock>();
+	b->properties.push_back( std::move(d) );
+	EXO_TRACK_NODE(b);
+}
+declblock(b) ::= declfun(d) T_SEMICOLON. {
+	b = std::make_unique<exo::ast::DeclBlock>();
+	b->methods.push_back( std::move(d) );
+	EXO_TRACK_NODE(b);
+}
+declblock(b) ::= declblock(l) declprop(d) T_SEMICOLON. {
+	l->properties.push_back( std::move(d) );
+	b = std::move(l);
+}
+declblock(b) ::= declblock(l) declfun(d) T_SEMICOLON. {
+	l->methods.push_back( std::move(d) );
+	b = std::move(l);
+}
+
+/* a class declaration is a class keyword, followed by an identifier, optionally an extend with a classname, and and associated class block */
+%type declclass { std::unique_ptr<exo::ast::DeclClass> }
+declclass(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET declblock(b) T_RBRACKET. {
+	c = std::make_unique<exo::ast::DeclClass>( std::move(i), std::move(p) );
+	c->properties = std::move(b->properties);
+	c->methods = std::move(b->methods);
+	EXO_TRACK_NODE(c);
+}
+declclass(c) ::= T_CLASS id(i) T_LBRACKET declblock(b) T_RBRACKET. {
+	c = std::make_unique<exo::ast::DeclClass>( std::move(i) );
+	c->properties = std::move(b->properties);
+	c->methods = std::move(b->methods);
+	EXO_TRACK_NODE(c);
+}
+declclass(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET T_RBRACKET. {
+	c = std::make_unique<exo::ast::DeclClass>( std::move(i), std::move(p) );
+	EXO_TRACK_NODE(c);
+}
+declclass(c) ::= T_CLASS id(i) T_LBRACKET T_RBRACKET. {
+	c = std::make_unique<exo::ast::DeclClass>( std::move(i) );
+	EXO_TRACK_NODE(c);
+}
+
+/*
+ * a function prototype declaration is a type identifier followed by the keyword function a functionname
+ */
+%type declfunproto { std::unique_ptr<exo::ast::DeclFunProto> }
+declfunproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE. {
+	f = std::make_unique<exo::ast::DeclFunProto>( std::move(i), std::move(t), std::move(l), false );
+	EXO_TRACK_NODE(f);
+}
+declfunproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE. {
+	f = std::make_unique<exo::ast::DeclFunProto>( std::move(i), std::move(t), std::move(l), true );
 	EXO_TRACK_NODE(f);
 }
 
+/*
+ * a function declaration has an optional access modifier, a (return)type identifier followed by the keyword function a functionname
+ * optionally function arguments in brackets and an associated block.
+ */
+%type declfun { std::unique_ptr<exo::ast::DeclFun> }
+declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(t), std::move(l), std::move(b), false );
+	EXO_TRACK_NODE(f);
+}
+declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(t), std::move(l), std::move(b), true );
+	EXO_TRACK_NODE(f);
+}
+declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::move(t), std::move(l), std::move(b), false );
+	EXO_TRACK_NODE(f);
+}
+declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::move(t), std::move(l), std::move(b), true );
+	EXO_TRACK_NODE(f);
+}
 
-/* a while has a condition which is checked block and an asscoiated block */
-%type stmtbreak { std::unique_ptr<exo::ast::StmtBreak> }
-stmtbreak(i) ::= T_BREAK. {
-	i = std::make_unique<exo::ast::StmtBreak>();
-	EXO_TRACK_NODE(i);
+/* a module declaration is a module identifier */
+%type declmod { std::unique_ptr<exo::ast::DeclMod> }
+declmod(m) ::= T_MODULE id(i). {
+	ast->moduleName = i->inNamespace + i->name;
+	m = std::make_unique<exo::ast::DeclMod>( std::move(i) );
+	EXO_TRACK_NODE(m);
+}
+
+/* a property declaration is an access modifier followed by a variable declaration */
+%type declprop { std::unique_ptr<exo::ast::DeclProp> }
+declprop(p) ::= access(a) declvar(v). {
+	p = std::make_unique<exo::ast::DeclProp>( std::move(v), std::move(a) );
+	EXO_TRACK_NODE(p);
+}
+
+/* a variable declaration is a type identifier followed by a variable name optionally followed by an assignment to an expression */
+%type declvar { std::unique_ptr<exo::ast::DeclVar> }
+declvar(d) ::= type(t) S_VAR(v). {
+	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t) );
+	EXO_TRACK_NODE(d);
+}
+declvar(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
+	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), std::move(e) );
+	EXO_TRACK_NODE(d);
+}
+
+/* a variable declaration list are variable declarations seperated by a colon optionally or empty */
+%type declvarlist { std::unique_ptr<exo::ast::DeclVarList> }
+declvarlist(l)::= . {
+	l = std::make_unique<exo::ast::DeclVarList>();
+	EXO_TRACK_NODE(l);
+}
+declvarlist(l) ::= declvar(d). {
+	l = std::make_unique<exo::ast::DeclVarList>();
+	l->list.push_back( std::move(d) );
+	EXO_TRACK_NODE(l);
+}
+declvarlist(e) ::= declvarlist(l) T_COMMA declvar(d). {
+	l->list.push_back( std::move(d) );
+	e = std::move(l);
 }
 
 
@@ -217,7 +363,7 @@ id(i) ::= S_ID(s). {
 }
 
 
-/* a type may be a primitive bool, integer, float, string, auto, callable, null or an identifier for a complex */
+/* a type may be a primitive (bool, integer, float, string, auto, callable, null) or an identifier for a complex */
 %type type { std::unique_ptr<exo::ast::Type> }
 type(t) ::= T_TBOOL. {
 	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "bool" ), true );
@@ -236,11 +382,11 @@ type(t) ::= T_TSTRING. {
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TAUTO. {
-	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "auto" ), true );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "auto" ) );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_TCALLABLE. {
-	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "callable" ), true );
+	t = std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "callable" ) );
 	EXO_TRACK_NODE(t);
 }
 type(t) ::= T_VNULL. {
@@ -250,119 +396,6 @@ type(t) ::= T_VNULL. {
 type(t) ::= id(i). {
 	t = std::make_unique<exo::ast::Type>( std::move(i) );
 	EXO_TRACK_NODE(t);
-}
-
-
-/* a variable declaration is a type identifier followed by a variable name optionally followed by an assignment to an expression */
-%type vardec { std::unique_ptr<exo::ast::DecVar> }
-vardec(d) ::= type(t) S_VAR(v). {
-	d = std::make_unique<exo::ast::DecVar>( TOKENSTR(v), std::move(t) );
-	EXO_TRACK_NODE(d);
-}
-vardec(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
-	d = std::make_unique<exo::ast::DecVar>( TOKENSTR(v), std::move(t), std::move(e) );
-	EXO_TRACK_NODE(d);
-}
-
-
-/* a variable declaration lists are variable declarations seperated by a colon optionally or empty */
-%type vardeclist { std::unique_ptr<exo::ast::DecList> }
-vardeclist(l)::= . {
-	l = std::make_unique<exo::ast::DecList>();
-	EXO_TRACK_NODE(l);
-}
-vardeclist(l) ::= vardec(d). {
-	l = std::make_unique<exo::ast::DecList>();
-	l->list.push_back( std::move(d) );
-	EXO_TRACK_NODE(l);
-}
-vardeclist(e) ::= vardeclist(l) T_COMMA vardec(d). {
-	l->list.push_back( std::move(d) );
-	e = std::move(l);
-	EXO_TRACK_NODE(e);
-}
-
-/*
- * a function declaration is a type identifier followed by the keyword function a functionname
- * optionally function arguments in brackets. if it has an associated block its a proper function and not a prototype
- */
-%type funproto { std::unique_ptr<exo::ast::DecFunProto> }
-funproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_RANGLE. {
-	f = std::make_unique<exo::ast::DecFunProto>( std::move(i), std::move(t), std::move(l), false );
-	EXO_TRACK_NODE(f);
-}
-funproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE. {
-	f = std::make_unique<exo::ast::DecFunProto>( std::move(i), std::move(t), std::move(l), true );
-	EXO_TRACK_NODE(f);
-}
-%type fundec { std::unique_ptr<exo::ast::DecFun> }
-fundec(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_RANGLE block(b). {
-	f = std::make_unique<exo::ast::DecFun>( std::move(i), std::move(t), std::move(l), std::move(b), false );
-	EXO_TRACK_NODE(f);
-}
-fundec(f) ::= type(t) T_FUNCTION id(i) T_LANGLE vardeclist(l) T_VARG T_RANGLE block(b). {
-	f = std::make_unique<exo::ast::DecFun>( std::move(i), std::move(t), std::move(l), std::move(b), true );
-	EXO_TRACK_NODE(f);
-}
-
-
-/* a method declaration is an access modifier followed by a function declaration */
-%type methoddec { std::unique_ptr<exo::ast::DecMethod> }
-methoddec(m) ::= access(a) fundec(f) T_SEMICOLON. {
-	m = std::make_unique<exo::ast::DecMethod>( std::move(f), std::move(a) );
-	EXO_TRACK_NODE(m);
-}
-
-
-/* a property declaration is an access modifier followed by a variable declaration */
-%type propertydec { std::unique_ptr<exo::ast::DecProp> }
-propertydec(p) ::= access(a) vardec(v) T_SEMICOLON. {
-	p = std::make_unique<exo::ast::DecProp>( std::move(v), std::move(a) );
-	EXO_TRACK_NODE(p);
-}
-
-
-/* a class declaration is a class keyword, followed by an identifier, optionally an extend with a classname, and and associated class block */
-%type classdec { std::unique_ptr<exo::ast::DecClass> }
-classdec(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET classblock(b) T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::move(p), std::move(b) );
-	EXO_TRACK_NODE(c);
-}
-classdec(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::move(p), std::make_unique<exo::ast::ClassBlock>() );
-	EXO_TRACK_NODE(c);
-}
-classdec(c) ::= T_CLASS id(i) T_LBRACKET classblock(b) T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::move(b) );
-	EXO_TRACK_NODE(c);
-}
-classdec(c) ::= T_CLASS id(i) T_LBRACKET T_RBRACKET. {
-	c = std::make_unique<exo::ast::DecClass>( std::move(i), std::make_unique<exo::ast::ClassBlock>() );
-	EXO_TRACK_NODE(c);
-}
-
-
-/* a class block contains the declarations of a class. that is properties and methods. */
-%type classblock { std::unique_ptr<exo::ast::ClassBlock> }
-classblock(b) ::= propertydec(d). {
-	b = std::make_unique<exo::ast::ClassBlock>();
-	b->properties.push_back( std::move(d) );
-	EXO_TRACK_NODE(b);
-}
-classblock(b) ::= methoddec(d). {
-	b = std::make_unique<exo::ast::ClassBlock>();
-	b->methods.push_back( std::move(d) );
-	EXO_TRACK_NODE(b);
-}
-classblock(b) ::= classblock(l) propertydec(d). {
-	l->properties.push_back( std::move(d) );
-	b = std::move(l);
-	EXO_TRACK_NODE(b);
-}
-classblock(b) ::= classblock(l) methoddec(d). {
-	l->methods.push_back( std::move(d) );
-	b = std::move(l);
-	EXO_TRACK_NODE(b);
 }
 
 
@@ -380,18 +413,17 @@ exprlist(l) ::= expr(e). {
 exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 	l->list.push_back( std::move(e) );
 	f = std::move(l);
-	EXO_TRACK_NODE(f);
 }
 
 
-/* an expression may be an function call, method call, property, variable (expression), constant, binary (add, ... assignment) operation, delimited/grouped by brackets */
+/* an expression may be (delimited/grouped by brackets) an function call, method call, property, variable (expression), constant, binary operation (add, ... assignment) operation, unary operation ( new, delete) */
 %type expr { std::unique_ptr<exo::ast::Expr> }
 expr(e) ::= id(i) T_LANGLE exprlist(a) T_RANGLE. {
-	e = std::make_unique<exo::ast::CallFun>( std::move(i), std::move(a) );
+	e = std::make_unique<exo::ast::ExprCallFun>( std::move(i), std::move(a) );
 	EXO_TRACK_NODE(e);
 }
 expr(e) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
-	e = std::make_unique<exo::ast::CallMethod>( std::make_unique<exo::ast::Id>( TOKENSTR(i) ), std::move(v), std::move(a) );
+	e = std::make_unique<exo::ast::ExprCallMethod>( std::make_unique<exo::ast::Id>( TOKENSTR(i) ), std::move(v), std::move(a) );
 	EXO_TRACK_NODE(e);
 }
 expr(e) ::= expr(v) T_PTR S_ID(i). {
@@ -404,7 +436,6 @@ expr(e) ::= S_VAR(v). {
 }
 expr(e) ::= constant(c). {
 	e = std::move(c);
-	EXO_TRACK_NODE(e);
 }
 /* binary ops */
 expr(e) ::= expr(a) T_PLUS expr(b). {
@@ -479,9 +510,7 @@ expr(e) ::= expr(a) T_DIV T_ASSIGN expr(b). {
 }
 expr(e) ::= T_LANGLE expr(a) T_RANGLE. {
 	e = std::move(a);
-	EXO_TRACK_NODE(e);
 }
-
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */
 %type constant { std::unique_ptr<exo::ast::Expr> }
@@ -523,13 +552,10 @@ constant(c) ::= T_CONST_MODULE. {
 }
 constant(c) ::= number(n). {
 	c = std::move(n);
-	EXO_TRACK_NODE(c);
 }
 constant(c) ::= string(s). {
 	c = std::move(s);
-	EXO_TRACK_NODE(c);
 }
-
 
 /* a number can be an integer or a float */
 %type number { std::unique_ptr<exo::ast::Expr> }
@@ -550,9 +576,8 @@ number(n) ::= T_MINUS S_FLOAT(f). {
 	EXO_TRACK_NODE(n);
 }
 
-
 /* a string is delimited by quotes */
-%type string { std::unique_ptr<exo::ast::Expr> }
+%type string { std::unique_ptr<exo::ast::ConstStr> }
 string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 	s = std::make_unique<exo::ast::ConstStr>( TOKENSTR(q) );
 	EXO_TRACK_NODE(s);
@@ -563,13 +588,22 @@ string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 %type access { std::unique_ptr<exo::ast::ModAccess> }
 access(a) ::= T_PUBLIC. {
 	a = std::make_unique<exo::ast::ModAccess>();
+	a->isPublic = true;
+	a->isPrivate = false;
+	a->isProtected = false;
 	EXO_TRACK_NODE(a);
 }
 access(a) ::= T_PRIVATE. {
 	a = std::make_unique<exo::ast::ModAccess>();
+	a->isPublic = false;
+	a->isPrivate = true;
+	a->isProtected = false;
 	EXO_TRACK_NODE(a);
 }
 access(a) ::= T_PROTECTED. {
 	a = std::make_unique<exo::ast::ModAccess>();
+	a->isPublic = false;
+	a->isPrivate = false;
+	a->isProtected = true;
 	EXO_TRACK_NODE(a);
 }

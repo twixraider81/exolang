@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		ClassBlock::ClassBlock()
+		DeclBlock::DeclBlock()
 		{
 		}
 	}

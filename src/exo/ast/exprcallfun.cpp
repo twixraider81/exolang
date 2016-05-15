@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		CallFun::CallFun( std::unique_ptr<Id> i, std::unique_ptr<ExprList> a ) : id( std::move( i ) ), arguments( std::move( a ) )
+		ExprCallFun::ExprCallFun( std::unique_ptr<Id> i, std::unique_ptr<ExprList> a ) :
+			id( std::move(i) ),
+			arguments( std::move(a) )
 		{
 		}
 	}

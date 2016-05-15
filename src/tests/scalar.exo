@@ -1,9 +1,9 @@
 int $a		= 1;
 integer $b	= __LINE__;
-int $c		= $a + $b;
-int $d		= $b - $a;
-bool $j		= true;
-boolean $k	= false;
+
+int $c = $a + $b, int $d = $b - $a;
+bool $j = true, boolean $k = false;
+
 string $s	= __FILE__;
 str $v		= __VERSION__;
 string $t	= __TARGET__;

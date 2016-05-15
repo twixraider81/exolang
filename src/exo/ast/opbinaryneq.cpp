@@ -19,7 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		OpBinaryNeq::OpBinaryNeq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) )
+		OpBinaryNeq::OpBinaryNeq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) :
+			OpBinary( std::move(a), std::move(b) )
 		{
 		}
 	}

@@ -19,11 +19,16 @@ namespace exo
 {
 	namespace ast
 	{
-		DecVar::DecVar( std::string n, std::unique_ptr<Type> t, std::unique_ptr<Expr> e ) : name( n ), type( std::move(t) ), expression( std::move(e) )
+		DeclVar::DeclVar( std::string n, std::unique_ptr<Type> t, std::unique_ptr<Expr> e ) :
+			name( n ),
+			type( std::move(t) ),
+			expression( std::move(e) )
 		{
 		}
 
-		DecVar::DecVar( std::string n, std::unique_ptr<Type> t ) : name( n ), type( std::move(t) )
+		DeclVar::DeclVar( std::string n, std::unique_ptr<Type> t ) :
+			name( n ),
+			type( std::move(t) )
 		{
 		}
 	}

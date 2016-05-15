@@ -30,7 +30,7 @@ start = EXO;
  */
 define
 {
-	P_ID	([_a-zA-Z]+[_a-zA-Z0-9]*)	/* an identifier is an alpha char or underscore, followed by any amount of alphanumeric or udnerscore characters */
+	P_ID	([_a-zA-Z]+[_a-zA-Z0-9]*)	/* an identifier is an alpha char or underscore, minus, followed by any amount of alphanumeric or udnerscore characters */
 	P_NS	"::"						/* namespace denotifier */
 }
 
@@ -72,15 +72,20 @@ mode EXO:
 	"callable"						=> QUEX_TKN_T_TCALLABLE;
 
 	"module"						=> QUEX_TKN_T_MODULE;
+	"use"							=> QUEX_TKN_T_USE;
+	"import"						=> QUEX_TKN_T_IMPORT;
 
+	"fn"							=> QUEX_TKN_T_FUNCTION;
 	"function"						=> QUEX_TKN_T_FUNCTION;
 	"return"						=> QUEX_TKN_T_RETURN;
 
 	"if"							=> QUEX_TKN_T_IF;
 	"else"							=> QUEX_TKN_T_ELSE;
+
 	"while"							=> QUEX_TKN_T_WHILE;
 	"for"							=> QUEX_TKN_T_FOR;
 	"break"							=> QUEX_TKN_T_BREAK;
+	"continue"						=> QUEX_TKN_T_CONTINUE;
 
 	"class"							=> QUEX_TKN_T_CLASS;
 	"extends"						=> QUEX_TKN_T_EXTENDS;

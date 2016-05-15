@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		DecList::DecList()
+		DeclVarList::DeclVarList()
 		{
 		}
 	}

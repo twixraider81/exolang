@@ -19,7 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		DecMod::DecMod( std::unique_ptr<Id> i ) : id( std::move( i ) )
+		DeclMod::DeclMod( std::unique_ptr<Id> i ) :
+			id( std::move( i ) )
 		{
 		}
 	}

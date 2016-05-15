@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		DecProp::DecProp( std::unique_ptr<DecVar> d, std::unique_ptr<ModAccess> a ) : access( std::move(a) ), property( std::move(d) )
+		DeclProp::DeclProp( std::unique_ptr<DeclVar> d, std::unique_ptr<ModAccess> a ) :
+			access( std::move(a) ),
+			property( std::move(d) )
 		{
 		}
 	}

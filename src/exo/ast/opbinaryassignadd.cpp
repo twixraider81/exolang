@@ -20,9 +20,9 @@ namespace exo
 	namespace ast
 	{
 		OpBinaryAssignAdd::OpBinaryAssignAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) :
-				OpBinary( std::move(a), std::move(b) ),
-				OpBinaryAssign( std::move(a), std::move(b) ),
-				OpBinaryAssignShort( std::move(a), std::move(b) )
+			OpBinary( std::move(a), std::move(b) ),
+			OpBinaryAssign( std::move(a), std::move(b) ),
+			OpBinaryAssignShort( std::move(a), std::move(b) )
 		{
 		}
 	}

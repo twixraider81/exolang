@@ -25,44 +25,39 @@ namespace exo
 	// forward declarations
 	namespace ast
 	{
-		class Expr;
-
-		class CallFun;
-		class CallMethod;
-
 		class ConstBool;
 		class ConstFloat;
 		class ConstInt;
 		class ConstNull;
 		class ConstStr;
-
-		class DecMod;
-		class DecClass;
-		class DecFun;
-		class DecFunProto;
-		class DecVar;
-
+		class DeclClass;
+		class DeclFunProto;
+		class DeclFun;
+		class DeclMod;
+		class DeclVar;
+		class DeclVarList;
+		class Expr;
+		class ExprCallFun;
+		class ExprCallMethod;
 		class ExprVar;
 		class ExprProp;
-
+		class Id;
 		class OpBinary;
 		class OpBinaryAssign;
 		class OpBinaryAssignShort;
-
 		class OpUnaryDel;
 		class OpUnaryNew;
-
+		class StmtBlock;
 		class StmtBreak;
+		class StmtCont;
 		class StmtExpr;
 		class StmtFor;
 		class StmtIf;
+		class StmtImport;
 		class StmtReturn;
-		class StmtList;
+		class StmtUse;
 		class StmtWhile;
-
-		class Id;
 		class Type;
-
 		class Tree;
 	}
 
@@ -94,43 +89,41 @@ namespace exo
 				llvm::Function*	getCallee( std::string className );
 				llvm::Value* 	invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments );
 
-
-				llvm::Value* Generate( exo::ast::CallFun* call );
-				llvm::Value* Generate( exo::ast::CallMethod* call );
-
 				llvm::Value* Generate( exo::ast::ConstBool* val );
 				llvm::Value* Generate( exo::ast::ConstInt* val );
 				llvm::Value* Generate( exo::ast::ConstFloat* val );
 				llvm::Value* Generate( exo::ast::ConstNull* val );
 				llvm::Value* Generate( exo::ast::ConstStr* val );
-
-				llvm::Value* Generate( exo::ast::DecMod* dec );
-				llvm::Value* Generate( exo::ast::DecClass* dec );
-				llvm::Value* Generate( exo::ast::DecFun* dec );
-				llvm::Value* Generate( exo::ast::DecFunProto* dec );
-				llvm::Value* Generate( exo::ast::DecVar* dec );
-
-				llvm::Value* Generate( exo::ast::ExprVar* expr );
+				llvm::Value* Generate( exo::ast::DeclClass* dec );
+				llvm::Value* Generate( exo::ast::DeclFunProto* dec );
+				llvm::Value* Generate( exo::ast::DeclFun* dec );
+				llvm::Value* Generate( exo::ast::DeclMod* dec );
+				llvm::Value* Generate( exo::ast::DeclVar* dec );
+				llvm::Value* Generate( exo::ast::DeclVarList* dec );
+				llvm::Value* Generate( exo::ast::ExprCallFun* call );
+				llvm::Value* Generate( exo::ast::ExprCallMethod* call );
 				llvm::Value* Generate( exo::ast::ExprProp* expr );
-
+				llvm::Value* Generate( exo::ast::ExprVar* expr );
 				llvm::Value* Generate( exo::ast::OpBinary* op );
 				llvm::Value* Generate( exo::ast::OpBinaryAssign* op );
 				llvm::Value* Generate( exo::ast::OpBinaryAssignShort* op );
-
 				llvm::Value* Generate( exo::ast::OpUnaryDel* op );
 				llvm::Value* Generate( exo::ast::OpUnaryNew* op );
-
+				llvm::Value* Generate( exo::ast::StmtBlock* stmts );
 				llvm::Value* Generate( exo::ast::StmtBreak* stmt );
+				llvm::Value* Generate( exo::ast::StmtCont* stmt );
 				llvm::Value* Generate( exo::ast::StmtExpr* stmt );
 				llvm::Value* Generate( exo::ast::StmtFor* stmt );
 				llvm::Value* Generate( exo::ast::StmtIf* stmt );
+				llvm::Value* Generate( exo::ast::StmtImport* stmt );
 				llvm::Value* Generate( exo::ast::StmtReturn* stmt );
-				llvm::Value* Generate( exo::ast::StmtList* stmts );
+				llvm::Value* Generate( exo::ast::StmtUse* dec );
 				llvm::Value* Generate( exo::ast::StmtWhile* stmt );
-
 				llvm::Value* Generate( exo::ast::Tree* tree );
 
 				std::string printValue( llvm::Value* value );
+
+				llvm::Function* registerExternFun( std::string name, llvm::Type* retType, std::vector<llvm::Type*> fArgs );
 		};
 	}
 }

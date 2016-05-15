@@ -19,7 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ConstInt::ConstInt( long long v ) : value( v )
+		ConstInt::ConstInt( long long v ) :
+			value( v )
 		{
 		}
 	}

@@ -8,6 +8,15 @@ string $i = '';
 std::$test;
 src::tests::scalar::$a;
 
+module custom::test
+{
+	int function test()
+	{
+		return( 1 );
+	}
+};
+
+
 $t();
 
 // unknown variable usage creates an auto type

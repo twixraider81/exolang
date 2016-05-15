@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		Node::Node() : lineNo( 0 ), columnNo( 0 )
+		Node::Node() :
+			lineNo( 0 ),
+			columnNo( 0 )
 		{
 		}
 

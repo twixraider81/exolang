@@ -19,7 +19,7 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtList::StmtList()
+		StmtBlock::StmtBlock()
 		{
 		}
 	}

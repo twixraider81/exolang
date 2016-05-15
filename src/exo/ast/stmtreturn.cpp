@@ -19,7 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtReturn::StmtReturn( std::unique_ptr<Expr> e ) : StmtExpr( std::move( e ) )
+		StmtReturn::StmtReturn( std::unique_ptr<Expr> e ) :
+			StmtExpr( std::move( e ) )
 		{
 		}
 	}

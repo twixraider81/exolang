@@ -19,7 +19,9 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtWhile::StmtWhile( std::unique_ptr<Expr> e, std::unique_ptr<StmtList> b ) : StmtExpr( std::move( e ) ), block( std::move( b ) )
+		StmtWhile::StmtWhile( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> b ) :
+			StmtExpr( std::move( e ) ),
+			block( std::move( b ) )
 		{
 		}
 	}

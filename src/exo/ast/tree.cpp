@@ -26,7 +26,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree() : stmts( std::make_unique<exo::ast::StmtList>() ), fileName( "?" ), currentLineNo( 0 ), currentColumnNo( 0 )
+		Tree::Tree() : fileName( "?" ), currentLineNo( 0 ), currentColumnNo( 0 )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );
@@ -83,7 +83,7 @@ namespace exo
 
 				::Parse( parser, 0, nullptr, this );
 			} catch( boost::exception &exception ) {
-				exception << boost::errinfo_file_name( fileName ) << boost::errinfo_file_name( fileName ) << boost::errinfo_at_line( currentLineNo );
+				exception << boost::errinfo_file_name( fileName ) << boost::errinfo_at_line( currentLineNo ) << exo::exceptions::ColumnNo( currentColumnNo );
 				throw;
 			}
 		}

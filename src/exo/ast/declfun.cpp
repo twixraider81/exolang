@@ -19,10 +19,19 @@ namespace exo
 {
 	namespace ast
 	{
-		DecFun::DecFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DecList> a, std::unique_ptr<StmtList> b, bool va ) :
-				DecFunProto( std::move( i ), std::move( r ), std::move( a ), va ),
-				stmts( std::move( b ) )
+		DeclFun::DeclFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<Stmt> b, bool va ) :
+			DeclFunProto( std::move(i), std::move(r), std::move(a), va ),
+			stmts( std::move(b) ),
+			access( std::make_unique<ModAccess>() )
 		{
+		}
+
+		DeclFun::DeclFun( std::unique_ptr<Id> i, std::unique_ptr<ModAccess> m, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<Stmt> b, bool va ):
+			DeclFunProto( std::move(i), std::move(r), std::move(a), va ),
+			stmts( std::move(b) ),
+			access( std::move(m) )
+		{
+
 		}
 	}
 }

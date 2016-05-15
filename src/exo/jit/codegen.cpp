@@ -23,7 +23,7 @@ namespace exo
 {
 	namespace jit
 	{
-		Codegen::Codegen( std::unique_ptr<llvm::Module> m ) : module( std::move(m) ), builder( llvm::getGlobalContext() )
+		Codegen::Codegen( std::unique_ptr<llvm::Module> m ) : module( std::move(m) ), builder( module->getContext() )
 		{
 			stack = std::make_unique<Stack>();
 		}
@@ -125,8 +125,259 @@ namespace exo
 			return( builder.CreateStore( retval, memory ) );
 		}
 
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::CallFun* call )
+
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
+		{
+			EXO_DEBUG_LOG( trace, "Generating boolean \"" << val->value << "\" in (" << stack->blockName() << ")" );
+
+			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
+			llvm::Value* memory = builder.CreateAlloca( type );
+
+			if( val->value ) {
+				builder.CreateStore( llvm::ConstantInt::getTrue( type ), memory );
+			} else {
+				builder.CreateStore( llvm::ConstantInt::getFalse( type ), memory );
+			}
+			return( memory );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
+		{
+			EXO_DEBUG_LOG( trace, "Generating float \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			llvm::Type* type = llvm::Type::getDoubleTy( module->getContext() );
+			llvm::Value* memory = builder.CreateAlloca( type );
+			builder.CreateStore( llvm::ConstantFP::get( type, val->value ), memory );
+			return( memory );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
+		{
+			EXO_DEBUG_LOG( trace, "Generating integer \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			llvm::Type* type = llvm::Type::getInt64Ty( module->getContext() );
+			llvm::Value* memory = builder.CreateAlloca( type );
+			builder.CreateStore( llvm::ConstantInt::get( type, val->value ), memory );
+			return( memory );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
+		{
+			EXO_DEBUG_LOG( trace, "Generating null in (" << stack->blockName() << ")" );
+			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
+			llvm::Value* memory = builder.CreateAlloca( type );
+			builder.CreateStore( llvm::Constant::getNullValue( type ), memory );
+			return( memory );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
+		{
+			EXO_DEBUG_LOG( trace, "Generating string \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			llvm::Type* type = llvm::Type::getInt8PtrTy( module->getContext() );
+			llvm::Value* memory = builder.CreateAlloca( type );
+			llvm::Value* str = builder.CreateBitCast( builder.CreateGlobalString( val->value ), type );
+			builder.CreateStore( str, memory );
+			return( memory );
+		}
+
+
+		/*
+		 * a class structure is CURRENTLY declared as follows:
+		 * %__vtbl_struct_%className { a structure containing signatures to the class methods }
+		 * %__vtbl_%className { a global instance of the vtbl structure with approriate method pointers }
+		 * %className { a structure with all own + inherited properties }
+		 * TODO: how do we overwrite methods & properties in a proper way?
+		 * FIXME: get rid of globalvariable
+		 */
+		llvm::Value* Codegen::Generate( exo::ast::DeclClass* decl )
+		{
+			EXO_LOG( trace, "Declaring class \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
+
+			// if we have a parent, do inherit properties and methods
+			if( decl->parent ) {
+				std::string pName = EXO_CLASS( decl->parent->name );
+				llvm::StructType* parent;
+
+				if( !( parent = module->getTypeByName( pName ) ) ) {
+					EXO_THROW( UnknownClass() << exo::exceptions::ClassName( pName ) );
+				}
+
+				properties[ EXO_CLASS( decl->id->name ) ]		= properties[ EXO_CLASS( pName ) ];
+				propertyIndex[ EXO_CLASS( decl->id->name ) ]	= propertyIndex[ EXO_CLASS( pName ) ];
+				methodIndex[ EXO_CLASS( decl->id->name ) ]		= methodIndex[ EXO_CLASS( pName ) ];
+				methods[ EXO_CLASS( decl->id->name ) ]			= methods[ EXO_CLASS( pName ) ];
+				vtblSignatures[ EXO_CLASS( decl->id->name ) ]	= vtblSignatures[ EXO_CLASS( pName ) ];
+				vtblInitializers[ EXO_CLASS( decl->id->name ) ]	= vtblInitializers[ EXO_CLASS( pName ) ];
+			}
+
+
+			// generate our properties
+			for( auto &property : decl->properties ) {
+				EXO_LOG( trace, "Property " << property->property->type->id->name << " $" << property->property->name );
+				propertyIndex[ EXO_CLASS( decl->id->name ) ].push_back( property->property->name );
+				properties[ EXO_CLASS( decl->id->name ) ].push_back( getType( property->property->type.get() ) );
+			}
+			llvm::StructType* classStruct = llvm::StructType::create( module->getContext(), properties[ EXO_CLASS( decl->id->name ) ], EXO_CLASS( decl->id->name ) );
+
+
+			// generate our methods & vtbl
+			for( auto &method : decl->methods ) {
+				std::string oName = method->id->name;
+				method->id->name = EXO_METHOD( decl->id->name, method->id->name );
+
+				// check if we are redeclaring
+				// TODO: this MUST check method signatures
+				bool reDeclare = false;
+				std::vector<std::string>::iterator it = std::find( methodIndex[ EXO_CLASS( decl->id->name ) ].begin(), methodIndex[ EXO_CLASS( decl->id->name ) ].end(), oName );
+				if( it != methodIndex[ EXO_CLASS( decl->id->name ) ].end() ) {
+					reDeclare = true;
+				}
+
+				// a pointer to a class structure as first parameter for methods
+				std::unique_ptr<exo::ast::Id> id = std::make_unique<exo::ast::Id>( decl->id->name );
+				method->arguments->list.insert( method->arguments->list.begin(), std::make_unique<exo::ast::DeclVar>( "this", std::make_unique<exo::ast::Type>( std::move( id ) ) ) );
+				method->Generate( this );
+
+				// mark position & signature in our vtbl
+				llvm::Function* cMethod = module->getFunction( method->id->name );
+				if( reDeclare ) {
+					int mIndex = getMethodPosition( decl->id->name, oName );
+					methods[ EXO_CLASS( decl->id->name ) ][mIndex]			= cMethod;
+					vtblSignatures[ EXO_CLASS( decl->id->name ) ][mIndex]	=  cMethod->getFunctionType()->getPointerTo();
+					vtblInitializers[ EXO_CLASS( decl->id->name ) ][mIndex]	= cMethod;
+				} else {
+					methodIndex[ EXO_CLASS( decl->id->name ) ].push_back( oName );
+					methods[ EXO_CLASS( decl->id->name ) ].push_back( cMethod );
+					vtblSignatures[ EXO_CLASS( decl->id->name ) ].push_back( cMethod->getFunctionType()->getPointerTo() );
+					vtblInitializers[ EXO_CLASS( decl->id->name ) ].push_back( cMethod );
+				}
+			}
+
+			llvm::StructType* vtbl = llvm::StructType::create( module->getContext(), vtblSignatures[ EXO_CLASS( decl->id->name ) ], EXO_VTABLE_STRUCT( decl->id->name ) );
+			llvm::GlobalVariable* value = new llvm::GlobalVariable( *module, vtbl, false, llvm::GlobalValue::ExternalLinkage, 0, EXO_VTABLE( decl->id->name ) );
+			value->setInitializer( llvm::ConstantStruct::get( vtbl, vtblInitializers[ EXO_CLASS( decl->id->name ) ] ) );
+			return( value );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::DeclFunProto* decl )
+		{
+			EXO_DEBUG_LOG( trace, "Declaring function prototype \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
+
+			std::vector<llvm::Type*> fArgs;
+			for( auto &argument : decl->arguments->list ) {
+				llvm::Type* arg = getType( argument->type.get() );
+				EXO_DEBUG_LOG( trace, "Argument $" << argument->name );
+				fArgs.push_back( arg );
+			}
+
+			llvm::Function* fun = llvm::Function::Create(
+				llvm::FunctionType::get( getType( decl->returnType.get() ), fArgs, decl->hasVaArg ),
+				llvm::GlobalValue::ExternalLinkage,
+				decl->id->name,
+				module.get()
+			);
+
+			return( fun );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::DeclFun* decl )
+		{
+			std::string argumentList;
+
+			// build up our argument list
+			std::vector<llvm::Type*> arguments;
+			for( auto &argument : decl->arguments->list ) {
+				arguments.push_back( getType( argument->type.get() ) );
+#ifdef EXO_DEBUG
+				argumentList.append(argument->type->id->name);
+				argumentList.append(" $");
+				argumentList.append(argument->name);
+				argumentList.append(", ");
+#endif
+			}
+			EXO_DEBUG_LOG( trace, "Generating function " << decl->id->name << "(" << argumentList << ") in (" << stack->blockName() << ")" );
+
+			// create a function block for our local variables
+			llvm::Function* function = llvm::Function::Create(
+					llvm::FunctionType::get( getType( decl->returnType.get() ),	arguments, decl->hasVaArg ),
+					( decl->access->isPublic ? llvm::GlobalValue::ExternalLinkage : llvm::GlobalValue::InternalLinkage ),
+					decl->id->name,
+					module.get()
+			);
+			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->id->name, function );
+
+			// track our scope, exit block
+			builder.SetInsertPoint( stack->Push( block, stack->Block() ) );
+
+			// create loads for the arguments passed to our function
+			int i = 0;
+			for( auto &argument : function->args() ) {
+				llvm::Value* memory = builder.CreateAlloca( argument.getType() );
+				builder.CreateStore( &argument, memory );
+				stack->setSymbol( decl->arguments->list.at( i )->name, memory );
+				i++;
+			}
+
+			// generate our actual function statements
+			llvm::Value* retVal = decl->stmts->Generate( this );
+
+			// sanitize function exit
+			if( retVal == nullptr || !llvm::isa<llvm::ReturnInst>(retVal) ) {
+				if( getType( decl->returnType.get() )->isVoidTy() ) {
+					EXO_DEBUG_LOG( trace, "Generating void return in (" << stack->blockName() << ")" );
+					builder.CreateRetVoid();
+				} else {
+					EXO_DEBUG_LOG( trace, "Generating null return in (" << stack->blockName() << ")" );
+					builder.CreateRet( llvm::Constant::getNullValue( getType( decl->returnType.get() ) ) );
+				}
+			}
+
+			// pop our block, void local variables
+			builder.SetInsertPoint( stack->Pop() );
+
+			return( function );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::DeclMod* decl )
+		{
+			/* dont tinker here
+			module->setModuleIdentifier( decl->id->inNamespace +  decl->id->name );
+			*/
+			return( nullptr );
+		}
+
+		// FIXME: check instantiation
+		llvm::Value* Codegen::Generate( exo::ast::DeclVar* decl )
+		{
+			EXO_LOG( trace, "Allocating " << decl->type->id->name << " $" << decl->name << " on stack in (" << stack->blockName() << ")" );
+			stack->setSymbol( decl->name, builder.CreateAlloca( getType( decl->type.get() ) ) );
+
+			if( decl->expression ) {
+				std::unique_ptr<exo::ast::OpBinaryAssign> a = std::make_unique<exo::ast::OpBinaryAssign>( std::make_unique<exo::ast::ExprVar>( decl->name ), std::move( decl->expression ) );
+				a->Generate( this );
+			}
+
+			llvm::Value* variable;
+
+			try {
+				variable = stack->getSymbol( decl->name );
+			} catch( boost::exception &exception ) {
+				exception << boost::errinfo_at_line( decl->lineNo ) << exo::exceptions::ColumnNo( decl->columnNo );
+				throw;
+			}
+
+			return( variable );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::DeclVarList* decl )
+		{
+			for( auto &argument : decl->list ) {
+				argument->Generate( this );
+			}
+
+			return( nullptr );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::ExprCallFun* call )
 		{
 			EXO_LOG( debug, "Call to \"" << call->id->name << "\" in (" << stack->blockName() << ")" );
 			llvm::Function* callee = getCallee( call->id->name );
@@ -148,7 +399,7 @@ namespace exo
 		}
 
 		// TODO: check if the invoker is actually a type / sub type
-		llvm::Value* Codegen::Generate( exo::ast::CallMethod* call )
+		llvm::Value* Codegen::Generate( exo::ast::ExprCallMethod* call )
 		{
 			llvm::Value* variable = call->expression->Generate( this );
 
@@ -196,272 +447,6 @@ namespace exo
 			return( memory );
 		}
 
-
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
-		{
-			EXO_DEBUG_LOG( trace, "Generating boolean \"" << val->value << "\" in (" << stack->blockName() << ")" );
-
-			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
-			llvm::Value* memory = builder.CreateAlloca( type );
-
-			if( val->value ) {
-				builder.CreateStore( llvm::ConstantInt::getTrue( type ), memory );
-			} else {
-				builder.CreateStore( llvm::ConstantInt::getFalse( type ), memory );
-			}
-			return( memory );
-		}
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
-		{
-			EXO_DEBUG_LOG( trace, "Generating float \"" << val->value << "\" in (" << stack->blockName() << ")" );
-			llvm::Type* type = llvm::Type::getDoubleTy( module->getContext() );
-			llvm::Value* memory = builder.CreateAlloca( type );
-			builder.CreateStore( llvm::ConstantFP::get( type, val->value ), memory );
-			return( memory );
-		}
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
-		{
-			EXO_DEBUG_LOG( trace, "Generating integer \"" << val->value << "\" in (" << stack->blockName() << ")" );
-			llvm::Type* type = llvm::Type::getInt64Ty( module->getContext() );
-			llvm::Value* memory = builder.CreateAlloca( type );
-			builder.CreateStore( llvm::ConstantInt::get( type, val->value ), memory );
-			return( memory );
-		}
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
-		{
-			EXO_DEBUG_LOG( trace, "Generating null in (" << stack->blockName() << ")" );
-			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
-			llvm::Value* memory = builder.CreateAlloca( type );
-			builder.CreateStore( llvm::Constant::getNullValue( type ), memory );
-			return( memory );
-		}
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
-		{
-			EXO_DEBUG_LOG( trace, "Generating string \"" << val->value << "\" in (" << stack->blockName() << ")" );
-			llvm::Type* type = llvm::Type::getInt8PtrTy( module->getContext() );
-			llvm::Value* memory = builder.CreateAlloca( type );
-			llvm::Value* str = builder.CreateBitCast( builder.CreateGlobalString( val->value ), type );
-			builder.CreateStore( str, memory );
-			return( memory );
-		}
-
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::DecMod* decl )
-		{
-			//module->setModuleIdentifier( decl->id->inNamespace +  decl->id->name );
-			return( nullptr );
-		}
-
-		/*
-		 * a class structure is CURRENTLY declared as follows:
-		 * %__vtbl_struct_%className { a structure containing signatures to the class methods }
-		 * %__vtbl_%className { a global instance of the vtbl structure with approriate method pointers }
-		 * %className { a structure with all own + inherited properties }
-		 * TODO: how do we overwrite methods & properties in a proper way?
-		 * FIXME: get rid of globalvariable
-		 */
-		llvm::Value* Codegen::Generate( exo::ast::DecClass* decl )
-		{
-			EXO_LOG( trace, "Declaring class \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
-
-			// if we have a parent, do inherit properties and methods
-			if( decl->parent ) {
-				std::string pName = EXO_CLASS( decl->parent->name );
-				llvm::StructType* parent;
-
-				if( !( parent = module->getTypeByName( pName ) ) ) {
-					EXO_THROW( UnknownClass() << exo::exceptions::ClassName( pName ) );
-				}
-
-				properties[ EXO_CLASS( decl->id->name ) ]		= properties[ EXO_CLASS( pName ) ];
-				propertyIndex[ EXO_CLASS( decl->id->name ) ]	= propertyIndex[ EXO_CLASS( pName ) ];
-				methodIndex[ EXO_CLASS( decl->id->name ) ]		= methodIndex[ EXO_CLASS( pName ) ];
-				methods[ EXO_CLASS( decl->id->name ) ]			= methods[ EXO_CLASS( pName ) ];
-				vtblSignatures[ EXO_CLASS( decl->id->name ) ]	= vtblSignatures[ EXO_CLASS( pName ) ];
-				vtblInitializers[ EXO_CLASS( decl->id->name ) ]	= vtblInitializers[ EXO_CLASS( pName ) ];
-			}
-
-
-			// generate our properties
-			for( auto &property : decl->block->properties ) {
-				EXO_LOG( trace, "Property " << property->property->type->id->name << " $" << property->property->name );
-				propertyIndex[ EXO_CLASS( decl->id->name ) ].push_back( property->property->name );
-				properties[ EXO_CLASS( decl->id->name ) ].push_back( getType( property->property->type.get() ) );
-			}
-			llvm::StructType* classStruct = llvm::StructType::create( module->getContext(), properties[ EXO_CLASS( decl->id->name ) ], EXO_CLASS( decl->id->name ) );
-
-
-			// generate our methods & vtbl
-			for( auto &method : decl->block->methods ) {
-				std::string oName = method->method->id->name;
-				method->method->id->name = EXO_METHOD( decl->id->name, method->method->id->name );
-
-				// check if we are redeclaring
-				// TODO: this MUST check method signatures
-				bool reDeclare = false;
-				std::vector<std::string>::iterator it = std::find( methodIndex[ EXO_CLASS( decl->id->name ) ].begin(), methodIndex[ EXO_CLASS( decl->id->name ) ].end(), oName );
-				if( it != methodIndex[ EXO_CLASS( decl->id->name ) ].end() ) {
-					reDeclare = true;
-				}
-
-				// a pointer to a class structure as first parameter for methods
-				std::unique_ptr<exo::ast::Id> id = std::make_unique<exo::ast::Id>( decl->id->name );
-				method->method->arguments->list.insert( method->method->arguments->list.begin(), std::make_unique<exo::ast::DecVar>( "this", std::make_unique<exo::ast::Type>( std::move( id ) ) ) );
-				method->method->Generate( this );
-
-				// mark position & signature in our vtbl
-				llvm::Function* cMethod = module->getFunction( method->method->id->name );
-				if( reDeclare ) {
-					int mIndex = getMethodPosition( decl->id->name, oName );
-					methods[ EXO_CLASS( decl->id->name ) ][mIndex]			= cMethod;
-					vtblSignatures[ EXO_CLASS( decl->id->name ) ][mIndex]	=  cMethod->getFunctionType()->getPointerTo();
-					vtblInitializers[ EXO_CLASS( decl->id->name ) ][mIndex]	= cMethod;
-				} else {
-					methodIndex[ EXO_CLASS( decl->id->name ) ].push_back( oName );
-					methods[ EXO_CLASS( decl->id->name ) ].push_back( cMethod );
-					vtblSignatures[ EXO_CLASS( decl->id->name ) ].push_back( cMethod->getFunctionType()->getPointerTo() );
-					vtblInitializers[ EXO_CLASS( decl->id->name ) ].push_back( cMethod );
-				}
-			}
-
-			llvm::StructType* vtbl = llvm::StructType::create( module->getContext(), vtblSignatures[ EXO_CLASS( decl->id->name ) ], EXO_VTABLE_STRUCT( decl->id->name ) );
-			llvm::GlobalVariable* value = new llvm::GlobalVariable( *module, vtbl, false, llvm::GlobalValue::ExternalLinkage, 0, EXO_VTABLE( decl->id->name ) );
-			value->setInitializer( llvm::ConstantStruct::get( vtbl, vtblInitializers[ EXO_CLASS( decl->id->name ) ] ) );
-			return( value );
-		}
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::DecFun* decl )
-		{
-			std::string argumentList;
-
-			// build up our argument list
-			std::vector<llvm::Type*> arguments;
-			for( auto &argument : decl->arguments->list ) {
-				arguments.push_back( getType( argument->type.get() ) );
-#ifdef EXO_DEBUG
-				argumentList.append(argument->type->id->name);
-				argumentList.append(" $");
-				argumentList.append(argument->name);
-				argumentList.append(", ");
-#endif
-			}
-			EXO_DEBUG_LOG( trace, "Generating function " << decl->id->name << "(" << argumentList << ") in (" << stack->blockName() << ")" );
-
-			// create a function block for our local variables
-			llvm::Function* function = llvm::Function::Create(
-					llvm::FunctionType::get( getType( decl->returnType.get() ),	arguments, decl->hasVaArg ),
-					llvm::GlobalValue::InternalLinkage,
-					decl->id->name,
-					module.get()
-			);
-			llvm::BasicBlock* block = llvm::BasicBlock::Create( module->getContext(), decl->id->name, function );
-
-			// track our scope, exit block
-			builder.SetInsertPoint( stack->Push( block, stack->Block() ) );
-
-			// create loads for the arguments passed to our function
-			int i = 0;
-			for( auto &argument : function->args() ) {
-				llvm::Value* memory = builder.CreateAlloca( argument.getType() );
-				builder.CreateStore( &argument, memory );
-				stack->setSymbol( decl->arguments->list.at( i )->name, memory );
-				i++;
-			}
-
-			// generate our actual function statements
-			llvm::Value* retVal = decl->stmts->Generate( this );
-
-			// sanitize function exit
-			if( retVal == nullptr || !llvm::isa<llvm::ReturnInst>(retVal) ) {
-				if( getType( decl->returnType.get() )->isVoidTy() ) {
-					EXO_DEBUG_LOG( trace, "Generating void return in (" << stack->blockName() << ")" );
-					builder.CreateRetVoid();
-				} else {
-					EXO_DEBUG_LOG( trace, "Generating null return in (" << stack->blockName() << ")" );
-					builder.CreateRet( llvm::Constant::getNullValue( getType( decl->returnType.get() ) ) );
-				}
-			}
-
-			// pop our block, void local variables
-			builder.SetInsertPoint( stack->Pop() );
-
-			return( function );
-		}
-
-
-		llvm::Value* Codegen::Generate( exo::ast::DecFunProto* decl )
-		{
-			EXO_DEBUG_LOG( trace, "Declaring function prototype \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
-
-			std::vector<llvm::Type*> fArgs;
-			for( auto &argument : decl->arguments->list ) {
-				llvm::Type* arg = getType( argument->type.get() );
-				EXO_DEBUG_LOG( trace, "Argument $" << argument->name );
-				fArgs.push_back( arg );
-			}
-
-			llvm::Function* fun = llvm::Function::Create(
-				llvm::FunctionType::get( getType( decl->returnType.get() ), fArgs, decl->hasVaArg ),
-				llvm::GlobalValue::ExternalLinkage,
-				decl->id->name,
-				module.get()
-			);
-
-			return( fun );
-		}
-
-		// FIXME: check instantiation
-		llvm::Value* Codegen::Generate( exo::ast::DecVar* decl )
-		{
-			EXO_LOG( trace, "Allocating " << decl->type->id->name << " $" << decl->name << " on stack in (" << stack->blockName() << ")" );
-			stack->setSymbol( decl->name, builder.CreateAlloca( getType( decl->type.get() ) ) );
-
-			if( decl->expression ) {
-				std::unique_ptr<exo::ast::OpBinaryAssign> a = std::make_unique<exo::ast::OpBinaryAssign>( std::make_unique<exo::ast::ExprVar>( decl->name ), std::move( decl->expression ) );
-				a->Generate( this );
-			}
-
-			llvm::Value* variable;
-
-			try {
-				variable = stack->getSymbol( decl->name );
-			} catch( boost::exception &exception ) {
-				exception << boost::errinfo_at_line( decl->lineNo );
-				throw;
-			}
-
-			return( variable );
-		}
-
-
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
-		{
-			llvm::Value* variable;
-
-			try {
-				variable = stack->getSymbol( expr->name );
-			} catch( boost::exception &exception ) {
-				exception << boost::errinfo_at_line( expr->lineNo );
-				throw;
-			}
-
-			return( variable );
-		}
-
 		// FIXME: track if instance property is actually initialized
 		llvm::Value* Codegen::Generate( exo::ast::ExprProp* expr )
 		{
@@ -482,6 +467,19 @@ namespace exo
 			return( builder.CreateInBoundsGEP( variable, idx, expr->name ) );
 		}
 
+		llvm::Value* Codegen::Generate( exo::ast::ExprVar* expr )
+		{
+			llvm::Value* variable;
+
+			try {
+				variable = stack->getSymbol( expr->name );
+			} catch( boost::exception &exception ) {
+				exception << boost::errinfo_at_line( expr->lineNo ) << exo::exceptions::ColumnNo( expr->columnNo );
+				throw;
+			}
+
+			return( variable );
+		}
 
 
 		llvm::Value* Codegen::Generate( exo::ast::OpBinary* op )
@@ -530,7 +528,6 @@ namespace exo
 			return( memory );
 		}
 
-		// ok
 		llvm::Value* Codegen::Generate( exo::ast::OpBinaryAssign* assign )
 		{
 			llvm::Value* variable = assign->lhs->Generate( this );
@@ -540,7 +537,6 @@ namespace exo
 			return( builder.CreateStore( value, variable ) );
 		}
 
-		// ok
 		llvm::Value* Codegen::Generate( exo::ast::OpBinaryAssignShort* assign )
 		{
 			llvm::Value* variable = assign->lhs->Generate( this );
@@ -587,7 +583,7 @@ namespace exo
 			try {
 				stack->delSymbol( var->name );
 			} catch( boost::exception &exception ) {
-				exception << boost::errinfo_at_line( op->lineNo );
+				exception << boost::errinfo_at_line( op->lineNo ) << exo::exceptions::ColumnNo( op->columnNo );
 				throw;
 			}
 
@@ -603,7 +599,7 @@ namespace exo
 		 */
 		llvm::Value* Codegen::Generate( exo::ast::OpUnaryNew* op )
 		{
-			exo::ast::CallFun* init = dynamic_cast<exo::ast::CallFun*>( op->rhs.get() );
+			exo::ast::ExprCallFun* init = dynamic_cast<exo::ast::ExprCallFun*>( op->rhs.get() );
 
 			if( !init ) {
 				EXO_THROW( InvalidExpr() );
@@ -660,7 +656,22 @@ namespace exo
 			return( memory );
 		}
 
-		// ok
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtBlock* stmts )
+		{
+			EXO_DEBUG_LOG( trace, "Generating " << stmts->list.size() << " statement(s) in (" << stack->blockName() << ")" );
+
+			llvm::Value *last = nullptr;
+			for( auto &stmt : stmts->list ) {
+				// flow might have been altered (i.e. a break) stop generating in that case
+				if( stack->Block()->getTerminator() == nullptr ) {
+					last = stmt->Generate( this );
+				}
+			}
+
+			return( last );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtBreak* stmt )
 		{
 			llvm::BasicBlock* exitBlock = stack->Exit();
@@ -672,7 +683,29 @@ namespace exo
 			return( builder.CreateBr( exitBlock ) );
 		}
 
-		// ok
+		llvm::Value* Codegen::Generate( exo::ast::StmtCont* stmt )
+		{
+			llvm::BasicBlock* exitBlock = stack->Exit();
+			if( exitBlock == nullptr ) { // check if we are actually in a loop
+				EXO_THROW( InvalidCont() );
+			}
+
+			EXO_DEBUG_LOG( trace, "Generating continue statement in (" << stack->blockName() << ")" );
+
+			// we need to split the stack
+			llvm::Function* scope		= stack->Block()->getParent();
+			llvm::BasicBlock* contBlock	= llvm::BasicBlock::Create( module->getContext(), "continue", scope );
+			llvm::Value* retval = builder.CreateBr( contBlock );
+			builder.SetInsertPoint( contBlock );
+			return( retval );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
+		{
+			EXO_DEBUG_LOG( trace, "Generating expression statement in (" << stack->blockName() << ")" );
+			return( stmt->expression->Generate( this ) );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtFor* stmt )
 		{
 			EXO_DEBUG_LOG( trace, "Generating for statement in (" << stack->blockName() << ")" );
@@ -695,19 +728,13 @@ namespace exo
 			llvm::Value* condition = stmt->expression->Generate( this );
 			stmt->block->Generate( this );
 
-			// flow might have been altered by i.e. a break
-			if( stack->Block()->getTerminator() == nullptr ) {
-				// update loop variables
-				for( auto &statement : stmt->update->list ) {
-					statement->Generate( this );
-				}
+			// update loop variables
+			for( auto &statement : stmt->update->list ) {
+				statement->Generate( this );
 			}
 
-			// flow might have been altered by i.e. a break
-			if( stack->Block()->getTerminator() == nullptr ) {
-				// branch into loop again
-				builder.CreateCondBr( builder.CreateLoad( condition ), forBlock, contBlock );
-			}
+			// branch into loop again
+			builder.CreateCondBr( builder.CreateLoad( condition ), forBlock, contBlock );
 
 			stack->Pop();
 
@@ -717,15 +744,6 @@ namespace exo
 			return( condition );
 		}
 
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
-		{
-			EXO_DEBUG_LOG( trace, "Generating expression statement in (" << stack->blockName() << ")" );
-
-			return( stmt->expression->Generate( this ) );
-		}
-
-		// ok
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
 		{
 			EXO_DEBUG_LOG( trace, "Generating if statement in (" << stack->blockName() << ")" );
@@ -762,7 +780,6 @@ namespace exo
 
 			builder.SetInsertPoint( stack->Pop() );
 
-
 			// generate our else statements
 			if( stmt->onFalse ) {
 				EXO_DEBUG_LOG( trace, "Generating else statement in (" << stack->blockName() << ")" );
@@ -785,7 +802,24 @@ namespace exo
 			return( condition );
 		}
 
-		// ok
+		llvm::Value* Codegen::Generate( exo::ast::StmtImport* stmt )
+		{
+			EXO_DEBUG_LOG( trace, "Generating import statement in (" << stack->blockName() << ")" );
+			return( nullptr );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
+		{
+			EXO_DEBUG_LOG( trace, "Generating return statement in (" << stack->blockName() << ")" );
+			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
+		}
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtUse* decl )
+		{
+			EXO_LOG( trace, "Use \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
+			return( nullptr );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtWhile* stmt )
 		{
 			EXO_DEBUG_LOG( trace, "Generating while statement in (" << stack->blockName() << ")" );
@@ -811,11 +845,8 @@ namespace exo
 			builder.SetInsertPoint( stack->Push( whileLoop, whileExit ) );
 			stmt->block->Generate( this );
 
-			// flow might have been altered (i.e. break)
-			if( stack->Block()->getTerminator() == nullptr ) {
-				// branch into check condition to see if we enter loop another time
-				builder.CreateBr( whileCondition );
-			}
+			// branch into check condition to see if we enter loop another time
+			builder.CreateBr( whileCondition );
 
 			stack->Pop(); // loop
 			stack->Pop(); // condition
@@ -826,44 +857,14 @@ namespace exo
 			return( condition );
 		}
 
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
-		{
-			EXO_DEBUG_LOG( trace, "Generating return statement in (" << stack->blockName() << ")" );
-
-			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
-		}
-
-		// ok
-		llvm::Value* Codegen::Generate( exo::ast::StmtList* stmts )
-		{
-			EXO_DEBUG_LOG( trace, "Generating " << stmts->list.size() << " statement(s) in (" << stack->blockName() << ")" );
-
-			llvm::Value *last = nullptr;
-			for( auto &stmt : stmts->list ) {
-				last = stmt->Generate( this );
-			}
-
-			return( last );
-		}
-
-		// ok
 		llvm::Value* Codegen::Generate( exo::ast::Tree* tree )
 		{
-			std::vector<llvm::Type*> fArgs;
-
 			llvm::Type* intType = module->getDataLayout().getIntPtrType( module->getContext() );
 			llvm::Type* ptrType = intType->getPointerTo();
+			llvm::Type* voidType = llvm::Type::getVoidTy( module->getContext() );
 
-			/*
-			 * register essential externals
-			 */
-			fArgs.push_back( intType );
-			llvm::Function::Create( llvm::FunctionType::get( ptrType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_ALLOC, module.get() );
-
-			fArgs.clear();
-			fArgs.push_back( ptrType );
-			llvm::Function::Create( llvm::FunctionType::get( llvm::Type::getVoidTy( module->getContext() ), fArgs, false ), llvm::GlobalValue::ExternalLinkage, EXO_DEALLOC, module.get() );
+			registerExternFun( EXO_ALLOC, ptrType, { intType } );
+			registerExternFun( EXO_DEALLOC, voidType, { ptrType } );
 
 			// module function entry, named as the module
 			llvm::Function* entry = llvm::Function::Create( llvm::FunctionType::get( intType, false ), llvm::GlobalValue::ExternalLinkage, module->getName(), module.get() );
@@ -900,6 +901,11 @@ namespace exo
 			value->print( bStream, true );
 
 			return( bStream.str() );
+		}
+
+		llvm::Function* Codegen::registerExternFun( std::string name, llvm::Type* retType, std::vector<llvm::Type*> fArgs )
+		{
+			return( llvm::Function::Create( llvm::FunctionType::get( retType, fArgs, false ), llvm::GlobalValue::ExternalLinkage, name, module.get() ) );
 		}
 	}
 }

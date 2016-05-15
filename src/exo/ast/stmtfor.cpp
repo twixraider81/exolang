@@ -19,11 +19,11 @@ namespace exo
 {
 	namespace ast
 	{
-		StmtFor::StmtFor( std::unique_ptr<Expr> e, std::unique_ptr<DecList> i, std::unique_ptr<ExprList> u, std::unique_ptr<StmtList> b ) :
-				StmtExpr( std::move( e ) ),
-				initialization( std::move( i ) ),
-				update( std::move( u ) ),
-				block( std::move( b ) )
+		StmtFor::StmtFor( std::unique_ptr<Expr> e, std::unique_ptr<DeclVarList> i, std::unique_ptr<ExprList> u, std::unique_ptr<Stmt> b ) :
+			StmtExpr( std::move( e ) ),
+			initialization( std::move( i ) ),
+			update( std::move( u ) ),
+			block( std::move( b ) )
 		{
 		}
 	}

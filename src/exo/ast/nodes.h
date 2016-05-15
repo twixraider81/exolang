@@ -37,49 +37,45 @@ namespace exo
 
 		class Expr : public virtual Node { };
 		class Stmt : public virtual Node { };
+		class Decl : public virtual Stmt { };
 
 		// forward declare
-		class DecProp;
-		class DecMethod;
-		class DecList;
-		class DecVar;
+		class ConstBool;
+		class ConstFloat;
+		class ConstInt;
+		class ConstNull;
+		class ConstStr;
+		class DeclClass;
+		class DeclFunProto;
+		class DeclFun;
+		class DeclMod;
+		class DeclProp;
+		class DeclVar;
+		class DeclVarList;
+		class ExprCallFun;
+		class ExprCallMethod;
 		class ExprList;
-		class ModAccess;
-		class StmtExpr;
-		class StmtList;
+		class ExprProp;
+		class ExprVar;
 		class Id;
+		class ModAccess;
+		class OpBinary;
+		class OpBinaryAssign;
+		class OpBinaryAssignShort;
+		class OpUnaryDel;
+		class OpUnaryNew;
+		class StmtBlock;
+		class StmtBreak;
+		class StmtCont;
+		class StmtExpr;
+		class StmtFor;
+		class StmtImport;
+		class StmtIf;
+		class StmtReturn;
+		class StmtUse;
+		class StmtWhile;
 		class Type;
-
-
-		class CallFun : public virtual Expr
-		{
-			public:
-				std::unique_ptr<Id>			id;
-				std::unique_ptr<ExprList>	arguments;
-
-				CallFun( std::unique_ptr<Id> i, std::unique_ptr<ExprList> a );
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class CallMethod : public virtual CallFun
-		{
-			public:
-				std::unique_ptr<Expr> expression;
-
-				CallMethod( std::unique_ptr<Id> i, std::unique_ptr<Expr> e, std::unique_ptr<ExprList> a );
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-
-		class ClassBlock : public virtual Stmt
-		{
-			public:
-				std::vector< std::unique_ptr<DecProp> >		properties;
-				std::vector< std::unique_ptr<DecMethod> >	methods;
-
-				ClassBlock();
-		};
-
+		class Tree;
 
 
 		class ConstBool : public virtual Expr
@@ -126,87 +122,106 @@ namespace exo
 		};
 
 
-		class DecMod : public virtual Stmt
+		class DeclBlock : public virtual Decl
 		{
 			public:
-				std::unique_ptr<Id>			id;
+				std::vector< std::unique_ptr<DeclProp> >	properties;
+				std::vector< std::unique_ptr<DeclFun> >		methods;
 
-				DecMod( std::unique_ptr<Id> i );
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+				DeclBlock();
 		};
 
-		class DecClass : public virtual Stmt
+		class DeclClass : public virtual DeclBlock
 		{
 			public:
 				std::unique_ptr<Id>			id;
 				std::unique_ptr<Id>			parent;
-				std::unique_ptr<ClassBlock>	block;
 
-				DecClass( std::unique_ptr<Id> i, std::unique_ptr<Id> p, std::unique_ptr<ClassBlock> b );
-				DecClass( std::unique_ptr<Id> i, std::unique_ptr<ClassBlock> b );
+				DeclClass( std::unique_ptr<Id> i, std::unique_ptr<Id> p );
+				DeclClass( std::unique_ptr<Id> i );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class DecFunProto : public virtual Stmt
+		class DeclFunProto : public virtual Decl
+		{
+			public:
+				std::unique_ptr<Id>				id;
+				std::unique_ptr<Type>			returnType;
+				std::unique_ptr<DeclVarList>	arguments;
+				bool							hasVaArg;
+
+				DeclFunProto( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, bool va = false );
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class DeclFun : public virtual DeclFunProto
+		{
+			public:
+				std::unique_ptr<Stmt>		stmts;
+				std::unique_ptr<ModAccess>	access;
+
+				DeclFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<Stmt> b, bool va = false );
+				DeclFun( std::unique_ptr<Id> i, std::unique_ptr<ModAccess> m, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<Stmt> b, bool va = false );
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class DeclMod : public virtual Decl
 		{
 			public:
 				std::unique_ptr<Id>			id;
-				std::unique_ptr<Type>		returnType;
-				std::unique_ptr<DecList>	arguments;
-				bool		hasVaArg;
 
-				DecFunProto( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DecList> a, bool va = false );
+				DeclMod( std::unique_ptr<Id> i );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class DecFun : public virtual DecFunProto
-		{
-			public:
-				std::unique_ptr<StmtList>	stmts;
-
-				DecFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DecList> a, std::unique_ptr<StmtList> b, bool va = false );
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
-		class DecList : public virtual Stmt
-		{
-			public:
-				std::vector< std::unique_ptr<DecVar> > list;
-
-				DecList();
-		};
-
-		class DecMethod : public virtual Stmt
+		class DeclProp : public virtual Decl
 		{
 			public:
 				std::unique_ptr<ModAccess>	access;
-				std::unique_ptr<DecFun>		method;
+				std::unique_ptr<DeclVar>	property;
 
-				DecMethod( std::unique_ptr<DecFun> m, std::unique_ptr<ModAccess> a );
+				DeclProp( std::unique_ptr<DeclVar> d, std::unique_ptr<ModAccess> a );
 		};
 
-		class DecVar : public virtual Stmt
+		class DeclVar : public virtual Decl
 		{
 			public:
-				std::string name;
-				std::unique_ptr<Type> type;
+				std::string				name;
+				std::unique_ptr<Type>	type;
+				std::unique_ptr<Expr>	expression;
+
+				DeclVar( std::string n, std::unique_ptr<Type> t, std::unique_ptr<Expr> e );
+				DeclVar( std::string n, std::unique_ptr<Type> t );
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class DeclVarList : public virtual Decl
+		{
+			public:
+				std::vector< std::unique_ptr<DeclVar> >	list;
+
+				DeclVarList();
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ExprCallFun : public virtual Expr
+		{
+			public:
+				std::unique_ptr<Id>			id;
+				std::unique_ptr<ExprList>	arguments;
+
+				ExprCallFun( std::unique_ptr<Id> i, std::unique_ptr<ExprList> a );
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class ExprCallMethod : public virtual ExprCallFun
+		{
+			public:
 				std::unique_ptr<Expr> expression;
 
-				DecVar( std::string n, std::unique_ptr<Type> t, std::unique_ptr<Expr> e );
-				DecVar( std::string n, std::unique_ptr<Type> t );
+				ExprCallMethod( std::unique_ptr<Id> i, std::unique_ptr<Expr> e, std::unique_ptr<ExprList> a );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
-
-		class DecProp : public virtual Stmt
-		{
-			public:
-				std::unique_ptr<ModAccess>	access;
-				std::unique_ptr<DecVar>		property;
-
-				DecProp( std::unique_ptr<DecVar> d, std::unique_ptr<ModAccess> a );
-		};
-
-
 
 		class ExprList : public virtual Expr
 		{
@@ -237,10 +252,12 @@ namespace exo
 		class ModAccess : public virtual Node
 		{
 			public:
+				// FIXME: use a bitmask, this here is unsafe
+				bool isPublic;
+				bool isPrivate;
+				bool isProtected;
 				ModAccess();
 		};
-
-
 
 		class OpBinary : public virtual Expr
 		{
@@ -350,7 +367,6 @@ namespace exo
 				OpBinaryAssignDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
 		};
 
-
 		class OpUnary : public virtual Expr
 		{
 			public:
@@ -373,6 +389,26 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class StmtBlock : public virtual Stmt
+		{
+			public:
+				std::vector< std::unique_ptr<Stmt> > list;
+
+				StmtBlock();
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class StmtBreak : public virtual Stmt
+		{
+			public:
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
+		class StmtCont : public virtual Stmt
+		{
+			public:
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
 
 		class StmtExpr : public virtual Stmt
 		{
@@ -383,40 +419,34 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class StmtBreak : public virtual Stmt
-		{
-			public:
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
-		};
-
 		class StmtFor : public virtual StmtExpr
 		{
 			public:
-				std::unique_ptr<StmtList>	block;
-				std::unique_ptr<DecList>	initialization;
-				std::unique_ptr<ExprList>	update;
+				std::unique_ptr<Stmt>			block;
+				std::unique_ptr<DeclVarList>	initialization;
+				std::unique_ptr<ExprList>		update;
 
-				StmtFor( std::unique_ptr<Expr> e, std::unique_ptr<DecList> i, std::unique_ptr<ExprList> u, std::unique_ptr<StmtList> b );
+				StmtFor( std::unique_ptr<Expr> e, std::unique_ptr<DeclVarList> i, std::unique_ptr<ExprList> u, std::unique_ptr<Stmt> b );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
 		class StmtIf : public virtual StmtExpr
 		{
 			public:
-				std::unique_ptr<StmtList> onTrue;
-				std::unique_ptr<StmtList> onFalse;
+				std::unique_ptr<Stmt> onTrue;
+				std::unique_ptr<Stmt> onFalse;
 
-				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<StmtList> t, std::unique_ptr<StmtList> f );
-				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<StmtList> t );
+				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> t, std::unique_ptr<Stmt> f );
+				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> t );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
-		class StmtList : public virtual Expr
+		class StmtImport : public virtual Stmt
 		{
 			public:
-				std::vector< std::unique_ptr<Stmt> > list;
+				std::unique_ptr<ConstStr>	library;
 
-				StmtList();
+				StmtImport( std::unique_ptr<ConstStr> l );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
@@ -427,14 +457,24 @@ namespace exo
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
 
+		class StmtUse : public virtual Stmt
+		{
+			public:
+				std::unique_ptr<Id>			id;
+
+				StmtUse( std::unique_ptr<Id> i );
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
+		};
+
 		class StmtWhile : public virtual StmtExpr
 		{
 			public:
-				std::unique_ptr<StmtList> block;
+				std::unique_ptr<Stmt> block;
 
-				StmtWhile( std::unique_ptr<Expr> e, std::unique_ptr<StmtList> b );
+				StmtWhile( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> b );
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx ) { return( ctx->Generate( this ) ); };
 		};
+
 
 		class Id : public virtual Node
 		{
@@ -468,7 +508,7 @@ namespace exo
 				std::string		fileName;
 				std::string		targetMachine;
 
-				std::unique_ptr<exo::ast::StmtList> stmts;
+				std::unique_ptr<exo::ast::StmtBlock> stmts;
 
 				Tree();
 				~Tree();

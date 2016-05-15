@@ -19,7 +19,8 @@ namespace exo
 {
 	namespace ast
 	{
-		ConstStr::ConstStr( std::string v ) : value( v )
+		ConstStr::ConstStr( std::string v ) :
+			value( v )
 		{
 		}
 	}

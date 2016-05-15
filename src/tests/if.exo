@@ -1,6 +1,12 @@
+int function puts( string $str );
+
 int $a = 1;
 int $b = 2;
 
 if( $a == $b ) {
 	$a = 4;
 };
+
+if( $a < $b ) puts( "$a < $b" );
+
+int $c = 3;
