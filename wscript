@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, sys, re, platform, pipes, pprint, glob
+import os, subprocess, re, glob
 
 from waflib import Build, Options, Context, Scripting, Utils, Task, TaskGen
 from waflib.ConfigSet import ConfigSet
@@ -40,6 +40,14 @@ def options( opt ):
 
 # configure
 def configure( conf ):
+	conf.msg( 'Configuring for', conf.options.mode, 'BLUE' )
+
+	if conf.options.gc == 'disable':
+		conf.define( 'EXO_GC_DISABLE', 1 )
+		conf.msg( 'Garbage collector', 'disabled', 'RED' )
+	else:
+		conf.msg( 'Garbage collector', 'enabled', 'GREEN' )
+
 	conf.load( 'compiler_cxx compiler_c')
 
 	conf.find_program( os.path.basename( conf.options.llvm ), var = 'LLVMCONFIG', mandatory = True, path_list = os.path.dirname( conf.options.llvm ) )
@@ -63,15 +71,14 @@ def configure( conf ):
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cppflags'], stdout = subprocess.PIPE )
 	cppflags = process.communicate()[0].strip().replace( "\n", '' )
-	conf.msg( 'llvm-config cppflags:', cppflags, 'CYAN' )
-
-	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--cxxflags'], stdout = subprocess.PIPE )
-	cxxflags = process.communicate()[0].strip().replace( "\n", '' )
-	conf.msg( 'llvm-config cxxflags:', cxxflags, 'CYAN' )
+	for define in re.findall( "-D([\w]+)", cppflags ):
+		#conf.define( define, 1 )
+		cppflags = cppflags.replace( "-D" + define, "" )
+	#conf.msg( 'LLVM cppflags:', cppflags, 'CYAN' )
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--ldflags'], stdout = subprocess.PIPE )
 	ldflags = process.communicate()[0].strip().replace( "\n", '' )
-	conf.msg( 'llvm-config ldflags:', ldflags, 'CYAN' )
+	#conf.msg( 'LLVM ldflags:', ldflags, 'CYAN' )
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--libs'], stdout = subprocess.PIPE )
 	llvmlibs = ''.join(process.communicate()[0].strip().replace( "\n", '' ).replace( "-l", '' ))
@@ -84,34 +91,34 @@ def configure( conf ):
 	if conf.env.GOLD:
 		ldflags += [ '-fuse-ld=gold' ]
 
-	exoflags = [
-		'-DEXO_VERSION="'+VERSION+'"',
-		'-DQUEX_OPTION_LINE_NUMBER_COUNTING',
-		'-DQUEX_OPTION_COLUMN_NUMBER_COUNTING',
-		'-DQUEX_OPTION_SEND_AFTER_TERMINATION_ADMISSIBLE',
-		'-std=c++14'
-	]
-	cppflags += exoflags
+	cppflags += [ '-std=c++14' ]
+	conf.define( 'EXO_VERSION', VERSION )
+	#conf.define( 'QUEX_OPTION_LINE_NUMBER_COUNTING', 1 )
+	#conf.define( 'QUEX_OPTION_COLUMN_NUMBER_COUNTING', 1 )
+	conf.define( 'QUEX_OPTION_SEND_AFTER_TERMINATION_ADMISSIBLE', 1 )
+	conf.define( 'BOOST_ALL_DYN_LINK', 1 )
 
 	if conf.options.mode == 'release':
-		cppflags += [ '-O3', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_DISABLED', '-DNDEBUG' ]
+		cppflags += [ '-O3' ]
+		conf.define( 'QUEX_OPTION_ASSERTS_DISABLED', 1 )
+		conf.define( 'NDEBUG', 1 )
 	elif conf.options.mode == 'debug':
-		cppflags += [ '-O0', '-g', '-DBOOST_ALL_DYN_LINK', '-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', '-DEXO_DEBUG' ]
-
-
-	if conf.options.gc == 'disable':
-		cppflags += [ '-DEXO_GC_DISABLE' ]
-		conf.msg( 'garbage collector', 'disabled', 'RED' )
-	else:
-		conf.msg( 'garbage collector', 'enabled', 'GREEN' )
-
+		cppflags += [ '-O0', '-g' ]
+		conf.define( 'QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED', 1 )
+		conf.define( 'EXO_DEBUG', 1 )
 
 	conf.env.append_value( 'CXXFLAGS', cppflags )
-	conf.env.append_value( 'LINKFLAGS',ldflags  )
+	conf.env.append_value( 'LINKFLAGS', ldflags )
 
-
-
-	conf.msg( 'configuring for', conf.options.mode, 'BLUE' )
+	process = subprocess.Popen( ['ld', '--verbose'], stdout = subprocess.PIPE )
+	result = process.communicate()[0].strip()
+	result = re.findall( "SEARCH_DIR\(\"=([\w/-]+)", result )
+	if result:
+		result = '{\"' + '\",\"'.join( result ) + '\"}'
+		conf.define( 'EXO_LIBRARY_PATHS', result, False )
+	else:
+		conf.define( 'EXO_LIBRARY_PATHS', '{}', False )
+	#conf.msg( 'Library paths', result, 'BLUE' )
 
 	# header checks
 	conf.check_cxx( header_name = "fstream" )
@@ -172,6 +179,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Transforms/IPO/PassManagerBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 	conf.check_cxx( header_name = "llvm/Bitcode/ReaderWriter.h" )
+	conf.check_cxx( header_name = "llvm/Object/Archive.h" )
 
 
 	if conf.options.gc != 'disable':
@@ -195,6 +203,8 @@ def configure( conf ):
 	conf.check_cxx( lib = "unwind-generic" )
 	conf.check_cxx( lib = "z" )
 
+	conf.write_config_header('config.h')
+
 # build
 def build( bld ):
 	exo = bld.path.ant_glob( SRCDIR + 'exo/**/*.cpp' )
@@ -215,7 +225,7 @@ def build( bld ):
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.runtests:
-		for file in sorted(glob.glob( SRCDIR + "tests/*.exo")):
+		for file in sorted( glob.glob( SRCDIR + "tests/*.exo") ):
 			try:
 				subprocess.check_output( [BUILDDIR + '/exolang', '-i', os.path.abspath( file ) ] )
 				print "\033[90mPassed: " + file

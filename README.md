@@ -60,6 +60,8 @@ Next configure the build. For now since it's under heavy development:
 
 ./waf clean; ./waf configure --mode=debug --llvm=./bin/bin/llvm-config --gc=disable
 
+(./waf clean; ./waf configure --mode=release --llvm=./bin/bin/llvm-config --gc=enable in release mode)
+
 After that start the build process via:
 
 ./waf buildparser buildlexer build

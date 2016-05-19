@@ -16,6 +16,8 @@
 #ifndef EXO_H_
 #define EXO_H_
 
+#include "../../build/config.h"
+
 /*
  * FIXME: probably better handled by configure
  */
