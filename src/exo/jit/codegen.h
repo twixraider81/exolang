@@ -67,9 +67,8 @@ namespace exo
 
 		class Codegen
 		{
-			public:
-				std::unique_ptr<Stack>	stack;
-
+			private:
+				std::unique_ptr<Stack>									stack;
 				std::map< std::string, std::vector<std::string> >		propertyIndex;
 				std::map< std::string, std::vector<llvm::Type*> >		properties;
 				std::map< std::string, std::vector<std::string> >		methodIndex;
@@ -77,8 +76,10 @@ namespace exo
 				std::map< std::string, std::vector<llvm::Type*> >		vtblSignatures;
 				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
 
-				std::unique_ptr<llvm::Module>	module;
-				llvm::IRBuilder<>				builder;
+			public:
+				std::unique_ptr< llvm::Module >	module;
+				llvm::IRBuilder<>				builder; // this needs to be defined after module due to how initializer list is used/works
+				std::set< std::string >			imports;
 
 				Codegen( std::unique_ptr<llvm::Module> m );
 				~Codegen();

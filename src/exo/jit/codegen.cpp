@@ -129,7 +129,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstBool* val )
 		{
-			EXO_DEBUG_LOG( trace, "Generating boolean \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Boolean \"" << val->value << "\" in (" << stack->blockName() << ")" );
 
 			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
@@ -144,7 +144,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstFloat* val )
 		{
-			EXO_DEBUG_LOG( trace, "Generating float \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Float \"" << val->value << "\" in (" << stack->blockName() << ")" );
 			llvm::Type* type = llvm::Type::getDoubleTy( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			builder.CreateStore( llvm::ConstantFP::get( type, val->value ), memory );
@@ -153,7 +153,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstInt* val )
 		{
-			EXO_DEBUG_LOG( trace, "Generating integer \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Integer \"" << val->value << "\" in (" << stack->blockName() << ")" );
 			llvm::Type* type = llvm::Type::getInt64Ty( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			builder.CreateStore( llvm::ConstantInt::get( type, val->value ), memory );
@@ -162,7 +162,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstNull* val )
 		{
-			EXO_DEBUG_LOG( trace, "Generating null in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Null in (" << stack->blockName() << ")" );
 			llvm::Type* type = llvm::Type::getInt1Ty( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			builder.CreateStore( llvm::Constant::getNullValue( type ), memory );
@@ -171,7 +171,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::ConstStr* val )
 		{
-			EXO_DEBUG_LOG( trace, "Generating string \"" << val->value << "\" in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "String \"" << val->value << "\" in (" << stack->blockName() << ")" );
 			llvm::Type* type = llvm::Type::getInt8PtrTy( module->getContext() );
 			llvm::Value* memory = builder.CreateAlloca( type );
 			llvm::Value* str = builder.CreateBitCast( builder.CreateGlobalString( val->value ), type );
@@ -294,7 +294,7 @@ namespace exo
 				argumentList.append(", ");
 #endif
 			}
-			EXO_DEBUG_LOG( trace, "Generating function " << decl->id->name << "(" << argumentList << ") in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Declaring function " << decl->id->name << "(" << argumentList << ") in (" << stack->blockName() << ")" );
 
 			// create a function block for our local variables
 			llvm::Function* function = llvm::Function::Create(
@@ -489,34 +489,34 @@ namespace exo
 			llvm::Value* result;
 
 			if( typeid(*op) == typeid( exo::ast::OpBinaryAdd ) ) {
-				EXO_DEBUG_LOG( trace, "Generating addition in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Addition in (" << stack->blockName() << ")" );
 				result = builder.CreateAdd( lhs, rhs, "add" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinarySub ) ) {
-				EXO_DEBUG_LOG( trace, "Generating substraction in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Substraction in (" << stack->blockName() << ")" );
 				result = builder.CreateSub( lhs, rhs, "sub" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryMul ) ) {
-				EXO_DEBUG_LOG( trace, "Generating multiplication in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Multiplication in (" << stack->blockName() << ")" );
 				result = builder.CreateMul( lhs, rhs, "mul" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryDiv ) ) {
-				EXO_DEBUG_LOG( trace, "Generating division in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Division in (" << stack->blockName() << ")" );
 				result = builder.CreateSDiv( lhs, rhs, "div" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLt ) ) {
-				EXO_DEBUG_LOG( trace, "Generating lower than comparison in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Lower than comparison in (" << stack->blockName() << ")" );
 				result = builder.CreateICmpSLT( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryLe ) ) {
-				EXO_DEBUG_LOG( trace, "Generating lower equal comparison in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Lower equal comparison in (" << stack->blockName() << ")" );
 				result = builder.CreateICmpSLE( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryGe ) ) {
-				EXO_DEBUG_LOG( trace, "Generating greater equal comparison in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Greater equal comparison in (" << stack->blockName() << ")" );
 				result = builder.CreateICmpSGE( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryGt ) ) {
-				EXO_DEBUG_LOG( trace, "Generating greater than comparison in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Greater than comparison in (" << stack->blockName() << ")" );
 				result = builder.CreateICmpSGT( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryEq ) ) {
-				EXO_DEBUG_LOG( trace, "Generating is equal comparison in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Is equal comparison in (" << stack->blockName() << ")" );
 				result = builder.CreateICmpEQ( lhs, rhs, "cmp" );
 			} else if( typeid(*op) == typeid( exo::ast::OpBinaryEq ) ) {
-				EXO_DEBUG_LOG( trace, "Generating not equal comparison in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Not equal comparison in (" << stack->blockName() << ")" );
 				result = builder.CreateICmpNE( lhs, rhs, "cmp" );
 			} else {
 				EXO_THROW( InvalidOp() );
@@ -533,7 +533,7 @@ namespace exo
 			llvm::Value* variable = assign->lhs->Generate( this );
 			llvm::Value* value = builder.CreateLoad( assign->rhs->Generate( this ) );
 
-			EXO_DEBUG_LOG( trace, "Generating assignment in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Assignment in (" << stack->blockName() << ")" );
 			return( builder.CreateStore( value, variable ) );
 		}
 
@@ -544,16 +544,16 @@ namespace exo
 			llvm::Value* result = nullptr;
 
 			if( typeid(*assign) == typeid( exo::ast::OpBinaryAssignAdd ) ) {
-				EXO_DEBUG_LOG( trace, "Generating assign addition in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Assign addition in (" << stack->blockName() << ")" );
 				result = builder.CreateAdd( builder.CreateLoad( variable ), value, "add" );
 			} else if( typeid(*assign) == typeid( exo::ast::OpBinaryAssignSub ) ) {
-				EXO_DEBUG_LOG( trace, "Generating assign substraction in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Assign substraction in (" << stack->blockName() << ")" );
 				result = builder.CreateSub( builder.CreateLoad( variable ), value, "sub" );
 			} else if( typeid(*assign) == typeid( exo::ast::OpBinaryAssignMul ) ) {
-				EXO_DEBUG_LOG( trace, "Generating assign multiplication in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Assign multiplication in (" << stack->blockName() << ")" );
 				result = builder.CreateMul( builder.CreateLoad( variable ), value, "mul" );
 			} else if( typeid(*assign) == typeid( exo::ast::OpBinaryAssignDiv ) ) {
-				EXO_DEBUG_LOG( trace, "Generating assign division in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Assign division in (" << stack->blockName() << ")" );
 				result = builder.CreateSDiv( builder.CreateLoad( variable ), value, "div" );
 			} else {
 				EXO_THROW( InvalidOp() );
@@ -679,7 +679,7 @@ namespace exo
 				EXO_THROW( InvalidBreak() );
 			}
 
-			EXO_DEBUG_LOG( trace, "Generating break statement in (" << stack->blockName() << ") to (" << exitBlock->getName().str() << ")" );
+			EXO_DEBUG_LOG( trace, "Break statement in (" << stack->blockName() << ") to (" << exitBlock->getName().str() << ")" );
 			return( builder.CreateBr( exitBlock ) );
 		}
 
@@ -690,7 +690,7 @@ namespace exo
 				EXO_THROW( InvalidCont() );
 			}
 
-			EXO_DEBUG_LOG( trace, "Generating continue statement in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Continue statement in (" << stack->blockName() << ")" );
 
 			// we need to split the stack
 			llvm::Function* scope		= stack->Block()->getParent();
@@ -702,13 +702,13 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt )
 		{
-			EXO_DEBUG_LOG( trace, "Generating expression statement in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Expression statement in (" << stack->blockName() << ")" );
 			return( stmt->expression->Generate( this ) );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtFor* stmt )
 		{
-			EXO_DEBUG_LOG( trace, "Generating for statement in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "For statement in (" << stack->blockName() << ")" );
 
 			// setup basic blocks for loop statments and exit
 			llvm::Function* scope		= stack->Block()->getParent();
@@ -746,7 +746,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtIf* stmt )
 		{
-			EXO_DEBUG_LOG( trace, "Generating if statement in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "If statement in (" << stack->blockName() << ")" );
 
 			// setup basic blocks for if, else and exit
 			llvm::Function* scope		= stack->Block()->getParent();
@@ -782,7 +782,7 @@ namespace exo
 
 			// generate our else statements
 			if( stmt->onFalse ) {
-				EXO_DEBUG_LOG( trace, "Generating else statement in (" << stack->blockName() << ")" );
+				EXO_DEBUG_LOG( trace, "Else statement in (" << stack->blockName() << ")" );
 
 				scope->getBasicBlockList().push_back( elseBlock );
 				builder.SetInsertPoint( stack->Push( elseBlock ) );
@@ -804,13 +804,39 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtImport* stmt )
 		{
-			EXO_DEBUG_LOG( trace, "Generating import statement in (" << stack->blockName() << ")" );
+			boost::filesystem::path fileName = boost::filesystem::path( stmt->library->value );
+
+			if( !fileName.has_extension() ) {
+				fileName = fileName.replace_extension( ".so" );
+			}
+
+			if( !fileName.is_absolute() ) {
+				std::set<std::string> paths = EXO_LIBRARY_PATHS;
+
+				for( const auto &path : paths ) {
+					boost::filesystem::path testName = boost::filesystem::path( path ) / fileName;
+
+					if( boost::filesystem::exists( testName ) ) {
+						fileName = testName;
+						break;
+					}
+				}
+			}
+
+			if( !boost::filesystem::exists( fileName ) ) {
+				EXO_THROW( NotFound() << exo::exceptions::RessouceName( fileName.string() ) << boost::errinfo_at_line( stmt->lineNo ) << exo::exceptions::ColumnNo( stmt->columnNo ) );
+			}
+
+			std::string libName = fileName.string();
+			imports.insert( libName );
+
+			EXO_DEBUG_LOG( trace, "Import \"" << libName << "\" in (" << stack->blockName() << ")" );
 			return( nullptr );
 		}
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtReturn* stmt )
 		{
-			EXO_DEBUG_LOG( trace, "Generating return statement in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Return in (" << stack->blockName() << ")" );
 			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
 		}
 
@@ -822,7 +848,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtWhile* stmt )
 		{
-			EXO_DEBUG_LOG( trace, "Generating while statement in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "While in (" << stack->blockName() << ")" );
 
 			// setup basic blocks for condition, loop and exit
 			llvm::Function* scope				= stack->Block()->getParent();
@@ -886,7 +912,7 @@ namespace exo
 
 			llvm::TerminatorInst* retVal = block->getTerminator();
 			if( retVal == nullptr || !llvm::isa<llvm::ReturnInst>(retVal) ) {
-				EXO_DEBUG_LOG( trace, "Generating null return in (" << module->getName().str() << ")" );
+				EXO_DEBUG_LOG( trace, "Generating implicit null return in (" << module->getName().str() << ")" );
 				retVal = builder.CreateRet( llvm::ConstantInt::get( intType, 0 ) );
 			}
 

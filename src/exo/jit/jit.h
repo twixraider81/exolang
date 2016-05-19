@@ -28,9 +28,10 @@ namespace exo
 			std::unique_ptr<llvm::Module>	module;
 			std::unique_ptr<Target>			target;
 			llvm::legacy::PassManager		passManager;
+			std::set<std::string>			imports;
 
 			public:
-				JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t );
+				JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t, std::set<std::string> i );
 				~JIT();
 
 				int Execute( std::string fName );

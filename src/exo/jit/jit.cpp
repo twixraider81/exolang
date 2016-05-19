@@ -22,7 +22,10 @@ namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t ) : module( std::move(m) ), target( std::move(t) )
+		JIT::JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t, std::set<std::string>	i ) :
+			module( std::move(m) ),
+			target( std::move(t) ),
+			imports( i )
 		{
 			llvm::legacy::FunctionPassManager fpassManager( module.get() );
 
@@ -86,15 +89,6 @@ namespace exo
 			builder.setEngineKind( llvm::EngineKind::JIT );
 			builder.setMCJITMemoryManager( std::unique_ptr<llvm::RTDyldMemoryManager>( memMgr ) );
 
-			/*
-			builder.setRelocationModel( llvm::Reloc::Default );
-			builder.setCodeModel( llvm::CodeModel::JITDefault );
-			builder.setOptLevel( target->codeGenOpt );
-			llvm::TargetOptions options = target->targetMachine->Options;
-			options.FloatABIType = llvm::FloatABI::Default;
-			builder.setTargetOptions( options );
-			*/
-
 			std::unique_ptr<llvm::ExecutionEngine> jit( builder.create( target->targetMachine.release() ) );
 
 			if( jit == nullptr ) {
@@ -105,6 +99,18 @@ namespace exo
 			jit->RegisterJITEventListener( llvm::JITEventListener::createIntelJITEventListener() );
 
 			jit->DisableLazyCompilation( false );
+
+			for( auto &import : imports ) {
+				EXO_DEBUG_LOG( trace, "Importing \"" << import << "\"" );
+
+				llvm::ErrorOr< llvm::object::OwningBinary<llvm::object::ObjectFile> > objectErr = llvm::object::ObjectFile::createObjectFile( import );
+				if( !objectErr ) {
+					EXO_THROW_MSG( objectErr.getError().message() );
+				}
+
+				llvm::object::OwningBinary<llvm::object::ObjectFile> &object = objectErr.get();
+				jit->addObjectFile( std::move(object) );
+			}
 
 			jit->finalizeObject();
 

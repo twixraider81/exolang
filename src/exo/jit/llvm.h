@@ -46,4 +46,6 @@
 
 #include <llvm/Bitcode/ReaderWriter.h>
 
+#include <llvm/Object/Archive.h>
+
 #endif /* LLVM_H_ */

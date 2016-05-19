@@ -81,7 +81,7 @@ int main( int argc, char **argv )
 		std::cout << "EXO version:\t" << EXO_VERSION << std::endl;
 #ifndef EXO_GC_DISABLE
 		unsigned gcVersion = GC_get_version();
-		std::cout << "LibGC version:\t\t" << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
+		std::cout << "LibGC version:\t" << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
 #else
 		std::cout << "LibGC:\t\tdisabled" << std::endl;
 #endif
@@ -118,11 +118,11 @@ int main( int argc, char **argv )
 		ast->Parse( input, target->getName() );
 
 		// generate llvm ir code
-		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move( target->createModule( ast->moduleName ) ) );
+		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move(target->createModule( ast->moduleName )) );
 		generator->Generate( ast.get() );
 
 		// create jit and eventually execute our module
-		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( std::move( generator->module ), std::move(target) );
+		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( std::move(generator->module), std::move(target), generator->imports );
 
 		if( commandLine.count( "emit-llvm" ) ) {
 			retval = jit->Emit( 0, emitFile );
