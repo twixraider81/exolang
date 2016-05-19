@@ -45,7 +45,7 @@ namespace exo
 
 #ifndef EXO_GC_DISABLE
 			GC_INIT();
-			GC_enable_incremental();
+			//GC_enable_incremental();
 #endif
 			// initialize llvm
 			llvm::InitializeAllTargets();
