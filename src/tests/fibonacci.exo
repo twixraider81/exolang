@@ -1,15 +1,10 @@
 int function printf( string $str ... );
 
 int function fibonacci( int $n ) {
-	if( $n < 0 ) {
-		return( 0 );
-	} else if( $n == 0 ) {
-		return( 0 );
-	} else if( $n == 1 ) {
-		return( 1 );
-	};
-
-	return ( fibonacci( $n - 1 ) + fibonacci( $n - 2 ) );
+	if( $n < 0 ) return( 0 );
+	else if( $n == 0 ) return( 0 );
+	else if( $n == 1 ) return( 1 );
+	else return ( fibonacci( $n - 1 ) + fibonacci( $n - 2 ) );
 };
 
 printf( "%d\n", fibonacci( 40 ) );

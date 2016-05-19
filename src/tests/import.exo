@@ -1,1 +1,6 @@
-import "libc.so.6";
+import "libpcre";
+
+int function puts( string $str );
+string function pcre_version();
+
+puts( pcre_version() );
