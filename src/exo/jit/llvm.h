@@ -46,6 +46,6 @@
 
 #include <llvm/Bitcode/ReaderWriter.h>
 
-#include <llvm/Object/Archive.h>
+#include <llvm/Support/DynamicLibrary.h>
 
 #endif /* LLVM_H_ */

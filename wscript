@@ -179,7 +179,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "llvm/Transforms/IPO/PassManagerBuilder.h" )
 	conf.check_cxx( header_name = "llvm/IR/IRBuilder.h" )
 	conf.check_cxx( header_name = "llvm/Bitcode/ReaderWriter.h" )
-	conf.check_cxx( header_name = "llvm/Object/Archive.h" )
+	conf.check_cxx( header_name = "llvm/Support/DynamicLibrary.h" )
 
 
 	if conf.options.gc != 'disable':

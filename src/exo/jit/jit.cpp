@@ -95,28 +95,34 @@ namespace exo
 				EXO_THROW_MSG( buffer );
 			}
 
+			/*
+			jit->DisableSymbolSearching( false );
+			EXO_DEBUG_LOG( trace, "Symbol searching: " << ( jit->isSymbolSearchingDisabled() ? "disabled" : "enabled" ) << "" );
+			jit->DisableGVCompilation ( false );
+			EXO_DEBUG_LOG( trace, "Symbol allocation: " << ( jit->isGVCompilationDisabled() ? "disabled" : "enabled" ) << "" );
+			*/
+
+			std::string error;
+			for( auto &import : imports ) {
+				EXO_DEBUG_LOG( trace, "Importing \"" << import << "\"" );
+
+				if( llvm::sys::DynamicLibrary::LoadLibraryPermanently( import.c_str(), &error ) ) {
+					EXO_THROW_MSG( error );
+				}
+			}
+
 			jit->RegisterJITEventListener( llvm::JITEventListener::createOProfileJITEventListener() );
 			jit->RegisterJITEventListener( llvm::JITEventListener::createIntelJITEventListener() );
 
 			jit->DisableLazyCompilation( false );
-
-			for( auto &import : imports ) {
-				EXO_DEBUG_LOG( trace, "Importing \"" << import << "\"" );
-
-				llvm::ErrorOr< llvm::object::OwningBinary<llvm::object::ObjectFile> > objectErr = llvm::object::ObjectFile::createObjectFile( import );
-				if( !objectErr ) {
-					EXO_THROW_MSG( objectErr.getError().message() );
-				}
-
-				llvm::object::OwningBinary<llvm::object::ObjectFile> &object = objectErr.get();
-				jit->addObjectFile( std::move(object) );
-			}
 
 			jit->finalizeObject();
 
 			jit->runStaticConstructorsDestructors( false );
 
 			EXO_LOG( trace, "Executing \"" + fName + "\"." );
+
+			(void)jit->getFunctionAddress( fName );
 
 			static_cast<llvm::SectionMemoryManager*>(memMgr)->invalidateInstructionCache();
 
@@ -127,7 +133,7 @@ namespace exo
 
 			jit->runStaticConstructorsDestructors( true );
 
-			return( retval.IntVal.getSExtValue() );
+			return( retval.IntVal.getZExtValue() );
 		}
 
 		// llvm streams are pure evil
