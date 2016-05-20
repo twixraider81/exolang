@@ -482,7 +482,7 @@ namespace exo
 				std::string name;
 				std::string inNamespace;
 
-				Id( std::string n, std::string ns = "::" );
+				Id( std::string n, std::string ns = "" );
 		};
 
 		class Type : public virtual Node

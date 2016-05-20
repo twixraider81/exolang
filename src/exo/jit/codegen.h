@@ -75,6 +75,8 @@ namespace exo
 				std::map< std::string, std::vector<llvm::Function*> >	methods;
 				std::map< std::string, std::vector<llvm::Type*> >		vtblSignatures;
 				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
+				std::string												currentFile;
+				std::string												currentTarget;
 
 			public:
 				std::unique_ptr< llvm::Module >	module;

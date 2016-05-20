@@ -1,1 +1,6 @@
-use src::tests::object;
+use object;
+use src::tests::scalar;
+
+int function printf( string $str ... );
+
+printf( "%s\n", $s );

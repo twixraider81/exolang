@@ -840,9 +840,34 @@ namespace exo
 			return( builder.CreateRet( builder.CreateLoad( stmt->expression->Generate( this ) ) ) );
 		}
 
+		//FIXME: really unsafe (the pathing) and doesnt handle recursiveness
+		//TODO: load compiled (.ll) modules
 		llvm::Value* Codegen::Generate( exo::ast::StmtUse* decl )
 		{
 			EXO_LOG( trace, "Use \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
+
+			std::string fileName;
+			if( decl->id->inNamespace.length() ) { // path relative to where we execute from
+				fileName += decl->id->inNamespace;
+				boost::replace_all( fileName, "::", "/" );
+			} else { // path relative to where script is stored
+				boost::filesystem::path pathName = boost::filesystem::path( currentFile ).parent_path();
+				fileName += pathName.string() + "/";
+			}
+			fileName += decl->id->name;
+			fileName.append( ".exo" );
+
+			boost::filesystem::path file = boost::filesystem::path( fileName );
+
+			if( boost::filesystem::exists( file ) ) {
+				std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>();
+				ast->Parse( fileName, currentTarget );
+
+				if( ast->stmts ) {
+					return( ast->stmts->Generate( this ) );
+				}
+			}
+
 			return( nullptr );
 		}
 
@@ -899,6 +924,9 @@ namespace exo
 			builder.SetInsertPoint( stack->Push( block ) );
 
 			try {
+				currentFile = tree->fileName;
+				currentTarget = tree->targetMachine;
+
 				if( tree->stmts ) {
 					tree->stmts->Generate( this );
 				}

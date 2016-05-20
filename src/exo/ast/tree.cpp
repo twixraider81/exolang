@@ -65,7 +65,7 @@ namespace exo
 				EXO_THROW( NotFound() << exo::exceptions::RessouceName( fileName ) );
 			}
 
-			EXO_LOG( debug, "Opening <" << fileName << ">" );
+			EXO_LOG( debug, "Opening \"" << fileName << "\"" );
 
 			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = nullptr;
