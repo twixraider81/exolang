@@ -1,6 +1,6 @@
 /*
  * The classic "Hello World!"
  */
+use stdc::stdio;
 
-int function puts( string $str );
-puts( "Hello World!" );
+println( "Hello World!" );

@@ -1,6 +1,6 @@
 use object;
-use src::tests::scalar;
-
-int function printf( string $str ... );
+use scalar;
+use stdc::stdio;
+use ::stdc::math;
 
 printf( "%s\n", $s );

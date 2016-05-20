@@ -1,0 +1,2 @@
+int function raise( int $sig );
+//void(*signal(int sig, void (*func)(int)))(int);
