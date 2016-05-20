@@ -110,6 +110,7 @@ def configure( conf ):
 	conf.env.append_value( 'CXXFLAGS', cppflags )
 	conf.env.append_value( 'LINKFLAGS', ldflags )
 
+	# detect system link paths (we could also use llvm for this)
 	process = subprocess.Popen( ['ld', '--verbose'], stdout = subprocess.PIPE )
 	result = process.communicate()[0].strip()
 	result = re.findall( "SEARCH_DIR\(\"=([\w/-]+)", result )
@@ -118,7 +119,8 @@ def configure( conf ):
 		conf.define( 'EXO_LIBRARY_PATHS', result, False )
 	else:
 		conf.define( 'EXO_LIBRARY_PATHS', '{}', False )
-	#conf.msg( 'Library paths', result, 'BLUE' )
+	# only stdlib for now
+	conf.define( 'EXO_INCLUDE_PATHS', '{\"' + os.path.abspath( SRCDIR ) + '/stdlib\"}', False )
 
 	# header checks
 	conf.check_cxx( header_name = "fstream" )

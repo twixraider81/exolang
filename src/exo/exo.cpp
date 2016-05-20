@@ -26,14 +26,14 @@
 /*
  * TODO: 1. implement type system
  * TODO: 2. document ast and jit
- * TODO: 3. use boost unit tests!
  * TODO: 5. implement a real symbol table which tracks types, memory locations and pointer/refs
  */
 int main( int argc, char **argv )
 {
 	// commandline variable store
 	int severity, optimizeLvl, retval;
-	std::string archName, cpuName, emit, input, emitFile;
+	std::string archName, cpuName, emit, inputFile, emitFile;
+	std::vector<std::string> includePaths, libraryPaths, defaultIncludePaths = EXO_INCLUDE_PATHS, defaultLibraryPaths = EXO_LIBRARY_PATHS;
 
 	// llvm native information
 	std::string nativeCpu = llvm::sys::getHostCPUName();
@@ -42,25 +42,29 @@ int main( int argc, char **argv )
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
 	availOptions.add_options()
-		( "help,h",																				"Show this usage/help" )
-		( "input,i",		boost::program_options::value<std::string>(&input),					"File to parse and execute if nothing is to be emitted" )
+		( "cpu,c", 			boost::program_options::value<std::string>(&cpuName)->default_value( nativeCpu ),	"Set target cpu" )
 		( "emit-llvm,e",	boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit LLVM IR (to stdout if empty)" )
 		( "emit-assembly,S",boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit target assembly code (as inputfile.s if empty)" )
 		( "emit-object,o",	boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit target object code (as inputfile.obj if empty)" )
 		( "emit-bitcode,b",	boost::program_options::value<std::string>(&emitFile)->implicit_value(""),	"Emit LLVM bitcode (as inputfile.bc if empty)" )
-		( "log-severity,l", boost::program_options::value<int>(&severity)->default_value(4),	"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
-		( "optimize,O", 	boost::program_options::value<int>(&optimizeLvl)->default_value(2),	"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
+		( "help,h",																						"Show this usage/help" )
+		( "input-file,i",	boost::program_options::value<std::string>(&inputFile),						"File to parse (and execute if nothing is to be emitted)" )
+		( "include-path,I",	boost::program_options::value<std::vector<std::string>>(&includePaths),		"Add include path, can occur multiple" )
+		( "library-path,L",	boost::program_options::value<std::vector<std::string>>(&libraryPaths),		"Add library path, can occur multiple" )
+		( "log-severity,l", boost::program_options::value<int>(&severity)->default_value(4),			"Set log severity; 1 = trace, 2 = debug, 3 = info, 4 = warning, 5 = error, 6 = fatal" )
+		( "optimize,O", 	boost::program_options::value<int>(&optimizeLvl)->default_value(2),			"Set optimization level; 0 = none, 1 = less, 2 = default, 3 = all" )
 		( "target,t", 		boost::program_options::value<std::string>(&archName)->default_value( nativeTriple.str() ),	"Set target" )
-		( "cpu,c", 			boost::program_options::value<std::string>(&cpuName)->default_value( nativeCpu ),			"Set target cpu" )
-		( "version,v",																			"Show version, libraries and targets" )
+		( "version,v",																					"Show version and configuration" )
 		;
 
 	boost::program_options::positional_options_description positionalOptions;
-	positionalOptions.add( "input", -1 );
+	positionalOptions.add( "input-file", -1 );
 
 	boost::program_options::variables_map commandLine;
 	boost::program_options::store( boost::program_options::command_line_parser( argc, argv ).options( availOptions ).positional( positionalOptions ).run(), commandLine );
 	boost::program_options::notify( commandLine );
+	includePaths.insert( includePaths.end(), defaultIncludePaths.begin(), defaultIncludePaths.end() );
+	libraryPaths.insert( libraryPaths.end(), defaultLibraryPaths.begin(), defaultLibraryPaths.end() );
 
 
 	// show help & exit
@@ -83,12 +87,22 @@ int main( int argc, char **argv )
 		unsigned gcVersion = GC_get_version();
 		std::cout << "LibGC version:\t" << ( gcVersion >> 16 ) << "." << ( ( gcVersion >> 8 ) & 0xFF ) << "." << ( gcVersion & 0xF ) << std::endl;
 #else
-		std::cout << "LibGC:\t\tdisabled" << std::endl;
+		std::cout << "LibGC version:\tdisabled" << std::endl;
 #endif
 		std::cout << "LLVM version:\t" << LLVM_VERSION_STRING << std::endl << std::endl;
 
-		std::cout << "Native CPU:\t" << nativeCpu << std::endl;
-		std::cout << "Native target:\t" << nativeTriple.str() << std::endl << std::endl << "Supported architectures:" << std::endl;
+		std::cout << "Include path(s):" << std::endl;
+		for( auto &p : includePaths ) {
+			std::cout << " - " << p << std::endl;
+		}
+
+		std::cout << std::endl << "Library path(s):" << std::endl;
+		for( auto &p : libraryPaths ) {
+			std::cout << " - " << p << std::endl;
+		}
+
+		std::cout << std::endl << "LLVM native CPU:\t" << nativeCpu << std::endl;
+		std::cout << "LLVM native target:\t" << nativeTriple.str() << std::endl << std::endl << "LLVM supported architectures:" << std::endl;
 
 		for( auto &t : llvm::TargetRegistry::targets() ) {
 			std::cout << " - " << t.getName() << "\t";
@@ -102,23 +116,23 @@ int main( int argc, char **argv )
 	}
 
 	try {
-		if( !commandLine.count( "input" ) ) {
-			EXO_LOG( fatal, "No input file given." );
+		if( !commandLine.count( "input-file" ) ) {
+			EXO_LOG( fatal, "No input." );
 			exit( 1 );
 		}
 
 		// extract filename from path/fileinfo
-		boost::filesystem::path fileName = boost::filesystem::path( input ).filename();
+		boost::filesystem::path fileName = boost::filesystem::path( inputFile ).filename();
 
 		// create our target information
 		std::unique_ptr<exo::jit::Target> target = std::make_unique<exo::jit::Target>( archName, cpuName, optimizeLvl );
 
 		// create our abstract syntax tree
 		std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>();
-		ast->Parse( input, target->getName() );
+		ast->Parse( inputFile, target->getName() );
 
 		// generate llvm ir code
-		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move(target->createModule( ast->moduleName )) );
+		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move(target->createModule( ast->moduleName )), includePaths, libraryPaths );
 		generator->Generate( ast.get() );
 
 		// create jit and eventually execute our module

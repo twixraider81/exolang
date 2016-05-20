@@ -77,13 +77,15 @@ namespace exo
 				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
 				std::string												currentFile;
 				std::string												currentTarget;
+				std::vector<std::string>								includePaths;
+				std::vector<std::string>								libraryPaths;
 
 			public:
-				std::unique_ptr< llvm::Module >	module;
+				std::unique_ptr<llvm::Module>	module;
 				llvm::IRBuilder<>				builder; // this needs to be defined after module due to how initializer list is used/works
-				std::set< std::string >			imports;
+				std::set<std::string>			imports;
 
-				Codegen( std::unique_ptr<llvm::Module> m );
+				Codegen( std::unique_ptr<llvm::Module> m, std::vector<std::string> i, std::vector<std::string> l );
 				~Codegen();
 
 				llvm::Type*		getType( exo::ast::Type* type );

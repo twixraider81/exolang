@@ -23,7 +23,11 @@ namespace exo
 {
 	namespace jit
 	{
-		Codegen::Codegen( std::unique_ptr<llvm::Module> m ) : module( std::move(m) ), builder( module->getContext() )
+		Codegen::Codegen( std::unique_ptr<llvm::Module> m, std::vector<std::string> i, std::vector<std::string> l ) :
+			module( std::move(m) ),
+			builder( module->getContext() ),
+			includePaths( i ),
+			libraryPaths( l )
 		{
 			stack = std::make_unique<Stack>();
 		}
@@ -804,6 +808,7 @@ namespace exo
 
 		llvm::Value* Codegen::Generate( exo::ast::StmtImport* stmt )
 		{
+			boost::system::error_code error;
 			boost::filesystem::path fileName = boost::filesystem::path( stmt->library->value );
 
 			if( !fileName.has_extension() ) {
@@ -811,23 +816,24 @@ namespace exo
 			}
 
 			if( !fileName.is_absolute() ) {
-				std::set<std::string> paths = EXO_LIBRARY_PATHS;
-
-				for( const auto &path : paths ) {
+				for( const auto &path : libraryPaths ) {
 					boost::filesystem::path testName = boost::filesystem::path( path ) / fileName;
 
-					if( boost::filesystem::exists( testName ) ) {
+					if( boost::filesystem::exists( testName, error ) ) {
 						fileName = testName;
 						break;
 					}
 				}
 			}
 
+			boost::filesystem::path libFile = boost::filesystem::canonical( fileName ); // this should throw
+			/*
 			if( !boost::filesystem::exists( fileName ) ) {
 				EXO_THROW( NotFound() << exo::exceptions::RessouceName( fileName.string() ) << boost::errinfo_at_line( stmt->lineNo ) << exo::exceptions::ColumnNo( stmt->columnNo ) );
 			}
+			*/
 
-			std::string libName = fileName.string();
+			std::string libName = libFile.string();
 			imports.insert( libName );
 
 			EXO_DEBUG_LOG( trace, "Import \"" << libName << "\" in (" << stack->blockName() << ")" );
@@ -844,30 +850,39 @@ namespace exo
 		//TODO: load compiled (.ll) modules
 		llvm::Value* Codegen::Generate( exo::ast::StmtUse* decl )
 		{
-			EXO_LOG( trace, "Use \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
+			EXO_DEBUG_LOG( trace, "Use \"" << decl->id->name << "\" in (" << stack->blockName() << ")" );
 
 			std::string fileName;
-			if( decl->id->inNamespace.length() ) { // path relative to where we execute from
+			boost::system::error_code error;
+
+			if( decl->id->inNamespace.length() ) { // we have a namespace, translate namespaces to folder names
 				fileName += decl->id->inNamespace;
 				boost::replace_all( fileName, "::", "/" );
-			} else { // path relative to where script is stored
-				boost::filesystem::path pathName = boost::filesystem::path( currentFile ).parent_path();
-				fileName += pathName.string() + "/";
 			}
 			fileName += decl->id->name;
 			fileName.append( ".exo" );
+			EXO_DEBUG_LOG( trace, "Use \"" << fileName << "\" in (" << stack->blockName() << ")" );
+			boost::filesystem::path filePath = boost::filesystem::path( fileName );
+			if( !boost::filesystem::exists( filePath, error ) ) {
+				for( const auto &path : includePaths ) {
+					boost::filesystem::path testFile = boost::filesystem::path( path ) / filePath;
 
-			boost::filesystem::path file = boost::filesystem::path( fileName );
-
-			if( boost::filesystem::exists( file ) ) {
-				std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>();
-				ast->Parse( fileName, currentTarget );
-
-				if( ast->stmts ) {
-					return( ast->stmts->Generate( this ) );
+					if( boost::filesystem::exists( testFile, error ) ) {
+						filePath = testFile;
+						break;
+					}
 				}
 			}
+			boost::filesystem::path moduleFile = boost::filesystem::canonical( filePath ); // this should throw
 
+			std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>();
+			ast->Parse( moduleFile.string(), currentTarget );
+
+			if( ast->stmts ) {
+				return( ast->stmts->Generate( this ) );
+			}
+
+			//EXO_THROW( UnknownModule() << exo::exceptions::ModuleName( decl->id->name ) << boost::errinfo_at_line( decl->lineNo ) << exo::exceptions::ColumnNo( decl->columnNo ) );
 			return( nullptr );
 		}
 
@@ -923,17 +938,25 @@ namespace exo
 
 			builder.SetInsertPoint( stack->Push( block ) );
 
+			boost::filesystem::path currentPath = boost::filesystem::current_path();
+
 			try {
-				currentFile = tree->fileName;
+				currentFile = tree->fileName; //TODO: maybe make this a boost::filesystem::path
 				currentTarget = tree->targetMachine;
+
+				boost::filesystem::current_path( boost::filesystem::path( currentFile ).parent_path() );
 
 				if( tree->stmts ) {
 					tree->stmts->Generate( this );
 				}
 			} catch( boost::exception &exception ) {
-				exception << boost::errinfo_file_name( tree->fileName );
+				if( !boost::get_error_info<boost::errinfo_file_name>( exception ) ) {
+					exception << boost::errinfo_file_name( tree->fileName );
+				}
 				throw;
 			}
+
+			boost::filesystem::current_path( currentPath );
 
 			block = stack->Pop();
 			builder.SetInsertPoint( block );
