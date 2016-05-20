@@ -64,6 +64,11 @@ namespace exo
 		typedef boost::error_info<struct tag_error_description, std::string> RessouceName;
 
 		/**
+		 * Structure to hold a module name
+		 */
+		typedef boost::error_info<struct tag_error_description, std::string> ModuleName;
+
+		/**
 		 * Generic unspecified safe exception
 		 */
 		struct SafeException : public virtual boost::exception, public virtual std::exception
@@ -158,6 +163,14 @@ namespace exo
 		struct UnknownPrimitive : public virtual SafeException
 		{
 			public: virtual const char* what() const noexcept;
+		};
+
+		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an unknown module.
+		 */
+		struct UnknownModule : public virtual UnsafeException
+		{
+			public: virtual const char* what();
 		};
 
 		/**
