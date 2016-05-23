@@ -21,9 +21,23 @@ namespace exo
 {
 	namespace exceptions
 	{
-		const char* InvalidOp::what() const noexcept
+		const char* InvalidOp::what()
 		{
-			return( "Invalid operation" );
+			msg = "Invalid Operation";
+
+			if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
+				msg.append( " in " ).append( *fileName );
+			}
+
+			if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
+				msg.append( "#" ).append( std::to_string( *lineNo ) );
+			}
+
+			if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
+				msg.append( ":" ).append( std::to_string( *colNo ) );
+			}
+
+			return( msg.c_str() );
 		};
 	}
 }

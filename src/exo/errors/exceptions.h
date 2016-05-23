@@ -200,9 +200,9 @@ namespace exo
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid operator/operation.
 		 */
-		struct InvalidOp : public virtual SafeException
+		struct InvalidOp : public virtual UnsafeException
 		{
-			public: virtual const char* what() const noexcept;
+			public: virtual const char* what();
 		};
 
 		/**
