@@ -18,9 +18,6 @@
 
 #include "../../build/config.h"
 
-/*
- * FIXME: probably better handled by configure
- */
 #ifdef EXO_DEBUG
 # undef NDEBUG
 #endif

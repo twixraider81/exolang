@@ -39,7 +39,7 @@ namespace exo
 		void sigtermHandler( int signal, siginfo_t *si, void *arg );
 
 
-		/*
+		/**
 		 * Register signalhandlers, currently only a segfault exception throw is registered
 		 * TODO: check which other signals could be caught - http://en.wikipedia.org/wiki/Unix_signal
 		 */

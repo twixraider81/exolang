@@ -22,16 +22,36 @@ namespace exo
 {
 	namespace jit
 	{
+		/**
+		 * Simple helper class to assits with target machine specific operations
+		 */
 		class Target
 		{
 			public:
+				/**
+				 * The LLVM target machine, based upon architecture, cpu type
+				 */
 				std::unique_ptr<llvm::TargetMachine>	targetMachine;
+
+				/**
+				 * Code generation optimization Level (0-3)
+				 */
 				llvm::CodeGenOpt::Level					codeGenOpt;
 
+				/**
+				 * Constructs the targetmachine (thru LLVM) based, based upon architecture, cpu type and optimizatzion level
+				 */
 				Target( std::string archName, std::string cpuName, int optimizeLvl );
 				~Target();
 
+				/**
+				 * Create a module, suitable for our target
+				 */
 				std::unique_ptr<llvm::Module>	createModule( std::string moduleName );
+
+				/**
+				 * String representation/Name of our Target
+				 */
 				std::string						getName();
 		};
 	}

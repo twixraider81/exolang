@@ -21,6 +21,9 @@ namespace exo
 {
 	namespace signals
 	{
+		/*
+		 * TODO: proper handling of std::terminate, should this throw?
+		 */
 		void sigsegHandler( int signal, siginfo_t *si, void *arg )
 		{
 			if( signal == SIGSEGV ) {

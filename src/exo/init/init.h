@@ -30,7 +30,6 @@ namespace exo
 
 				/**
 				 * Shuts down our Interpreter. Only the garbage Collection for now.
-				 * FIXME: should also handle parser state.
 				 */
 				static void Shutdown();
 		};
