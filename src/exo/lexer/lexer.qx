@@ -88,6 +88,7 @@ mode EXO:
 	"continue"						=> QUEX_TKN_T_CONTINUE;
 
 	"class"							=> QUEX_TKN_T_CLASS;
+	"method"						=> QUEX_TKN_T_FUNCTION;
 	"extends"						=> QUEX_TKN_T_EXTENDS;
 	"public"						=> QUEX_TKN_T_PUBLIC;
 	"private"						=> QUEX_TKN_T_PRIVATE;

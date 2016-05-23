@@ -66,17 +66,18 @@
 
 
 /* token precedences */
+%left		T_COMMA.
 %nonassoc	T_IF.
 %nonassoc	T_ELSE.
-%left		T_ASSIGN.
-%left		T_EQ T_NE T_LT T_LE T_GT T_GE.
+%right		T_ASSIGN.
+%left		T_EQ T_NE.
+%left		T_LT T_LE T_GT T_GE.
 %left		T_PLUS.
 %nonassoc	T_MINUS.
 %left		T_MUL.
 %nonassoc	T_DIV.
-%right		T_PTR.
 %right		T_NEW T_DELETE.
-
+%left		T_PTR.
 
 /* a program is build out of statements. or is empty */
 program ::= stmts(s). {
@@ -274,7 +275,7 @@ declclass(c) ::= T_CLASS id(i) T_LBRACKET T_RBRACKET. {
 }
 
 /*
- * a function prototype declaration is a type identifier followed by the keyword function a functionname
+ * a function prototype declaration can have a type identifier followed by the keyword function a function identifier and a variaböe decleration
  */
 %type declfunproto { std::unique_ptr<exo::ast::DeclFunProto> }
 declfunproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE. {
@@ -285,12 +286,27 @@ declfunproto(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RA
 	f = std::make_unique<exo::ast::DeclFunProto>( std::move(i), std::move(t), std::move(l), true );
 	EXO_TRACK_NODE(f);
 }
+declfunproto(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE. {
+	f = std::make_unique<exo::ast::DeclFunProto>( std::move(i), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), false );
+	EXO_TRACK_NODE(f);
+}
+declfunproto(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE. {
+	f = std::make_unique<exo::ast::DeclFunProto>( std::move(i), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), true );
+	EXO_TRACK_NODE(f);
+}
 
 /*
- * a function declaration has an optional access modifier, a (return)type identifier followed by the keyword function a functionname
- * optionally function arguments in brackets and an associated block.
+ * a function declaration has an access modifier followed by a function prototype and a statement block
  */
 %type declfun { std::unique_ptr<exo::ast::DeclFun> }
+declfun(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), false );
+	EXO_TRACK_NODE(f);
+}
+declfun(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), true );
+	EXO_TRACK_NODE(f);
+}
 declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(t), std::move(l), std::move(b), false );
 	EXO_TRACK_NODE(f);
@@ -307,6 +323,15 @@ declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::move(t), std::move(l), std::move(b), true );
 	EXO_TRACK_NODE(f);
 }
+declfun(f) ::= access(a) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), false );
+	EXO_TRACK_NODE(f);
+}
+declfun(f) ::= access(a) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), true );
+	EXO_TRACK_NODE(f);
+}
+
 
 /* a module declaration is a module identifier */
 %type declmod { std::unique_ptr<exo::ast::DeclMod> }
@@ -399,7 +424,7 @@ type(t) ::= id(i). {
 }
 
 
-/* an expression list are expression delimited by a colon */
+/* an expression list may be empty or expressions delimited by a colon */
 %type exprlist { std::unique_ptr<exo::ast::ExprList> }
 exprlist(l) ::= . {
 	l = std::make_unique<exo::ast::ExprList>();
@@ -416,100 +441,100 @@ exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
 }
 
 
-/* an expression may be (delimited/grouped by brackets) an function call, method call, property, variable (expression), constant, binary operation (add, ... assignment) operation, unary operation ( new, delete) */
+/* an expression may be delimited/grouped by brackets, binary operation, call, constant, unary operation, variable */
 %type expr { std::unique_ptr<exo::ast::Expr> }
-expr(e) ::= id(i) T_LANGLE exprlist(a) T_RANGLE. {
-	e = std::make_unique<exo::ast::ExprCallFun>( std::move(i), std::move(a) );
-	EXO_TRACK_NODE(e);
+expr(e) ::= T_LANGLE expr(a) T_RANGLE. {
+	e = std::move(a);
 }
-expr(e) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
-	e = std::make_unique<exo::ast::ExprCallMethod>( std::make_unique<exo::ast::Id>( TOKENSTR(i) ), std::move(v), std::move(a) );
-	EXO_TRACK_NODE(e);
+expr(e) ::= binop(b). {
+	e = std::move(b);
 }
-expr(e) ::= expr(v) T_PTR S_ID(i). {
-	e = std::make_unique<exo::ast::ExprProp>( TOKENSTR(i), std::move(v) );
-	EXO_TRACK_NODE(e);
-}
-expr(e) ::= S_VAR(v). {
-	e = std::make_unique<exo::ast::ExprVar>( TOKENSTR(v) );
-	EXO_TRACK_NODE(e);
+expr(e) ::= call(c). {
+	e = std::move(c);
 }
 expr(e) ::= constant(c). {
 	e = std::move(c);
 }
-/* binary ops */
-expr(e) ::= expr(a) T_PLUS expr(b). {
+expr(e) ::= unop(b). {
+	e = std::move(b);
+}
+expr(e) ::= var(v). {
+	e = std::move(v);
+}
+
+/* binary operations ( + - * / == != < <= > >= = ) */
+%type binop { std::unique_ptr<exo::ast::OpBinary> }
+binop(e) ::= expr(a) T_PLUS expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAdd>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_MINUS expr(b). {
+binop(e) ::= expr(a) T_MINUS expr(b). {
 	e = std::make_unique<exo::ast::OpBinarySub>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_MUL expr(b). {
+binop(e) ::= expr(a) T_MUL expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryMul>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_DIV expr(b). {
+binop(e) ::= expr(a) T_DIV expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryDiv>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_EQ expr(b). {
+binop(e) ::= expr(a) T_EQ expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryEq>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_NE expr(b). {
+binop(e) ::= expr(a) T_NE expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryNeq>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_LT expr(b). {
+binop(e) ::= expr(a) T_LT expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryLt>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_LE expr(b). {
+binop(e) ::= expr(a) T_LE expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryLe>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_GT expr(b). {
+binop(e) ::= expr(a) T_GT expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryGt>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_GE expr(b). {
+binop(e) ::= expr(a) T_GE expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryGe>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(n) T_ASSIGN expr(v). {
+binop(e) ::= expr(n) T_ASSIGN expr(v). {
 	e = std::make_unique<exo::ast::OpBinaryAssign>( std::move(n), std::move(v) );
 	EXO_TRACK_NODE(e);
 }
-/* unary ops */
-expr(e) ::= T_NEW expr(a). {
-	e = std::make_unique<exo::ast::OpUnaryNew>( std::move(a) );
-	EXO_TRACK_NODE(e);
-}
-expr(e) ::= T_DELETE expr(a). {
-	e = std::make_unique<exo::ast::OpUnaryDel>( std::move(a) );
-	EXO_TRACK_NODE(e);
-}
 /* binary shorthand ops */
-expr(e) ::= expr(a) T_PLUS T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_PLUS T_ASSIGN expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignAdd>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_MINUS T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_MINUS T_ASSIGN expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignSub>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_MUL T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_MUL T_ASSIGN expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignMul>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= expr(a) T_DIV T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_DIV T_ASSIGN expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignDiv>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-expr(e) ::= T_LANGLE expr(a) T_RANGLE. {
-	e = std::move(a);
+
+/* a call can be a function or method call */
+%type call { std::unique_ptr<exo::ast::ExprCallFun> }
+call(c) ::= id(i) T_LANGLE exprlist(a) T_RANGLE. {
+	c = std::make_unique<exo::ast::ExprCallFun>( std::move(i), std::move(a) );
+	EXO_TRACK_NODE(c);
+}
+call(c) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
+	c = std::make_unique<exo::ast::ExprCallMethod>( std::make_unique<exo::ast::Id>( TOKENSTR(i) ), std::move(v), std::move(a) );
+	EXO_TRACK_NODE(c);
 }
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */
@@ -556,7 +581,6 @@ constant(c) ::= number(n). {
 constant(c) ::= string(s). {
 	c = std::move(s);
 }
-
 /* a number can be an integer or a float */
 %type number { std::unique_ptr<exo::ast::Expr> }
 number(n) ::= S_INT(i). {
@@ -575,12 +599,33 @@ number(n) ::= T_MINUS S_FLOAT(f). {
 	n = std::make_unique<exo::ast::ConstFloat>( -( boost::lexical_cast<double>( TOKENSTR(f) ) ) );
 	EXO_TRACK_NODE(n);
 }
-
 /* a string is delimited by quotes */
 %type string { std::unique_ptr<exo::ast::ConstStr> }
 string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 	s = std::make_unique<exo::ast::ConstStr>( TOKENSTR(q) );
 	EXO_TRACK_NODE(s);
+}
+
+/* unary operation may be a new or delete */
+%type unop { std::unique_ptr<exo::ast::OpUnary> }
+unop(u) ::= T_NEW expr(a). {
+	u = std::make_unique<exo::ast::OpUnaryNew>( std::move(a) );
+	EXO_TRACK_NODE(u);
+}
+unop(u) ::= T_DELETE expr(e). {
+	u = std::make_unique<exo::ast::OpUnaryDel>( std::move(e) );
+	EXO_TRACK_NODE(u);
+}
+
+/* a variable begins with dollar sign and may be a class property */
+%type var { std::unique_ptr<exo::ast::ExprVar> }
+var(v) ::= expr(e) T_PTR S_ID(n). {
+	v = std::make_unique<exo::ast::ExprProp>( TOKENSTR(n), std::move(e) );
+	EXO_TRACK_NODE(v);
+}
+var(v) ::= S_VAR(n). {
+	v = std::make_unique<exo::ast::ExprVar>( TOKENSTR(n) );
+	EXO_TRACK_NODE(v);
 }
 
 
