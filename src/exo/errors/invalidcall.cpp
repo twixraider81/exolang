@@ -24,7 +24,7 @@ namespace exo
 		const char* InvalidCall::what()
 		{
 			if( const std::string *functionName = boost::get_error_info<exo::exceptions::FunctionName>( *this ) ) {
-				msg.append( "Invalid call " ).append( *functionName );
+				msg.append( "Invalid call to " ).append( *functionName );
 
 				if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
 					msg.append( " in " ).append( *fileName );

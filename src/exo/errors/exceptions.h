@@ -18,6 +18,7 @@
 
 #define EXO_THROW_MSG(m)			BOOST_THROW_EXCEPTION( exo::exceptions::SafeException() << exo::exceptions::Message( m ) )
 #define EXO_THROW(e)				BOOST_THROW_EXCEPTION( exo::exceptions::e )
+#define EXO_THROW_AT(e,n)			BOOST_THROW_EXCEPTION( exo::exceptions::e << boost::errinfo_at_line( n->lineNo ) << exo::exceptions::ColumnNo( n->columnNo ) )
 
 namespace exo
 {
