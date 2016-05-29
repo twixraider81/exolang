@@ -69,13 +69,11 @@
 %left		T_COMMA.
 %nonassoc	T_IF.
 %nonassoc	T_ELSE.
-%right		T_ASSIGN.
+%right		T_ASSIGN T_ASSIGN_PLUS T_ASSIGN_MINUS T_ASSIGN_MUL T_ASSIGN_DIV.
 %left		T_EQ T_NE.
 %left		T_LT T_LE T_GT T_GE.
-%left		T_PLUS.
-%nonassoc	T_MINUS.
-%left		T_MUL.
-%nonassoc	T_DIV.
+%left		T_PLUS T_MINUS.
+%left		T_MUL T_DIV.
 %right		T_NEW T_DELETE.
 %left		T_PTR.
 
@@ -354,8 +352,16 @@ declvar(d) ::= type(t) S_VAR(v). {
 	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t) );
 	EXO_TRACK_NODE(d);
 }
+declvar(d) ::= T_REF type(t) S_VAR(v). {
+	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), true );
+	EXO_TRACK_NODE(d);
+}
 declvar(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
 	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), std::move(e) );
+	EXO_TRACK_NODE(d);
+}
+declvar(d) ::= T_REF type(t) S_VAR(v) T_ASSIGN var(r). {
+	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), std::move(r), true );
 	EXO_TRACK_NODE(d);
 }
 
@@ -509,19 +515,19 @@ binop(e) ::= expr(n) T_ASSIGN expr(v). {
 	EXO_TRACK_NODE(e);
 }
 /* binary shorthand ops */
-binop(e) ::= expr(a) T_PLUS T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_ASSIGN_PLUS expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignAdd>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-binop(e) ::= expr(a) T_MINUS T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_ASSIGN_MINUS expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignSub>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-binop(e) ::= expr(a) T_MUL T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_ASSIGN_MUL expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignMul>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
-binop(e) ::= expr(a) T_DIV T_ASSIGN expr(b). {
+binop(e) ::= expr(a) T_ASSIGN_DIV expr(b). {
 	e = std::make_unique<exo::ast::OpBinaryAssignDiv>( std::move(a), std::move(b) );
 	EXO_TRACK_NODE(e);
 }
@@ -608,8 +614,8 @@ string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 
 /* unary operation may be a new or delete */
 %type unop { std::unique_ptr<exo::ast::OpUnary> }
-unop(u) ::= T_NEW expr(a). {
-	u = std::make_unique<exo::ast::OpUnaryNew>( std::move(a) );
+unop(u) ::= T_NEW expr(e). {
+	u = std::make_unique<exo::ast::OpUnaryNew>( std::move(e) );
 	EXO_TRACK_NODE(u);
 }
 unop(u) ::= T_DELETE expr(e). {

@@ -78,6 +78,7 @@ mode EXO:
 	"fn"							=> QUEX_TKN_T_FUNCTION;
 	"function"						=> QUEX_TKN_T_FUNCTION;
 	"return"						=> QUEX_TKN_T_RETURN;
+	"ref"							=> QUEX_TKN_T_REF;
 
 	"if"							=> QUEX_TKN_T_IF;
 	"else"							=> QUEX_TKN_T_ELSE;
@@ -118,6 +119,10 @@ mode EXO:
 	"{"								=> QUEX_TKN_T_LBRACKET;
 	"}"								=> QUEX_TKN_T_RBRACKET;
 	"="								=> QUEX_TKN_T_ASSIGN;
+	"+="							=> QUEX_TKN_T_ASSIGN_PLUS;
+	"-="							=> QUEX_TKN_T_ASSIGN_MINUS;
+	"*="							=> QUEX_TKN_T_ASSIGN_MUL;
+	"/="							=> QUEX_TKN_T_ASSIGN_DIV;
 	"=="							=> QUEX_TKN_T_EQ;
 	"!="							=> QUEX_TKN_T_NE;
 	"<"								=> QUEX_TKN_T_LT;
