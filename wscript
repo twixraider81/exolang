@@ -34,6 +34,9 @@ def options( opt ):
 	opt.add_option( '--llvm', action = 'store', default = 'llvm-config', help = 'path to llvm-config' )
 	opt.add_option( '--gc', action = 'store', default = 'enabled', help = 'enable, or disable libgc garbage collector for debug purposes only, it will make us leak!' )
 	opt.add_option( '--gdb', type="string", default='', dest='gdb', help = 'load the specified script and run it with gdb' )
+	opt.add_option( '--gdbserver', type="string", default='', dest='gdbserver', help = 'load the specified script and run it with gdb server' )
+	opt.add_option( '--lldb', type="string", default='', dest='lldb', help = 'load the specified script and run it with lldb' )
+	opt.add_option( '--r2', type="string", default='', dest='r2', help = 'load the specified script and run it with radare2' )
 	opt.add_option( '--memcheck', type="string", default='', dest='memcheck', help = 'load the specified script and run it with valgrind memcheck' )
 	opt.add_option( '--callgrind', type="string", default='', dest='callgrind', help = 'load the specified script and run it with valgrind callgrind' )
 	opt.add_option( '--runtests', action='store_true', default='', dest='runtests', help = 'run all test scripts' )
@@ -52,20 +55,23 @@ def configure( conf ):
 
 	conf.find_program( os.path.basename( conf.options.llvm ), var = 'LLVMCONFIG', mandatory = True, path_list = os.path.dirname( conf.options.llvm ) )
 	conf.find_program( 'gdb', var = 'GDB', mandatory = False )
+	conf.find_program( 'lldb', var = 'LLDB', mandatory = False, path_list = os.path.dirname( conf.options.llvm ) )
+	conf.find_program( 'gdbserver', var = 'GDBSERVER', mandatory = False )
+	conf.find_program( 'r2', var = 'R2', mandatory = False )
 	conf.find_program( 'valgrind', var = 'VALGRIND', mandatory = False )
 	conf.find_program( 'ld.gold', var = 'GOLD', mandatory = False )
 
 	# read llvm-config
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--version'], stdout = subprocess.PIPE )
 	llvmversion = process.communicate()[0].strip()
-	conf.msg( 'LLVM version:', llvmversion, 'GREEN' )
+	conf.msg( 'Checking for LLVM version', llvmversion, 'GREEN' )
 	llvmversionNo = int( llvmversion.replace( ".", '' ) )
 	if llvmversionNo < 380:
 		conf.fatal( 'atleast LLVM 3.8.0 is required' );
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--has-rtti'], stdout = subprocess.PIPE )
 	rtti = process.communicate()[0].strip()
-	conf.msg( 'LLVM RTTI:', rtti, 'CYAN' )
+	conf.msg( 'Checking for LLVM RTTI', rtti, 'CYAN' )
 	if rtti == "NO":
 		conf.fatal( 'LLVM build with RTTI is required' );
 
@@ -138,6 +144,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "map" )
 	conf.check_cxx( header_name = "vector" )
 	conf.check_cxx( header_name = "stack" )
+	conf.check_cxx( header_name = "unordered_map" )
 	conf.check_cxx( header_name = "memory" )
 	conf.check_cxx( header_name = "iterator" )
 	conf.check_cxx( header_name = "algorithm" )
@@ -215,7 +222,19 @@ def build( bld ):
 	bld.program( target = 'exolang', features = 'cxx', source = exo, includes = [ TOP, SRCDIR, BINDIR + 'quex' ], lib = libs )
 
 	if Options.options.gdb and bld.env.GDB:
-		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --eval-command="r" --args ' + BUILDDIR + '/exolang -i ' + Options.options.gdb
+		cmd = bld.env.GDB[0] + ' --eval-command="b main" --eval-command="b exo::jit::JIT::JIT" --eval-command="r" --args ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.gdb
+		subprocess.call( cmd, shell=True )
+
+	if Options.options.gdbserver and bld.env.GDBSERVER:
+		cmd = bld.env.GDBSERVER[0] + ' --debug --remote-debug :2159 ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.gdbserver
+		subprocess.call( cmd, shell=True )
+
+	if Options.options.lldb and bld.env.LLDB:
+		cmd = bld.env.LLDB[0] + ' -- ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.lldb
+		subprocess.call( cmd, shell=True )
+
+	if Options.options.r2 and bld.env.R2:
+		cmd = bld.env.R2[0] + ' -e http.bind=0.0.0.0 -e http.dirlist=1 -c="h&" ' + BUILDDIR + '/exolang -l1 -i ' + Options.options.r2
 		subprocess.call( cmd, shell=True )
 
 	if Options.options.memcheck and bld.env.VALGRIND:
