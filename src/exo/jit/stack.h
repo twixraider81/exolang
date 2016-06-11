@@ -17,7 +17,8 @@
 #define STACK_H_
 
 #include "exo/exo.h"
-#include "exo/jit/stackentry.h"
+#include "exo/jit/frame.h"
+#include "exo/jit/symboltable.h"
 
 namespace exo
 {
@@ -26,23 +27,21 @@ namespace exo
 		class Stack
 		{
 			private:
-				std::stack< std::shared_ptr<StackEntry> >	entries;
+				std::stack< std::unique_ptr<Frame> >	frames;
 
 			public:
-				Stack();
-				~Stack();
-
-				llvm::BasicBlock*	Push( llvm::BasicBlock* block, llvm::BasicBlock* exit = nullptr );
+				llvm::BasicBlock*	Push( llvm::BasicBlock* insertPoint, llvm::BasicBlock* breakTo = nullptr );
 				llvm::BasicBlock*	Pop();
-				llvm::BasicBlock*	Join( llvm::BasicBlock* block );
+				llvm::BasicBlock*	Join( llvm::BasicBlock* joinPoint );
 				llvm::BasicBlock*	Block();
 				llvm::BasicBlock*	Exit();
 
 				std::string 		blockName();
 
-				llvm::Value*		getSymbol( std::string name );
-				void				setSymbol( std::string name, llvm::Value* value );
-				void				delSymbol( std::string name );
+				llvm::Value*		Get( std::string name );
+				void				Set( std::string name, llvm::Value* value, bool isRef = false );
+				void				Del( std::string name );
+				bool				isRef( std::string name );
 		};
 	}
 }

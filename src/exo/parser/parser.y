@@ -72,6 +72,7 @@
 %right		T_ASSIGN T_ASSIGN_PLUS T_ASSIGN_MINUS T_ASSIGN_MUL T_ASSIGN_DIV.
 %left		T_EQ T_NE.
 %left		T_LT T_LE T_GT T_GE.
+%right		T_AMP.
 %left		T_PLUS T_MINUS.
 %left		T_MUL T_DIV.
 %right		T_NEW T_DELETE.
@@ -360,8 +361,8 @@ declvar(d) ::= type(t) S_VAR(v) T_ASSIGN expr(e). {
 	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), std::move(e) );
 	EXO_TRACK_NODE(d);
 }
-declvar(d) ::= T_REF type(t) S_VAR(v) T_ASSIGN var(r). {
-	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), std::move(r), true );
+declvar(d) ::= T_REF type(t) S_VAR(v) T_ASSIGN expr(e). {
+	d = std::make_unique<exo::ast::DeclVar>( TOKENSTR(v), std::move(t), std::move(e), true );
 	EXO_TRACK_NODE(d);
 }
 
@@ -612,14 +613,18 @@ string(s) ::= T_QUOTE S_STRING(q) T_QUOTE. {
 	EXO_TRACK_NODE(s);
 }
 
-/* unary operation may be a new or delete */
+/* unary operation may be a delete, new or reference */
 %type unop { std::unique_ptr<exo::ast::OpUnary> }
+unop(u) ::= T_DELETE expr(e). {
+	u = std::make_unique<exo::ast::OpUnaryDel>( std::move(e) );
+	EXO_TRACK_NODE(u);
+}
 unop(u) ::= T_NEW expr(e). {
 	u = std::make_unique<exo::ast::OpUnaryNew>( std::move(e) );
 	EXO_TRACK_NODE(u);
 }
-unop(u) ::= T_DELETE expr(e). {
-	u = std::make_unique<exo::ast::OpUnaryDel>( std::move(e) );
+unop(u) ::= T_AMP expr(e). {
+	u = std::make_unique<exo::ast::OpUnaryRef>( std::move(e) );
 	EXO_TRACK_NODE(u);
 }
 

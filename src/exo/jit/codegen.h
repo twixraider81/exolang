@@ -39,6 +39,7 @@ namespace exo
 		class Expr;
 		class ExprCallFun;
 		class ExprCallMethod;
+		class ExprList;
 		class ExprVar;
 		class ExprProp;
 		class Id;
@@ -47,6 +48,7 @@ namespace exo
 		class OpBinaryAssignShort;
 		class OpUnaryDel;
 		class OpUnaryNew;
+		class OpUnaryRef;
 		class StmtBlock;
 		class StmtBreak;
 		class StmtCont;
@@ -68,78 +70,88 @@ namespace exo
 		class Codegen
 		{
 			private:
-				std::unique_ptr<Stack>									stack;
-				std::map< std::string, std::vector<std::string> >		propertyIndex;
-				std::map< std::string, std::vector<llvm::Type*> >		properties;
-				std::map< std::string, std::vector<std::string> >		methodIndex;
-				std::map< std::string, std::vector<llvm::Function*> >	methods;
-				std::map< std::string, std::vector<llvm::Type*> >		vtblSignatures;
-				std::map< std::string, std::vector<llvm::Constant*> >	vtblInitializers;
+				std::unique_ptr<Stack> stack;
+
+				/*
+				 * map layout
+				 * {
+				 *  "class1":
+				 *  {
+				 *   "prop1" : { 1, expr },
+				 *   "prop2" : { 2, expr }
+				 *  },
+				 *  ...
+				 * }
+				 */
+				std::unordered_map< std::string, std::unordered_map< std::string, std::pair<int, llvm::Value*> > >		properties;
+				std::unordered_map< std::string, std::unordered_map< std::string, std::pair<int, llvm::Function*> > >	methods;
+
 				std::string												currentFile;
 				std::string												currentTarget;
+
 				std::vector<std::string>								includePaths;
 				std::vector<std::string>								libraryPaths;
 
 			public:
 				std::unique_ptr<llvm::Module>	module;
-				llvm::IRBuilder<>				builder; // this needs to be defined after module due to how initializer list is used/works
+				llvm::IRBuilder<>				builder; // this needs to be defined after module due to how initializer list is used
 				std::set<std::string>			imports;
 
 				Codegen( std::unique_ptr<llvm::Module> m, std::vector<std::string> i, std::vector<std::string> l );
 				~Codegen();
 
 				llvm::Type*		getType( exo::ast::Type* type );
-				int				getPropertyPosition( std::string className, std::string propName );
-				int				getMethodPosition( std::string className, std::string methodName );
-				llvm::Function*	getCallee( std::string className );
-				llvm::Value* 	invokeMethod( llvm::Value* object, std::string method, std::vector<exo::ast::Expr*> arguments );
+				llvm::Value*	Generate( exo::ast::ConstBool* val, bool inMem );
+				llvm::Value*	Generate( exo::ast::ConstInt* val, bool inMem );
+				llvm::Value*	Generate( exo::ast::ConstFloat* val, bool inMem );
+				llvm::Value*	Generate( exo::ast::ConstNull* val, bool inMem );
+				llvm::Value*	Generate( exo::ast::ConstStr* val, bool inMem );
+				llvm::Value*	Generate( exo::ast::DeclClass* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::DeclFunProto* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::DeclFun* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::DeclMod* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::DeclVar* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::DeclVarList* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::ExprCallFun* call, bool inMem );
+				llvm::Value*	Generate( exo::ast::ExprCallMethod* call, bool inMem );
+				llvm::Value*	Generate( exo::ast::ExprProp* expr, bool inMem );
+				llvm::Value*	Generate( exo::ast::ExprVar* expr, bool inMem );
+				llvm::Value*	Generate( exo::ast::OpBinary* op, bool inMem );
+				llvm::Value*	Generate( exo::ast::OpBinaryAssign* op, bool inMem );
+				llvm::Value*	Generate( exo::ast::OpBinaryAssignShort* op, bool inMem );
+				llvm::Value*	Generate( exo::ast::OpUnaryDel* op, bool inMem );
+				llvm::Value*	Generate( exo::ast::OpUnaryNew* op, bool inMem );
+				llvm::Value*	Generate( exo::ast::OpUnaryRef* op, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtBlock* stmts, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtBreak* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtCont* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtExpr* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtFor* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtIf* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtImport* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtReturn* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtUse* dec, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtWhile* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::Tree* tree );
 
-				llvm::Value* Generate( exo::ast::ConstBool* val );
-				llvm::Value* Generate( exo::ast::ConstInt* val );
-				llvm::Value* Generate( exo::ast::ConstFloat* val );
-				llvm::Value* Generate( exo::ast::ConstNull* val );
-				llvm::Value* Generate( exo::ast::ConstStr* val );
-				llvm::Value* Generate( exo::ast::DeclClass* dec );
-				llvm::Value* Generate( exo::ast::DeclFunProto* dec );
-				llvm::Value* Generate( exo::ast::DeclFun* dec );
-				llvm::Value* Generate( exo::ast::DeclMod* dec );
-				llvm::Value* Generate( exo::ast::DeclVar* dec );
-				llvm::Value* Generate( exo::ast::DeclVarList* dec );
-				llvm::Value* Generate( exo::ast::ExprCallFun* call );
-				llvm::Value* Generate( exo::ast::ExprCallMethod* call );
-				llvm::Value* Generate( exo::ast::ExprProp* expr );
-				llvm::Value* Generate( exo::ast::ExprVar* expr );
-				llvm::Value* Generate( exo::ast::OpBinary* op );
-				llvm::Value* Generate( exo::ast::OpBinaryAssign* op );
-				llvm::Value* Generate( exo::ast::OpBinaryAssignShort* op );
-				llvm::Value* Generate( exo::ast::OpUnaryDel* op );
-				llvm::Value* Generate( exo::ast::OpUnaryNew* op );
-				llvm::Value* Generate( exo::ast::StmtBlock* stmts );
-				llvm::Value* Generate( exo::ast::StmtBreak* stmt );
-				llvm::Value* Generate( exo::ast::StmtCont* stmt );
-				llvm::Value* Generate( exo::ast::StmtExpr* stmt );
-				llvm::Value* Generate( exo::ast::StmtFor* stmt );
-				llvm::Value* Generate( exo::ast::StmtIf* stmt );
-				llvm::Value* Generate( exo::ast::StmtImport* stmt );
-				llvm::Value* Generate( exo::ast::StmtReturn* stmt );
-				llvm::Value* Generate( exo::ast::StmtUse* dec );
-				llvm::Value* Generate( exo::ast::StmtWhile* stmt );
-				llvm::Value* Generate( exo::ast::Tree* tree );
-
-				std::string printValue( llvm::Value* value );
+				std::string		toString( llvm::Value* value );
+				std::string		toString( llvm::Type* type );
 
 				llvm::Function* registerExternFun( std::string name, llvm::Type* retType, std::vector<llvm::Type*> fArgs );
+
+				llvm::Function*	getFunction( std::string functionName );
+				llvm::Value* 	invokeFunction( llvm::Value* callee, llvm::FunctionType* function, std::vector<llvm::Value*> arguments, exo::ast::ExprList* expressions, bool inMem );
+				llvm::Value* 	invokeMethod( llvm::Value* callee, std::string methodName, exo::ast::ExprList* expressions, bool isOptional, bool inMem );
+				int				getPropPos( std::string className, std::string propName );
+				int				getMethodPos( std::string className, std::string methodName );
 		};
 	}
 }
 
-#define EXO_CLASS(n) (n)
-#define EXO_VTABLE(n) "__vtbl_" + EXO_CLASS(n)
-#define EXO_VTABLE_STRUCT(n) "__vtbl_struct_" + EXO_CLASS(n)
-#define EXO_METHOD(c,m) "__method_" + EXO_CLASS(c) + "_" + m
-#define EXO_IS_CLASS_PTR(a) ( a->isPointerTy() && a->getPointerElementType()->isPointerTy() && a->getPointerElementType()->getPointerElementType()->isStructTy() )
-#define EXO_IS_OBJECT(a) EXO_IS_CLASS_PTR( a->getType() )
-#define EXO_OBJECT_CLASSNAME(a) a->getType()->getPointerElementType()->getStructName()
+#define EXO_CLASS(n)				( "__class_" + n )
+#define EXO_METHOD(c,m)				EXO_CLASS(c) + "_method_" + m
+#define EXO_VTABLE(n)				EXO_CLASS(n) + "_vtbl"
+#define EXO_CODEGEN_LOG(node,msg)	EXO_DEBUG_LOG(trace, msg << " in " << currentFile << "#" << node->lineNo << ":" << node->columnNo/* << " (" << stack->blockName() << ")"*/ )
 
 #ifndef EXO_GC_DISABLE
 # define EXO_ALLOC "GC_malloc"

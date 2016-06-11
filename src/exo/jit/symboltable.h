@@ -13,8 +13,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FRAME_H_
-#define FRAME_H_
+#ifndef SYMBOLTABLE_H_
+#define SYMBOLTABLE_H_
 
 #include "exo/exo.h"
 #include "exo/jit/llvm.h"
@@ -23,26 +23,17 @@ namespace exo
 {
 	namespace jit
 	{
-		class SymbolTable;
-
-		class Frame
+		class SymbolTable
 		{
 			public:
-				llvm::BasicBlock*					insertPoint;
-				llvm::BasicBlock*					breakTo;
-
-				std::shared_ptr<SymbolTable>		localSymbols;
-				std::shared_ptr<SymbolTable>		globalSymbols;
-
-				Frame( llvm::BasicBlock* i, llvm::BasicBlock* b );
-				~Frame();
+				std::unordered_map< std::string, std::pair< llvm::Value*, bool> >	symbols;
 
 				llvm::Value*	Get( std::string name );
-				void 			Set( std::string name, llvm::Value* value, bool isRef );
+				void 			Set( std::string name, llvm::Value* value, bool isRef = false );
 				void 			Del( std::string name );
 				bool			isRef( std::string name );
 		};
 	}
 }
 
-#endif /* FRAME_H_ */
+#endif /* SYMBOLTABLE_H_ */

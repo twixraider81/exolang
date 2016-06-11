@@ -21,119 +21,108 @@ namespace exo
 {
 	namespace jit
 	{
-		Stack::Stack()
+		llvm::BasicBlock* Stack::Push( llvm::BasicBlock* insertPoint, llvm::BasicBlock* breakTo )
 		{
-		};
-
-		Stack::~Stack()
-		{
-		};
-
-		llvm::BasicBlock* Stack::Push( llvm::BasicBlock* block, llvm::BasicBlock* exit )
-		{
-			if( entries.size() > 0 ) {
+			if( frames.size() > 0 ) {
 				// propagate exit/continue block in loops
-				if( exit == nullptr ) {
-					exit = entries.top()->exit;
+				if( breakTo == nullptr ) {
+					breakTo = frames.top()->breakTo;
 				}
 
-				std::shared_ptr<StackEntry> newBlock = std::make_shared<StackEntry>( block, exit );
-				// inherit parent variables
-				newBlock->symbols = entries.top()->symbols;
-				entries.push( newBlock );
+				std::unique_ptr<Frame> frame = std::make_unique<Frame>( insertPoint, breakTo );
+				frame->globalSymbols = frames.top()->localSymbols;
+				frames.push( std::move(frame) );
 			} else {
-				entries.push( std::make_shared<StackEntry>( block, exit ) );
+				frames.push( std::make_unique<Frame>( insertPoint, breakTo ) );
 			}
 
-			EXO_DEBUG_LOG( trace, "Switching to (" << entries.top()->block->getName().str() << ")" );
-			if( exit != nullptr ) {
-				EXO_DEBUG_LOG( trace, "Continue at exit (" << entries.top()->exit->getName().str() << ")" );
-			}
-
-			return( entries.top()->block );
+			return( frames.top()->insertPoint );
 		}
 
 		llvm::BasicBlock* Stack::Pop()
 		{
-			llvm::BasicBlock* b;
+			llvm::BasicBlock* insertPoint;
 
-			if( entries.size() == 0 ) {
+			if( frames.size() == 0 ) {
 				EXO_THROW_MSG( "Stack empty while trying to reduce further." );
 			}
 
-			if( entries.top()->exit == nullptr ) {
-				b = entries.top()->block;
-				entries.pop();
+			if( frames.top()->breakTo == nullptr ) {
+				insertPoint = frames.top()->insertPoint;
+				frames.pop();
 
-				if( entries.size() > 0 ) {
-					EXO_DEBUG_LOG( trace, "Continuing at (" << entries.top()->block->getName().str() << ")" );
-					b = entries.top()->block;
+				if( frames.size() > 0 ) {
+					insertPoint = frames.top()->insertPoint;
 				}
 			} else {
-				EXO_DEBUG_LOG( trace, "Continuing at exit (" << entries.top()->exit->getName().str() << ")" );
-				b = entries.top()->exit;
-				entries.pop();
+				insertPoint = frames.top()->breakTo;
+				frames.pop();
 			}
 
-			return( b );
+			return( insertPoint );
 		}
 
 		llvm::BasicBlock* Stack::Join( llvm::BasicBlock* block )
 		{
-			EXO_DEBUG_LOG( trace, "Joining (" << entries.top()->block->getName().str() << ") with (" << block->getName().str() << ")" );
-			entries.top()->block = block;
+			EXO_DEBUG_LOG( trace, "Joining (" << frames.top()->insertPoint->getName().str() << ") with (" << block->getName().str() << ")" );
+			frames.top()->insertPoint = block;
 			return block;
 		}
 
 		llvm::BasicBlock* Stack::Block()
 		{
-			return( entries.top()->block );
+			return( frames.top()->insertPoint );
 		}
 
 		llvm::BasicBlock* Stack::Exit()
 		{
-			if( entries.size() > 1 ) {
-				if( entries.top()->exit != nullptr ) { // custom exit block, e.g. in loops with continue block
-					return( entries.top()->exit );
+			if( frames.size() > 1 ) {
+				if( frames.top()->breakTo != nullptr ) { // custom exit block, e.g. in loops with continue block
+					return( frames.top()->breakTo );
 				} else { // normal block, e.g. previous stack entry
 
-					std::shared_ptr<StackEntry> current = entries.top();
-					llvm::BasicBlock* exit = nullptr;
-					entries.pop();
+					std::unique_ptr<Frame> current = std::unique_ptr<Frame>( frames.top().release() );
+					llvm::BasicBlock* breakTo = nullptr;
+					frames.pop();
 
-					if( entries.size() > 0 ) {
-						exit = entries.top()->block;
+					if( frames.size() > 0 ) {
+						breakTo = frames.top()->insertPoint;
 					} else {
 						EXO_THROW_MSG( "Can not lookup exit block." );
 					}
 
-					entries.push( current );
-					return( exit );
+					frames.push( std::move(current) );
+					return( breakTo );
 				}
 			}
 
 			EXO_THROW_MSG( "Can not lookup exit block." );
-			return nullptr;
+			return( nullptr );
 		}
 
 		std::string Stack::blockName()
 		{
-			 return( entries.top()->block->getName().str() );
+			 return( frames.top()->insertPoint->getName().str() );
 		}
 
-		llvm::Value* Stack::getSymbol( std::string name )
+		llvm::Value* Stack::Get( std::string name )
 		{
-			return( entries.top()->getSymbol( name ) );
+			return( frames.top()->Get( name ) );
 		}
 
-		void Stack::setSymbol( std::string name, llvm::Value* value )
+		void Stack::Set( std::string name, llvm::Value* value, bool isRef )
 		{
-			entries.top()->setSymbol( name, value );
+			frames.top()->Set( name, value, isRef );
 		}
 
-		void Stack::delSymbol( std::string name )
+		void Stack::Del( std::string name )
 		{
-			entries.top()->delSymbol( name );
+			frames.top()->Del( name );
+		}
+
+		bool Stack::isRef( std::string name )
+		{
+			return( frames.top()->isRef( name ) );
 		}
 	}
 }

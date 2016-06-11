@@ -133,6 +133,7 @@ mode EXO:
 	"-"								=> QUEX_TKN_T_MINUS;
 	"*"								=> QUEX_TKN_T_MUL;
 	"/"								=> QUEX_TKN_T_DIV;
+	"&"								=> QUEX_TKN_T_AMP;
 
 	"\""							{
 		self_send(QUEX_TKN_T_QUOTE);

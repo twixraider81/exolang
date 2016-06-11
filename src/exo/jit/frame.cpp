@@ -15,49 +15,66 @@
 
 #include "exo/exo.h"
 
-#include "exo/jit/stackentry.h"
+#include "exo/jit/frame.h"
+#include "exo/jit/symboltable.h"
 
 namespace exo
 {
 	namespace jit
 	{
-		StackEntry::StackEntry( llvm::BasicBlock* b, llvm::BasicBlock* e ) : block( b ), exit( e )
+		Frame::Frame( llvm::BasicBlock* i, llvm::BasicBlock* b ) :
+			insertPoint( i ),
+			breakTo( b ),
+			localSymbols( std::make_shared<SymbolTable>() ),
+			globalSymbols( std::make_shared<SymbolTable>() )
 		{
 		};
 
-		StackEntry::~StackEntry()
+		// TODO: call destructors of local symbols
+		Frame::~Frame()
 		{
 		};
 
-		llvm::Value* StackEntry::getSymbol( std::string name )
+		llvm::Value* Frame::Get( std::string name )
 		{
-			std::map<std::string,llvm::Value*>::iterator it = symbols.find( name );
-			if( it == symbols.end() ) {
-				EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
+			llvm::Value* value = localSymbols->Get( name );
+
+			if( value == nullptr ) {
+				value = globalSymbols->Get( name );
+
+				if( value == nullptr ) {
+					EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
+				}
 			}
 
-			return( it->second );
+			return( value );
 		}
 
-		void StackEntry::setSymbol( std::string name, llvm::Value* value )
+		void Frame::Set( std::string name, llvm::Value* value, bool isRef )
 		{
-			std::map<std::string,llvm::Value*>::iterator it = symbols.find( name );
-			if( it == symbols.end() ) {
-				value->setName( name );
-				symbols.insert( std::pair<std::string,llvm::Value*>( name, value ) );
-			} else {
-				symbols[name] = value;
-			}
+			localSymbols->Set( name, value, isRef );
 		}
 
-		void StackEntry::delSymbol( std::string name )
+		void Frame::Del( std::string name )
 		{
-			std::map<std::string,llvm::Value*>::iterator it = symbols.find( name );
-			if( it == symbols.end() ) {
-				EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
+			localSymbols->Del( name );
+		}
+
+		bool Frame::isRef( std::string name )
+		{
+			llvm::Value* value = localSymbols->Get( name );
+
+			if( value == nullptr ) {
+				value = globalSymbols->Get( name );
+
+				if( value == nullptr ) {
+					EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
+				}
+
+				return( globalSymbols->isRef( name ) );
 			}
 
-			symbols.erase( name );
+			return( localSymbols->isRef( name ) );
 		}
 	}
 }

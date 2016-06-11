@@ -64,6 +64,7 @@ namespace exo
 		class OpBinaryAssignShort;
 		class OpUnaryDel;
 		class OpUnaryNew;
+		class OpUnaryRef;
 		class StmtBlock;
 		class StmtBreak;
 		class StmtCont;
@@ -280,7 +281,7 @@ namespace exo
 		class OpBinaryAssign : public virtual OpBinary
 		{
 			public:
-				OpBinaryAssign( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ): OpBinary( std::move(a), std::move(b) ) { };
+				OpBinaryAssign( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) ) { };
 				OpBinaryAssign() { };
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); }
 		};
@@ -342,32 +343,33 @@ namespace exo
 		class OpBinaryAssignShort : public virtual OpBinaryAssign
 		{
 			public:
-				OpBinaryAssignShort( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinaryAssign( std::move(a), std::move(b) ) { };
+				OpBinaryAssignShort( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) ) { };
+				OpBinaryAssignShort() { };
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); }
 		};
 
 		class OpBinaryAssignAdd : public virtual OpBinaryAssignShort
 		{
 			public:
-				OpBinaryAssignAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinaryAssignShort( std::move(a), std::move(b) ) { };
+				OpBinaryAssignAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) ) { };
 		};
 
 		class OpBinaryAssignSub : public virtual OpBinaryAssignShort
 		{
 			public:
-				OpBinaryAssignSub( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinaryAssignShort( std::move(a), std::move(b) ) { };
+				OpBinaryAssignSub( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) ) { };
 		};
 
 		class OpBinaryAssignMul : public virtual OpBinaryAssignShort
 		{
 			public:
-				OpBinaryAssignMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinaryAssignShort( std::move(a), std::move(b) ) { };
+				OpBinaryAssignMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) ) { };
 		};
 
 		class OpBinaryAssignDiv : public virtual OpBinaryAssignShort
 		{
 			public:
-				OpBinaryAssignDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinaryAssignShort( std::move(a), std::move(b) ) { };
+				OpBinaryAssignDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move(a), std::move(b) ) { };
 		};
 
 		class OpUnary : public virtual Expr
@@ -389,6 +391,13 @@ namespace exo
 		{
 			public:
 				OpUnaryNew( std::unique_ptr<Expr> e ) : OpUnary( std::move(e) ) { };
+				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+		};
+
+		class OpUnaryRef : public virtual OpUnary
+		{
+			public:
+				OpUnaryRef( std::unique_ptr<Expr> e ) : OpUnary( std::move(e) ) { };
 				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
 		};
 

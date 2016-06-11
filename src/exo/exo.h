@@ -42,6 +42,7 @@
 #include <map>
 #include <vector>
 #include <stack>
+#include <unordered_map>
 #include <memory>
 #include <iterator>
 #include <algorithm>
