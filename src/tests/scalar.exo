@@ -1,11 +1,16 @@
+// variable declaration
 int $a		= 1;
 integer $b	= __LINE__;
 
+// variable declaration list
 int $c = $a + $b, int $d = $b - $a;
-bool $j = true, boolean $k = false;
+bool $j = true, boolean $k = false, float $u = 0.5;
 
-string $s	= __FILE__;
-str $v		= __VERSION__;
-string $t	= __TARGET__;
-float $g	= 32.4;
-string $z	= "Test";
+// variable declaration block
+{
+	string $s	= __FILE__;
+	str $v		= __VERSION__;
+	string $t	= __TARGET__;
+	float $g	= 32.4;
+	string $z	= "Test";
+}

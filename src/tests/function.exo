@@ -1,11 +1,29 @@
-int function test1( int $e )
+int function printf( string $str ... );
+
+public int function test1( int $e )
 {
 	return( $e + 1 );
 };
 int $a = test1( 1 );
 
-public int function test2( int $e )
+int function test2( int $e )
 {
 	return( $e + 1 );
 };
 int $b = test2( 1 );
+
+
+function test3()
+{
+	printf( "test\n" );
+};
+test3();
+
+
+function test4( ref int $v )
+{
+	$v += 1;
+};
+int $c = 1;
+test4( &$c );
+printf( "%d\n", $c );

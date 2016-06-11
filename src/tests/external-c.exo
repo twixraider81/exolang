@@ -5,4 +5,5 @@ int function printf( string $str ... );
 
 puts( "test\n" );
 printf( "sinus($g):\t%f - %f\n", 32.4, sin( 32.4 ) );
-printf( "cosinus($g):\t%f - %f\n", 32.4, cos( 32.4 ) );
+float $f = 32.4;
+printf( "cosinus($g):\t%f - %f\n", $f, cos( $f ) );

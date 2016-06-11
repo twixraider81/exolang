@@ -1,14 +1,18 @@
 auto $c = auto $d;
-auto $e = 1 + $c;
-auto $f = 3 - 2;
-auto $g = 3 * $a;
-auto $h = ( 4 / 2 );
 string $i = '';
+auto $c;
+callable $f;
+
+bool $t = $a ? true : false;
+
+$a++;
 
 std::$test;
 src::tests::scalar::$a;
 
 module custom::test
+@version(1.0)
+@depreceated
 {
 	int function test()
 	{
@@ -16,14 +20,22 @@ module custom::test
 	}
 };
 
+platform(Windows)
+{
+}
+platform(POSIX)
+{
+	platform(Linux)
+	{
+	}
+	platform(FreeBSD)
+	{
+	}
+	platform(Android)
+	{
+	}
+}
 
-$t();
-
-// unknown variable usage creates an auto type
-$k = 9;
-
-// nested expressions
-auto $k = 5 * ( 2 + 2 );
 
 class Object
 {
@@ -65,7 +77,7 @@ class Object
 	/**
 	 * Performs an assign
 	 */
-	Object @= ( Object rhs )
+	Object operator = ( Object rhs )
 	{
 	}
 }
@@ -75,39 +87,25 @@ class Object
 auto function blabla1 { ; };
 function() blabla2 { ; };
 string function blabla3( string $s ) { $s; };
-function blabla4( string $s, float $t ) { $s; };
 
-// different simple expressions
+function blabla4( string $s = "", float $t = 1.5, int $u = 1 ) { $s; };
+// call by name
+blabla4( $t=0.5, $u=1, $s="t" );
+// call by value
+blabla4( "t", 0.5, 1 );
 
-// {{{ internal types
-bool $e;
-boolean $e;
+alias blabla5@blabla4;
 
-{
-	int $a;
-	integer $a;
-	$a = 1;
-}
+func blabla6() (int, int) { return 3, 7 };
+int $b;
+int $a, $b = blabla6();
 
-float $b = 2.5;
-
-string $d;
-
-auto $c;
-
-callable $f;
-// }}}
 
 // user defined types
 item $item0;
 descendent\item $item;1
 \fullqualified\item $item2;
 
-
-// variable declaration list
-int $b, float $c, string $d;
-
-blabla3( $d );
 
 function vaArg( ... )
 {

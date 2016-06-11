@@ -1,22 +1,42 @@
+int function printf( string $str ... );
+
 class testClass
 {
-	protected	int		$intVal;
-	public		float	$floatVal;
-	private		boolean	$bVal;
+	public		float	$floatVal = 0.5;
+	public		int		$intVal;
+	private		boolean	$bVal = true;
 
-	public int function getOne()
+	public method __construct()
+	{
+		printf( "calling constructor\n" );
+		$this->intVal = 10;
+	};
+
+	public method __destruct()
+	{
+		printf( "calling destructor\n" );
+	};
+
+	public int method getOne()
 	{
 		return 1;
 	};
 
-	public int function getTwo()
+	public int method getTwo( int $i )
 	{
-		return 2;
+		return( $i + 2 );
 	};
 };
 
 testClass $i = new testClass();
-int $c = $i->getOne() + $i->getTwo();
+printf( "%i\n%f\n", $i->intVal, $i->floatVal );
 
-int function printf( string $str ... );
+int $c = $i->getOne() + $i->getTwo( 1 );
 printf( "%i\n", $c );
+
+delete $i;
+
+/*
+testClass $j;
+$j = new testClass();
+*/
