@@ -36,7 +36,7 @@ printf( "%i\n", $c );
 
 delete $i;
 
-/*
+
 testClass $j;
 $j = new testClass();
-*/
+delete $j;
