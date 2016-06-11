@@ -1,0 +1,24 @@
+int function printf( string $str ... );
+
+int $a = 1;
+int $b = 1;
+int $b = $a + $b;
+printf( "$a:%i\n", $a );
+printf( "$b:%i\n", $b );
+
+
+int $c = 2;
+$c += $a;
+printf( "$c:%i\n", $c );
+
+int $c = 5 * ( 2 + 2 );
+
+int $f = 3 - 2;
+int $g = 3 * $a;
+int $h = ( 4 / 2 );
+
+int $x;
+int $y = 1;
+$y + 2;
+$y = $y + 2;
+$y += 2;

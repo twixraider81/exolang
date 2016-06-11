@@ -1,0 +1,33 @@
+int function printf( string $str ... );
+
+class Parent
+{
+	public	int		$value1 = 5;
+};
+
+class Child1 extends Parent
+{
+	public boolean	$value2;
+};
+
+class Child2 extends Parent
+{
+	public float	$value1;
+};
+
+Parent $p = new Parent();
+printf( "%i\n", $p->value1 );
+delete $p;
+
+
+Child1 $c1 = new Child1();
+printf( "%i\n", $c1->value2 );
+$c1->value2 = true;
+printf( "%i\n", $c1->value2 );
+delete $c1;
+
+
+Child2 $c2 = new Child2();
+$c2->value1 = 0.5;
+printf( "%f\n", $c2->value1 );
+delete $c2;

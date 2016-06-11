@@ -1,0 +1,6 @@
+function test( ref int $b )
+{
+	$b = 6;
+};
+int $c = 1;
+test( $c );

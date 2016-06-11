@@ -1,0 +1,39 @@
+int function printf( string $str ... );
+
+class Parent
+{
+	public null function __construct()
+	{
+		printf( "construct parent\n" );
+	};
+
+	public null function __destruct()
+	{
+		printf( "destruct parent\n" );
+	};
+};
+
+class Child1 extends Parent
+{
+	public null function __construct()
+	{
+		printf( "construct child1\n" );
+	};
+};
+
+class Child2 extends Parent
+{
+	public null function test()
+	{
+		printf( "test\n" );
+	};
+};
+
+class Child3 extends Child2
+{
+};
+
+Child3 $c;
+$c = new Child3();
+$c->test();
+delete $c;

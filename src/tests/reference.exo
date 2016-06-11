@@ -1,0 +1,44 @@
+int function printf( string $str ... );
+int function puts( string $str );
+
+int $a = 1;
+ref int $b;
+$b =& $a;
+printf( "a:%d\nb:%d\n", $a, $b );
+$b = 4;
+printf( "a:%d\nb:%d\n", $a, $b );
+
+
+int $d = 1;
+int $e = 3;
+ref int $f =& $d;
+$d = $d + 2;
+printf( "d:%d\nf:%d\n", $d, $f );
+$b = 4;
+printf( "d:%d\nf:%d\n", $d, $f );
+$b = $b + 1;
+printf( "d:%d\nf:%d\n", $d, $f );
+
+$f =& $e;
+printf( "e:%d\nf:%d\n", $e, $f );
+$f = 1;
+printf( "e:%d\nf:%d\nd:%d\n", $e, $f, $d );
+
+
+function test( ref int $h )
+{
+	$h = 6;
+};
+int $g = 1;
+test( &$g );
+printf( "g:%d\n", $g );
+
+
+int $i = 1;
+int $j = 1 + 1;
+int $k = $i + $j;
+int $l;
+$l = 3;
+$l += 1;
+string $m = "i:%d\nj:%d\nk:%d\nl:%d\n";
+printf( $m, $i, $j, $k, $l );

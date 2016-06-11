@@ -1,0 +1,60 @@
+int function puts( string $str );
+int function printf( string $str ... );
+
+class Object
+{
+	public	string	$typeName = "Object";
+	public	Object	$value;
+
+	public	string	function getTypeName()
+	{
+		return $this->typeName;
+	};
+
+	public	bool	function setValue( Object $newValue )
+	{
+		$this->value = $newValue;
+		return( true );
+	};
+
+	public Object	function getValue()
+	{
+		return( $this->value );
+	};
+};
+
+class Boolean extends Object
+{
+	public	string	$typeName = "Boolean";
+	public	boolean $value = false;
+};
+
+class Integer extends Boolean
+{
+	public	string	$typeName = "Integer";
+	public	int		$value = 0;
+
+};
+
+class Float extends Integer
+{
+	public	string	$typeName = "Float";
+	public	float	$value = 0.0;
+};
+
+Object $o = new Object();
+printf( "%s\n", $o->typeName );
+
+Boolean $b = new Boolean();
+printf( "%s\n", $b->typeName );
+
+Integer $i = new Integer();
+printf( "%s\n", $i->typeName );
+
+Float $f = new Float();
+printf( "%s\n", $f->typeName );
+
+delete $o;
+delete $b;
+delete $i;
+delete $f;
