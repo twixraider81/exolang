@@ -167,7 +167,7 @@ cd "$DIR"
 
 # fetch waf
 if [ ! -f "waf" ]; then
-	curl -v -o "$DIR/waf" "https://waf.io/waf-1.8.20"
+	curl -v -o "$DIR/waf" "https://waf.io/waf-1.8.21"
 	chmod a+rx "$DIR/waf"
 fi
 
