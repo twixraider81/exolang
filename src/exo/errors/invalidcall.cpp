@@ -23,22 +23,26 @@ namespace exo
 	{
 		const char* InvalidCall::what()
 		{
+			msg = "Invalid call";
+
 			if( const std::string *functionName = boost::get_error_info<exo::exceptions::FunctionName>( *this ) ) {
-				msg.append( "Invalid call to " ).append( *functionName );
+				msg.append( " to " ).append( *functionName );
+			}
 
-				if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
-					msg.append( " in " ).append( *fileName );
-				}
+			if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
+				msg.append( " in " ).append( *fileName );
+			}
 
-				if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
-					msg.append( "#" ).append( std::to_string( *lineNo ) );
-				}
+			if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
+				msg.append( "#" ).append( std::to_string( *lineNo ) );
+			}
 
-				if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
-					msg.append( ":" ).append( std::to_string( *colNo ) );
-				}
-			} else {
-				msg = "Invalid call";
+			if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
+				msg.append( ":" ).append( std::to_string( *colNo ) );
+			}
+
+			if( std::string const *message = boost::get_error_info<exo::exceptions::Message>(*this) ) {
+				msg.append( " - " ).append( *message );
 			}
 
 			return( msg.c_str() );

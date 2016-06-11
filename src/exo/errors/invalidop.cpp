@@ -37,6 +37,10 @@ namespace exo
 				msg.append( ":" ).append( std::to_string( *colNo ) );
 			}
 
+			if( std::string const *message = boost::get_error_info<exo::exceptions::Message>(*this) ) {
+				msg.append( " - " ).append( *message );
+			}
+
 			return( msg.c_str() );
 		};
 	}

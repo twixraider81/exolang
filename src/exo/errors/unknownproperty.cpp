@@ -23,26 +23,30 @@ namespace exo
 	{
 		const char* UnknownProperty::what()
 		{
+			msg = "Unknown property ";
+
 			if( const std::string *propName = boost::get_error_info<exo::exceptions::PropertyName>( *this ) ) {
-				msg.append( "Unknown property " ).append( *propName );
+				msg.append( *propName );
+			}
 
-				if( const std::string *className = boost::get_error_info<exo::exceptions::ClassName>( *this ) ) {
-					msg.append( " for class " ).append( *className );
-				}
+			if( const std::string *className = boost::get_error_info<exo::exceptions::ClassName>( *this ) ) {
+				msg.append( " for class " ).append( *className );
+			}
 
-				if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
-					msg.append( " in " ).append( *fileName );
-				}
+			if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
+				msg.append( " in " ).append( *fileName );
+			}
 
-				if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
-					msg.append( "#" ).append( std::to_string( *lineNo ) );
-				}
+			if( const int *lineNo = boost::get_error_info<boost::errinfo_at_line>( *this ) ) {
+				msg.append( "#" ).append( std::to_string( *lineNo ) );
+			}
 
-				if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
-					msg.append( ":" ).append( std::to_string( *colNo ) );
-				}
-			} else {
-				msg = "Unknown property";
+			if( const long long *colNo = boost::get_error_info<exo::exceptions::ColumnNo>( *this ) ) {
+				msg.append( ":" ).append( std::to_string( *colNo ) );
+			}
+
+			if( std::string const *message = boost::get_error_info<exo::exceptions::Message>(*this) ) {
+				msg.append( " - " ).append( *message );
 			}
 
 			return( msg.c_str() );
