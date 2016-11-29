@@ -39,6 +39,11 @@ namespace exo
 				llvm::CodeGenOpt::Level					codeGenOpt;
 
 				/**
+				 * llvm context
+				 */
+				llvm::LLVMContext						context;
+
+				/**
 				 * Constructs the targetmachine (thru LLVM) based, based upon architecture, cpu type and optimizatzion level
 				 */
 				Target( std::string archName, std::string cpuName, int optimizeLvl );

@@ -64,14 +64,16 @@ mkdir -p "$TMPDIR"
 # fetch quex
 cd "$TMPDIR"
 if ! test -d "$BINDIR/quex"; then
-	ARQUEX="quex-0.65.11.zip"
-	URLQUEX="http://sourceforge.net/projects/quex/files/DOWNLOAD/$ARQUEX/download"
+	ARQUEX="quex-0.66.2.tar.gz"
+	URLQUEX="https://sourceforge.net/projects/quex/files/DOWNLOAD/$ARQUEX/download"
 
 	test -f "$TMPDIR/$ARQUEX" || curl -v -o "$TMPDIR/$ARQUEX" -L $URLQUEX
-	#test -d "$BINDIR/quex" || tar -xzf "$TMPDIR/$ARQUEX" -C "$TMPDIR"
+	
+	test -d "$BINDIR/quex" || tar -xzf "$TMPDIR/$ARQUEX" -C "$TMPDIR"
+	mv "$TMPDIR/${ARQUEX:0:-7}" "$BINDIR/quex"
 
-	test -d "$BINDIR/quex" || unzip -d "$TMPDIR" "$TMPDIR/$ARQUEX"
-	mv "$TMPDIR/${ARQUEX:0:-4}" "$BINDIR/quex"
+	#test -d "$BINDIR/quex" || unzip -d "$TMPDIR" "$TMPDIR/$ARQUEX"
+	#mv "$TMPDIR/${ARQUEX:0:-4}" "$BINDIR/quex"
 
 	if [ "$KEEP" == "0" ]; then
 		rm -f "$TMPDIR/$ARQUEX"
@@ -90,7 +92,7 @@ if ! test -f "$BINDIR/lemon/lemon"; then
 
 	test -d "lempar.cpp" || curl -v -L -o "lempar.cpp" "https://raw.githubusercontent.com/ksherlock/lemon--/master/lempar.cpp"
 	test -d "lemon.c" || curl -v -L -o "lemon.c" "https://raw.githubusercontent.com/ksherlock/lemon--/master/lemon.c"
-	g++ -std=c++14 -Wno-write-strings -DLEMONPLUSPLUS=1 -o lemon lemon.c
+	g++ -std=c++14 -Wno-write-strings -fpermissive -DLEMONPLUSPLUS=1 -o lemon lemon.c
 
 	if [ "$KEEP" == "0" ]; then
 		rm -f lemon.c
@@ -104,15 +106,15 @@ if [[ "$LLVM" == "1" && ! -f "$BINDIR/bin/llvm-config" ]]; then
 	cd "$TMPDIR"
 	LLVMDIR="$TMPDIR/llvm"
 
-	URLLLVM="http://llvm.org/releases/3.8.0"
-	ARLLVM="llvm-3.8.0.src.tar.xz"
-	ARCFE="cfe-3.8.0.src.tar.xz"
-	ARCLANGE="clang-tools-extra-3.8.0.src.tar.xz"
-	ARCOMPRT="compiler-rt-3.8.0.src.tar.xz"
-	ARPOLLY="polly-3.8.0.src.tar.xz"
-	AROPENMP="openmp-3.8.0.src.tar.xz"
-	ARLLDB="lldb-3.8.0.src.tar.xz"
-	ARLLD="lld-3.8.0.src.tar.xz"
+	URLLLVM="http://llvm.org/releases/3.9.0/"
+	ARLLVM="llvm-3.9.0.src.tar.xz"
+	ARCFE="cfe-3.9.0.src.tar.xz"
+	ARCLANGE="clang-tools-extra-3.9.0.src.tar.xz"
+	ARCOMPRT="compiler-rt-3.9.0.src.tar.xz"
+	ARPOLLY="polly-3.9.0.src.tar.xz"
+	AROPENMP="openmp-3.9.0.src.tar.xz"
+	ARLLDB="lldb-3.9.0.src.tar.xz"
+	ARLLD="lld-3.9.0.src.tar.xz"
 
 	test -f "$TMPDIR/$ARLLVM" || curl -v -o "$TMPDIR/$ARLLVM" -L $URLLLVM/$ARLLVM
 	test -d "$LLVMDIR" || tar -xJf "$TMPDIR/$ARLLVM" -C "$TMPDIR"
@@ -167,7 +169,7 @@ cd "$DIR"
 
 # fetch waf
 if [ ! -f "waf" ]; then
-	curl -v -o "$DIR/waf" "https://waf.io/waf-1.8.21"
+	curl -v -o "$DIR/waf" "https://waf.io/waf-1.9.6"
 	chmod a+rx "$DIR/waf"
 fi
 

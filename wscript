@@ -66,8 +66,8 @@ def configure( conf ):
 	llvmversion = process.communicate()[0].strip()
 	conf.msg( 'Checking for LLVM version', llvmversion, 'GREEN' )
 	llvmversionNo = int( llvmversion.replace( ".", '' ) )
-	if llvmversionNo < 380:
-		conf.fatal( 'atleast LLVM 3.8.0 is required' );
+	if llvmversionNo < 390:
+		conf.fatal( 'atleast LLVM 3.9.0 is required' );
 
 	process = subprocess.Popen( conf.env.LLVMCONFIG + ['--has-rtti'], stdout = subprocess.PIPE )
 	rtti = process.communicate()[0].strip()
@@ -154,7 +154,7 @@ def configure( conf ):
 	conf.check_cxx( header_name = "boost/throw_exception.hpp" )
 	conf.check_cxx( header_name = "boost/log/core.hpp" )
 	conf.check_cxx( header_name = "boost/log/trivial.hpp" )
-	conf.check_cxx( header_name = "boost/log/expressions.hpp" )
+	#conf.check_cxx( header_name = "boost/log/expressions.hpp" )
 	conf.check_cxx( header_name = "boost/lexical_cast.hpp" )
 	#conf.check_cxx( header_name = "boost/filesystem.hpp" )
 	conf.check_cxx( header_name = "boost/algorithm/string.hpp" )

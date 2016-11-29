@@ -65,7 +65,8 @@ namespace exo
 				}
 			}
 
-			targetMachine = std::unique_ptr<llvm::TargetMachine>( target->createTargetMachine( targetTriple.str(), cpu, subtargetFeatures.getString(), targetOptions, llvm::Reloc::Default, llvm::CodeModel::JITDefault, codeGenOpt ) );
+			llvm::Optional<llvm::Reloc::Model> relocModel;
+			targetMachine = std::unique_ptr<llvm::TargetMachine>( target->createTargetMachine( targetTriple.str(), cpu, subtargetFeatures.getString(), targetOptions, relocModel, llvm::CodeModel::JITDefault, codeGenOpt ) );
 		}
 
 		Target::~Target()
@@ -79,7 +80,7 @@ namespace exo
 
 		std::unique_ptr<llvm::Module> Target::createModule( std::string moduleName )
 		{
-			std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>( moduleName, llvm::getGlobalContext());
+			std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>( moduleName, context );
 			module->setTargetTriple( targetMachine->getTargetTriple().str() );
 			module->setDataLayout( targetMachine->createDataLayout() );
 			return( module );
