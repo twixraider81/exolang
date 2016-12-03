@@ -18,7 +18,6 @@
 
 #include "exo/exo.h"
 #include "exo/jit/frame.h"
-#include "exo/jit/symboltable.h"
 
 namespace exo
 {

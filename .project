@@ -32,7 +32,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1466704408824</id>
+			<id>1480506919300</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
@@ -41,7 +41,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1466704408843</id>
+			<id>1480506919320</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
@@ -50,12 +50,66 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1466704408859</id>
+			<id>1480506919338</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-bin</arguments>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/bin</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1480506919356</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/share</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1480506919374</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/quex</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1480506919391</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/lemon</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1480506919409</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/lemon</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1480506919427</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/lib</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1480506919445</id>
+			<name></name>
+			<type>30</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-projectRelativePath-matches-false-false-bin/libexec</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>

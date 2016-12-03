@@ -16,7 +16,6 @@
 #include "exo/exo.h"
 
 #include "exo/jit/frame.h"
-#include "exo/jit/symboltable.h"
 
 namespace exo
 {
@@ -24,9 +23,7 @@ namespace exo
 	{
 		Frame::Frame( llvm::BasicBlock* i, llvm::BasicBlock* b ) :
 			insertPoint( i ),
-			breakTo( b ),
-			localSymbols( std::make_shared<SymbolTable>() ),
-			globalSymbols( std::make_shared<SymbolTable>() )
+			breakTo( b )
 		{
 		};
 
@@ -37,44 +34,80 @@ namespace exo
 
 		llvm::Value* Frame::Get( std::string name )
 		{
-			llvm::Value* value = localSymbols->Get( name );
+			auto symbol = symbols.find( name );
 
-			if( value == nullptr ) {
-				value = globalSymbols->Get( name );
-
-				if( value == nullptr ) {
-					EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
-				}
+			if( symbol != symbols.end() ) { // found symbol in local scope
+				return( symbol->second.first );
 			}
 
-			return( value );
+			Frame* pFrame = parent.get();
+			while( pFrame != nullptr ) { // check parenting scope
+				symbol = parent->symbols.find( name );
+				if( symbol != symbols.end() ) {
+					return( symbol->second.first );
+				}
+
+				pFrame = pFrame->parent.get();
+			}
+
+			EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
 		}
 
 		void Frame::Set( std::string name, llvm::Value* value, bool isRef )
 		{
-			localSymbols->Set( name, value, isRef );
+			auto symbol = symbols.find( name );
+
+			value->setName( name );
+
+			if( symbol != symbols.end() ) { // found symbol in local scope
+				symbol->second.first = value;
+				return;
+			}
+
+			Frame* pFrame = parent.get();
+			while( pFrame != nullptr ) { // check parenting scope
+				symbol = parent->symbols.find( name );
+				if( symbol != symbols.end() ) {
+					symbol->second.first = value;
+				}
+
+				pFrame = pFrame->parent.get();
+			}
+
+			// no symbol found
+			symbols.insert( std::make_pair( name, std::make_pair( value, isRef ) ) );
 		}
 
 		void Frame::Del( std::string name )
 		{
-			localSymbols->Del( name );
+			auto symbol = symbols.find( name );
+
+			if( symbol == symbols.end() ) {
+				EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
+			}
+
+			symbols.erase( symbol );
 		}
 
 		bool Frame::isRef( std::string name )
 		{
-			llvm::Value* value = localSymbols->Get( name );
+			auto symbol = symbols.find( name );
 
-			if( value == nullptr ) {
-				value = globalSymbols->Get( name );
-
-				if( value == nullptr ) {
-					EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
-				}
-
-				return( globalSymbols->isRef( name ) );
+			if( symbol != symbols.end() ) { // found symbol in local scope
+				return( symbol->second.second );
 			}
 
-			return( localSymbols->isRef( name ) );
+			Frame* pFrame = parent.get();
+			while( pFrame != nullptr ) { // check parenting scope
+				symbol = parent->symbols.find( name );
+				if( symbol != symbols.end() ) {
+					return( symbol->second.second );
+				}
+
+				pFrame = pFrame->parent.get();
+			}
+
+			EXO_THROW( UnknownVar() << exo::exceptions::VariableName( name ) );
 		}
 	}
 }

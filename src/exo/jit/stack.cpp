@@ -30,8 +30,9 @@ namespace exo
 				}
 
 				std::unique_ptr<Frame> frame = std::make_unique<Frame>( insertPoint, breakTo );
-				frame->globalSymbols = frames.top()->localSymbols;
-				frames.push( std::move(frame) );
+				frame->parent = frames.top()->parent;
+
+				frames.push( std::move( frame ) );
 			} else {
 				frames.push( std::make_unique<Frame>( insertPoint, breakTo ) );
 			}

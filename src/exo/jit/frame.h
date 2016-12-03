@@ -30,9 +30,8 @@ namespace exo
 			public:
 				llvm::BasicBlock*					insertPoint;
 				llvm::BasicBlock*					breakTo;
-
-				std::shared_ptr<SymbolTable>		localSymbols;
-				std::shared_ptr<SymbolTable>		globalSymbols;
+				std::shared_ptr<Frame>				parent;
+				std::unordered_map< std::string /* name */, std::pair< llvm::Value*/* LLVM memory address */, bool /* isReference */> >	symbols;
 
 				Frame( llvm::BasicBlock* i, llvm::BasicBlock* b );
 				~Frame();
