@@ -21,9 +21,10 @@ namespace exo
 {
 	namespace jit
 	{
-		Frame::Frame( llvm::BasicBlock* i, llvm::BasicBlock* b ) :
-			insertPoint( i ),
-			breakTo( b )
+		Frame::Frame( llvm::BasicBlock* i, llvm::BasicBlock* b, llvm::BasicBlock* c ) :
+			insertBlock( i ),
+			breakBlock( b ),
+			conditionBlock( c )
 		{
 		};
 
@@ -34,16 +35,22 @@ namespace exo
 
 		llvm::Value* Frame::Get( std::string name )
 		{
+			EXO_DEBUG_LOG( trace, "Lookup symbol $" << name << " in (" << insertBlock->getName().str() << ")" );
+
 			auto symbol = symbols.find( name );
 
 			if( symbol != symbols.end() ) { // found symbol in local scope
+				EXO_DEBUG_LOG( trace, "Found symbol $" << name << " in (" << insertBlock->getName().str() << ")" );
 				return( symbol->second.first );
 			}
 
 			Frame* pFrame = parent.get();
 			while( pFrame != nullptr ) { // check parenting scope
-				symbol = parent->symbols.find( name );
+				EXO_DEBUG_LOG( trace, "Lookup symbol $" << name << " in (" << pFrame->insertBlock->getName().str() << ")" );
+
+				symbol = pFrame->symbols.find( name );
 				if( symbol != symbols.end() ) {
+					EXO_DEBUG_LOG( trace, "Found symbol $" << name << " in (" << pFrame->insertBlock->getName().str() << ")" );
 					return( symbol->second.first );
 				}
 
@@ -66,7 +73,7 @@ namespace exo
 
 			Frame* pFrame = parent.get();
 			while( pFrame != nullptr ) { // check parenting scope
-				symbol = parent->symbols.find( name );
+				symbol = pFrame->symbols.find( name );
 				if( symbol != symbols.end() ) {
 					symbol->second.first = value;
 				}
@@ -99,7 +106,7 @@ namespace exo
 
 			Frame* pFrame = parent.get();
 			while( pFrame != nullptr ) { // check parenting scope
-				symbol = parent->symbols.find( name );
+				symbol = pFrame->symbols.find( name );
 				if( symbol != symbols.end() ) {
 					return( symbol->second.second );
 				}

@@ -21,79 +21,90 @@ namespace exo
 {
 	namespace jit
 	{
-		llvm::BasicBlock* Stack::Push( llvm::BasicBlock* insertPoint, llvm::BasicBlock* breakTo )
+		llvm::BasicBlock* Stack::Push( llvm::BasicBlock* insertBlock, llvm::BasicBlock* breakBlock, llvm::BasicBlock* conditionBlock )
 		{
+			EXO_DEBUG_LOG( trace, "Frame pushed (" << insertBlock->getName().str() << ")" );
+
 			if( frames.size() > 0 ) {
-				// propagate exit/continue block in loops
-				if( breakTo == nullptr ) {
-					breakTo = frames.top()->breakTo;
+				// propagate exit/continue block
+				if( breakBlock == nullptr ) {
+					breakBlock = frames.top()->breakBlock;
+				}
+				if( conditionBlock == nullptr ) {
+					conditionBlock = frames.top()->conditionBlock;
 				}
 
-				std::unique_ptr<Frame> frame = std::make_unique<Frame>( insertPoint, breakTo );
-				frame->parent = frames.top()->parent;
+				std::shared_ptr<Frame> frame = std::make_shared<Frame>( insertBlock, breakBlock, conditionBlock );
+				frame->parent = frames.top();
+
+				if( frame->parent != nullptr ) {
+					EXO_DEBUG_LOG( trace, "Frame parent (" << frame->parent->insertBlock->getName().str() << ")" );
+				}
 
 				frames.push( std::move( frame ) );
 			} else {
-				frames.push( std::make_unique<Frame>( insertPoint, breakTo ) );
+				frames.push( std::make_shared<Frame>( insertBlock, breakBlock, conditionBlock ) );
 			}
 
-			return( frames.top()->insertPoint );
+			return( frames.top()->insertBlock );
 		}
 
 		llvm::BasicBlock* Stack::Pop()
 		{
-			llvm::BasicBlock* insertPoint;
+			llvm::BasicBlock* insertBlock;
 
 			if( frames.size() == 0 ) {
 				EXO_THROW_MSG( "Stack empty while trying to reduce further." );
 			}
 
-			if( frames.top()->breakTo == nullptr ) {
-				insertPoint = frames.top()->insertPoint;
+			EXO_DEBUG_LOG( trace, "Frame popped (" << frames.top()->insertBlock->getName().str() << ")" );
+
+			if( frames.top()->breakBlock == nullptr ) {
+				insertBlock = frames.top()->insertBlock;
 				frames.pop();
 
 				if( frames.size() > 0 ) {
-					insertPoint = frames.top()->insertPoint;
+					insertBlock = frames.top()->insertBlock;
 				}
 			} else {
-				insertPoint = frames.top()->breakTo;
+				insertBlock = frames.top()->breakBlock;
 				frames.pop();
 			}
 
-			return( insertPoint );
+			return( insertBlock );
 		}
 
 		llvm::BasicBlock* Stack::Join( llvm::BasicBlock* block )
 		{
-			EXO_DEBUG_LOG( trace, "Joining (" << frames.top()->insertPoint->getName().str() << ") with (" << block->getName().str() << ")" );
-			frames.top()->insertPoint = block;
+			EXO_DEBUG_LOG( trace, "Joining (" << frames.top()->insertBlock->getName().str() << ") with (" << block->getName().str() << ")" );
+			frames.top()->insertBlock = block;
 			return block;
 		}
 
 		llvm::BasicBlock* Stack::Block()
 		{
-			return( frames.top()->insertPoint );
+			return( frames.top()->insertBlock );
 		}
 
-		llvm::BasicBlock* Stack::Exit()
+		llvm::BasicBlock* Stack::Break()
 		{
 			if( frames.size() > 1 ) {
-				if( frames.top()->breakTo != nullptr ) { // custom exit block, e.g. in loops with continue block
-					return( frames.top()->breakTo );
+				if( frames.top()->breakBlock != nullptr ) { // custom exit block, e.g. in loops with continue block
+					return( frames.top()->breakBlock );
 				} else { // normal block, e.g. previous stack entry
 
-					std::unique_ptr<Frame> current = std::unique_ptr<Frame>( frames.top().release() );
-					llvm::BasicBlock* breakTo = nullptr;
+					std::shared_ptr<Frame> current = frames.top();
+					llvm::BasicBlock* breakBlock = nullptr;
 					frames.pop();
 
 					if( frames.size() > 0 ) {
-						breakTo = frames.top()->insertPoint;
+						breakBlock = frames.top()->insertBlock;
 					} else {
 						EXO_THROW_MSG( "Can not lookup exit block." );
 					}
 
-					frames.push( std::move(current) );
-					return( breakTo );
+					frames.push( current );
+					return( breakBlock );
 				}
 			}
 
@@ -101,9 +112,35 @@ namespace exo
 			return( nullptr );
 		}
 
+		llvm::BasicBlock* Stack::Continue()
+		{
+			if( frames.size() > 1 ) {
+				if( frames.top()->conditionBlock != nullptr ) { // custom condition block, e.g. in loops with continue block
+					return( frames.top()->conditionBlock );
+				} else { // normal block, e.g. previous stack entry
+
+					std::shared_ptr<Frame> current = frames.top();
+					llvm::BasicBlock* conditionBlock = nullptr;
+					frames.pop();
+
+					if( frames.size() > 0 ) {
+						conditionBlock = frames.top()->insertBlock;
+					} else {
+						EXO_THROW_MSG( "Can not lookup condition block." );
+					}
+
+					frames.push( current );
+					return( conditionBlock );
+				}
+			}
+
+			EXO_THROW_MSG( "Can not lookup condition block." );
+			return( nullptr );
+		}
+
 		std::string Stack::blockName()
 		{
-			 return( frames.top()->insertPoint->getName().str() );
+			 return( frames.top()->insertBlock->getName().str() );
 		}
 
 		llvm::Value* Stack::Get( std::string name )

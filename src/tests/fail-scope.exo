@@ -1,0 +1,5 @@
+{
+	string $z	= "Test";
+}
+
+printf( "%s\n", $z );

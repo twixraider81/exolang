@@ -83,27 +83,28 @@ program ::= stmts(s). {
 	ast->stmts = std::move(s);
 }
 program ::= . {
-	ast->stmts = std::make_unique<exo::ast::StmtBlock>();
+	ast->stmts = std::make_unique<exo::ast::StmtList>();
 }
 
 
 /*
  * a block is empty (i.e. protofunctions, class blocks ), a collection of statements delimited by brackets or a single statement
- * a statement block is terminated by a semocolon
+ * a statement block is terminated by a semicolon
  */
-%type stmtblock { std::unique_ptr<exo::ast::StmtBlock> }
-stmtblock(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
-	b = std::move(s);
+%type stmtscope { std::unique_ptr<exo::ast::StmtScope> }
+stmtscope(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
+	b = std::make_unique<exo::ast::StmtScope>( std::move(s) );
+	EXO_TRACK_NODE(b);
 }
-stmtblock(b) ::= T_LBRACKET T_RBRACKET. {
-	b = std::make_unique<exo::ast::StmtBlock>();
+stmtscope(b) ::= T_LBRACKET T_RBRACKET. {
+	b = std::make_unique<exo::ast::StmtScope>();
 	EXO_TRACK_NODE(b);
 }
 
 
-%type stmts { std::unique_ptr<exo::ast::StmtBlock> }
+%type stmts { std::unique_ptr<exo::ast::StmtList> }
 stmts(a) ::= stmt(b). {
-	a = std::make_unique<exo::ast::StmtBlock>();
+	a = std::make_unique<exo::ast::StmtList>();
 	a->list.push_back( std::move(b) );
 	EXO_TRACK_NODE(a);
 }
@@ -118,7 +119,7 @@ stmts(s) ::= stmts(a) stmt(b). {
  * statements are terminated by a semicolon
  */
 %type stmt { std::unique_ptr<exo::ast::Stmt> }
-stmt(s) ::= stmtblock(b). { /* no implicit termination needed */
+stmt(s) ::= stmtscope(b). { /* no implicit termination needed */
 	s = std::move(b);
 }
 stmt(s) ::= stmtbreak(b) T_SEMICOLON. {
@@ -168,7 +169,7 @@ stmtcont(c) ::= T_CONTINUE. {
 	EXO_TRACK_NODE(c);
 }
 
-/* a for block has a variable declaration list, followed by an expression condition, an expression update list and an asscoiated block */
+/* a for block has a variable declaration list, followed by an expression condition, an expression update list and an associated statement(s) */
 %type stmtfor { std::unique_ptr<exo::ast::StmtFor> }
 stmtfor(f) ::= T_FOR T_LANGLE declvarlist(l) T_SEMICOLON expr(c) T_SEMICOLON exprlist(u) T_RANGLE stmt(b). {
 	f = std::make_unique<exo::ast::StmtFor>( std::move(c), std::move(l), std::move(u), std::move(b) );
@@ -200,7 +201,7 @@ stmtuse(u) ::= T_USE id(i). {
 	EXO_TRACK_NODE(u);
 }
 
-/* a while has a condition which is checked block and an asscoiated block */
+/* a while has a condition which and an associated statement(s) */
 %type stmtwhile { std::unique_ptr<exo::ast::StmtWhile> }
 stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE stmt(b). {
 	i = std::make_unique<exo::ast::StmtWhile>( std::move(e), std::move(b) );
@@ -298,35 +299,35 @@ declfunproto(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE. {
  * a function declaration has an access modifier followed by a function prototype and a statement block
  */
 %type declfun { std::unique_ptr<exo::ast::DeclFun> }
-declfun(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+declfun(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), false );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+declfun(f) ::= T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), true );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(t), std::move(l), std::move(b), false );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+declfun(f) ::= type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(t), std::move(l), std::move(b), true );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::move(t), std::move(l), std::move(b), false );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+declfun(f) ::= access(a) type(t) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::move(t), std::move(l), std::move(b), true );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= access(a) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtblock(b). {
+declfun(f) ::= access(a) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), false );
 	EXO_TRACK_NODE(f);
 }
-declfun(f) ::= access(a) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtblock(b). {
+declfun(f) ::= access(a) T_FUNCTION id(i) T_LANGLE declvarlist(l) T_VARG T_RANGLE stmtscope(b). {
 	f = std::make_unique<exo::ast::DeclFun>( std::move(i), std::move(a), std::make_unique<exo::ast::Type>( std::make_unique<exo::ast::Id>( "null" ), true ), std::move(l), std::move(b), true );
 	EXO_TRACK_NODE(f);
 }

@@ -26,14 +26,15 @@ namespace exo
 		class Stack
 		{
 			private:
-				std::stack< std::unique_ptr<Frame> >	frames;
+				std::stack< std::shared_ptr<Frame> > frames;
 
 			public:
-				llvm::BasicBlock*	Push( llvm::BasicBlock* insertPoint, llvm::BasicBlock* breakTo = nullptr );
+				llvm::BasicBlock*	Push( llvm::BasicBlock* insertBlock, llvm::BasicBlock* breakBlock = nullptr, llvm::BasicBlock* conditionBlock = nullptr );
 				llvm::BasicBlock*	Pop();
 				llvm::BasicBlock*	Join( llvm::BasicBlock* joinPoint );
 				llvm::BasicBlock*	Block();
-				llvm::BasicBlock*	Exit();
+				llvm::BasicBlock*	Break();
+				llvm::BasicBlock*	Continue();
 
 				std::string 		blockName();
 

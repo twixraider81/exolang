@@ -1,7 +1,7 @@
 int function printf( string $str ... );
 
-for( int $i = 0; $i < 11111111; $i += 1 ) {
+int $i = 0;
+for( ; $i < 111111111; $i += 1 ) {
 	continue;
-
-	printf( "%i", $i );
 };
+printf( "%i", $i );

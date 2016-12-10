@@ -3,24 +3,23 @@ int function printf( string $str ... );
 int $a = 0;
 int $b = 5;
 
+
 while( $a < $b ) {
 	$a += 1;
 	continue;
-
 	printf( "%i\n", $a );
 };
-printf( "%i\n", $a );
+printf( "%i\n\n", $a );
 
 
-int $c = 5;
+int $c = 0;
 while( true ) {
 	$c += 1;
 	printf( "%i\n", $c );
 
-	if( $c >= 10 ) {
+	if( $c >= 9 ) {
 		break;
 	};
 };
-
-int $d = 11;
+int $d = 10;
 printf( "%i\n", $d );

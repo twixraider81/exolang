@@ -6,7 +6,12 @@ Goal
 The aim for exolang is to develop into a jiting/compiling rapid prototyping "script" language, using LLVM for its code generation.
 
 
-Quickstart
+Examples
+--------
+Please take a look at the [examples](https://github.com/twixraider81/exolang/tree/master/examples) and/or [test](https://github.com/twixraider81/exolang/tree/master/src/tests) subdirectories for various script examples.
+
+
+Build quickstart
 -----
 After the build is complete, the binary will reside under build/exolang.
 You can check the all command line options via:
@@ -81,11 +86,6 @@ To start valgrind/memcheck and load a script
 To run all test scripts
 
 ./waf --runtests
-
-
-Examples
---------
-Take a look at the examples subdirectory.
 
 
 Thanks & 3rd Party licenses

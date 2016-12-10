@@ -23,10 +23,24 @@ namespace exo
 	namespace jit
 	{
 		JIT::JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t, std::set<std::string>	i ) :
-			module( std::move(m) ),
-			target( std::move(t) ),
+			module( std::move( m ) ),
+			target( std::move( t ) ),
 			imports( i )
 		{
+			std::string buffer;
+			llvm::raw_string_ostream bStream( buffer );
+
+			if( llvm::verifyModule( *module, &bStream ) ) {
+#ifdef EXO_DEBUG
+				std::string moduleContents;
+				llvm::raw_string_ostream mStream( moduleContents );
+				module->print( mStream, nullptr, false, true );
+				EXO_DEBUG_LOG( trace, mStream.str() );
+#endif
+				EXO_THROW_MSG( bStream.str() );
+			}
+
+
 			llvm::legacy::FunctionPassManager fpassManager( module.get() );
 
 			passManager.add( llvm::createTargetTransformInfoWrapperPass( target->targetMachine->getTargetIRAnalysis() ) );
@@ -56,23 +70,12 @@ namespace exo
 		int JIT::Execute( std::string fName )
 		{
 			std::string buffer;
-			llvm::raw_string_ostream bStream( buffer );
 
 			if( !target->targetMachine->getTarget().hasJIT() ) {
 				EXO_THROW_MSG( "Unable to create JIT." );
 			}
 
 			passManager.run( *module );
-			if( llvm::verifyModule( *module, &bStream ) ) {
-#ifdef EXO_DEBUG
-				std::string moduleContents;
-				llvm::raw_string_ostream mStream( moduleContents );
-				module->print( mStream, nullptr, false, true );
-				EXO_DEBUG_LOG( trace, mStream.str() );
-#endif
-				EXO_THROW_MSG( bStream.str() );
-			}
-
 
 			llvm::Function* entry = module->getFunction( fName );
 
@@ -83,8 +86,8 @@ namespace exo
 
 			llvm::RTDyldMemoryManager* memMgr( new llvm::SectionMemoryManager() );
 
-			// careful, alot of ownership is transferred from here on
-			llvm::EngineBuilder builder( std::move(module) );
+			// careful, ownership is transferred from here on
+			llvm::EngineBuilder builder( std::move( module ) );
 			builder.setErrorStr( &buffer );
 			builder.setEngineKind( llvm::EngineKind::JIT );
 			builder.setMCJITMemoryManager( std::unique_ptr<llvm::RTDyldMemoryManager>( memMgr ) );

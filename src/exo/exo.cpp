@@ -26,7 +26,7 @@
 /*
  * TODO: 1. implement type system
  * TODO: 2. document ast and jit
- * TODO: 5. implement a real symbol table which tracks types, memory locations and pointer/refs
+ * TODO: 3. register signal handlers in standard library, to i.e. allow signaled program termination
  */
 int main( int argc, char **argv )
 {
@@ -38,6 +38,7 @@ int main( int argc, char **argv )
 	// llvm native information
 	std::string nativeCpu = llvm::sys::getHostCPUName();
 	llvm::Triple nativeTriple( llvm::sys::getDefaultTargetTriple() );
+	llvm::LLVMContext context;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -132,7 +133,7 @@ int main( int argc, char **argv )
 		ast->Parse( inputFile, target->getName() );
 
 		// generate llvm ir code
-		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move(target->createModule( ast->moduleName )), includePaths, libraryPaths );
+		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move( target->createModule( ast->moduleName, &context ) ), includePaths, libraryPaths );
 		generator->Generate( ast.get() );
 
 		// create jit and eventually execute our module
@@ -164,12 +165,14 @@ int main( int argc, char **argv )
 	} catch( exo::exceptions::UnsafeException& e ) {
 		try{
 			EXO_LOG( fatal, e.what() );
+			EXO_DEBUG_LOG( fatal, boost::diagnostic_information( e ) );
 		} catch( std::exception& n ) {
 			EXO_LOG( fatal, n.what() );
 		}
 		retval = 1;
 	} catch( exo::exceptions::SafeException& e ) {
 		EXO_LOG( fatal, e.what() );
+		EXO_DEBUG_LOG( fatal, boost::diagnostic_information( e ) );
 		retval = 1;
 	} catch( boost::exception& e ) {
 		EXO_LOG( fatal, boost::diagnostic_information( e ) );

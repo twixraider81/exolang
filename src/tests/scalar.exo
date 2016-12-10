@@ -1,3 +1,5 @@
+int function printf( string $str ... );
+
 // variable declaration
 int $a		= 1;
 integer $b	= __LINE__;
@@ -6,11 +8,4 @@ integer $b	= __LINE__;
 int $c = $a + $b, int $d = $b - $a;
 bool $j = true, boolean $k = false, float $u = 0.5;
 
-// variable declaration block
-{
-	string $s	= __FILE__;
-	str $v		= __VERSION__;
-	string $t	= __TARGET__;
-	float $g	= 32.4;
-	string $z	= "Test";
-}
+string $s	= __FILE__;
