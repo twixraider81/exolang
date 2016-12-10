@@ -111,3 +111,8 @@ function vaArg( ... )
 {
 	$1;
 }
+
+
+// unclean
+do $c += 1; while( $c > $b );
+printf( "%i\n", $a );

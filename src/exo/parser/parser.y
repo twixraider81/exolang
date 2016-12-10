@@ -87,20 +87,6 @@ program ::= . {
 }
 
 
-/*
- * a block is empty (i.e. protofunctions, class blocks ), a collection of statements delimited by brackets or a single statement
- * a statement block is terminated by a semicolon
- */
-%type stmtscope { std::unique_ptr<exo::ast::StmtScope> }
-stmtscope(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
-	b = std::make_unique<exo::ast::StmtScope>( std::move(s) );
-	EXO_TRACK_NODE(b);
-}
-stmtscope(b) ::= T_LBRACKET T_RBRACKET. {
-	b = std::make_unique<exo::ast::StmtScope>();
-	EXO_TRACK_NODE(b);
-}
-
 
 %type stmts { std::unique_ptr<exo::ast::StmtList> }
 stmts(a) ::= stmt(b). {
@@ -115,15 +101,15 @@ stmts(s) ::= stmts(a) stmt(b). {
 
 
 /*
- * statement can be a declaration-, delete-, return-, if-, while-, for-, break, use-, import-, continue-statement or an expression.
+ * a statement can be a declaration-, delete-, return-, if-, while-, for-, break, use-, import-, continue-statement or an expression.
  * statements are terminated by a semicolon
  */
 %type stmt { std::unique_ptr<exo::ast::Stmt> }
-stmt(s) ::= stmtscope(b). { /* no implicit termination needed */
-	s = std::move(b);
-}
 stmt(s) ::= stmtbreak(b) T_SEMICOLON. {
 	s = std::move(b);
+}
+stmt(s) ::= stmtdo(d). { /* ends with a statement */
+	s = std::move(d);
 }
 stmt(s) ::= stmtcont(c) T_SEMICOLON. {
 	s = std::move(c);
@@ -131,9 +117,8 @@ stmt(s) ::= stmtcont(c) T_SEMICOLON. {
 stmt(s) ::= decl(d) T_SEMICOLON. {
 	s = std::move(d);
 }
-stmt(s) ::= expr(e) T_SEMICOLON. {
-	s = std::make_unique<exo::ast::StmtExpr>( std::move(e) );
-	EXO_TRACK_NODE(s);
+stmt(s) ::= stmtexpr(e) T_SEMICOLON. {
+	s = std::move(e);
 }
 stmt(s) ::= stmtfor(f). { /* ends with a statement */
 	s = std::move(f);
@@ -144,14 +129,16 @@ stmt(s) ::= stmtif(i). { /* ends with a statement */
 stmt(s) ::= stmtimport(v) T_SEMICOLON. {
 	s = std::move(v);
 }
-stmt(s) ::= T_RETURN expr(e) T_SEMICOLON. {
-	s = std::make_unique<exo::ast::StmtReturn>( std::move(e) );
-	EXO_TRACK_NODE(s);
+stmt(s) ::= stmtreturn(r) T_SEMICOLON. {
+	s = std::move(r);
+}
+stmt(s) ::= stmtscope(b). { /* no implicit termination wanted */
+	s = std::move(b);
 }
 stmt(s) ::= stmtuse(u) T_SEMICOLON. {
 	s = std::move(u);
 }
-stmt(s) ::= stmtwhile(w). { /* ends with a statement */
+stmt(s) ::= stmtwhile(w). {  /* ends with a statement */
 	s = std::move(w);
 }
 
@@ -169,10 +156,24 @@ stmtcont(c) ::= T_CONTINUE. {
 	EXO_TRACK_NODE(c);
 }
 
+/* a do-while has statement(s) and and expression */
+%type stmtdo { std::unique_ptr<exo::ast::StmtDo> }
+stmtdo(d) ::= T_DO stmt(s) T_WHILE T_LANGLE expr(e) T_RANGLE. {
+	d = std::make_unique<exo::ast::StmtDo>( std::move(e), std::move(s) );
+	EXO_TRACK_NODE(d);
+}
+
+/* an expression is a statement */
+%type stmtexpr { std::unique_ptr<exo::ast::StmtExpr> }
+stmtexpr(s) ::= expr(e). {
+	s = std::make_unique<exo::ast::StmtExpr>( std::move(e) );
+	EXO_TRACK_NODE(s);
+}
+
 /* a for block has a variable declaration list, followed by an expression condition, an expression update list and an associated statement(s) */
 %type stmtfor { std::unique_ptr<exo::ast::StmtFor> }
-stmtfor(f) ::= T_FOR T_LANGLE declvarlist(l) T_SEMICOLON expr(c) T_SEMICOLON exprlist(u) T_RANGLE stmt(b). {
-	f = std::make_unique<exo::ast::StmtFor>( std::move(c), std::move(l), std::move(u), std::move(b) );
+stmtfor(f) ::= T_FOR T_LANGLE declvarlist(l) T_SEMICOLON expr(c) T_SEMICOLON exprlist(u) T_RANGLE stmt(s). {
+	f = std::make_unique<exo::ast::StmtFor>( std::move(c), std::move(l), std::move(u), std::move(s ) );
 	EXO_TRACK_NODE(f);
 }
 
@@ -194,6 +195,24 @@ stmtimport(i) ::= T_IMPORT string(s). {
 	EXO_TRACK_NODE(i);
 }
 
+/* a return has an expression */
+%type stmtreturn { std::unique_ptr<exo::ast::StmtReturn> }
+stmtreturn(r) ::= T_RETURN expr(e). {
+	r = std::make_unique<exo::ast::StmtReturn>( std::move(e) );
+	EXO_TRACK_NODE(r);
+}
+
+/* a scope is a collection of statements delimited by brackets or a single statement */
+%type stmtscope { std::unique_ptr<exo::ast::StmtScope> }
+stmtscope(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
+	b = std::make_unique<exo::ast::StmtScope>( std::move(s) );
+	EXO_TRACK_NODE(b);
+}
+stmtscope(b) ::= T_LBRACKET T_RBRACKET. {
+	b = std::make_unique<exo::ast::StmtScope>();
+	EXO_TRACK_NODE(b);
+}
+
 /* a use declaration has a module identifier */
 %type stmtuse { std::unique_ptr<exo::ast::StmtUse> }
 stmtuse(u) ::= T_USE id(i). {
@@ -203,9 +222,9 @@ stmtuse(u) ::= T_USE id(i). {
 
 /* a while has a condition which and an associated statement(s) */
 %type stmtwhile { std::unique_ptr<exo::ast::StmtWhile> }
-stmtwhile(i) ::= T_WHILE T_LANGLE expr(e) T_RANGLE stmt(b). {
-	i = std::make_unique<exo::ast::StmtWhile>( std::move(e), std::move(b) );
-	EXO_TRACK_NODE(i);
+stmtwhile(w) ::= T_WHILE T_LANGLE expr(e) T_RANGLE stmt(s). {
+	w = std::make_unique<exo::ast::StmtWhile>( std::move(e), std::move(s) );
+	EXO_TRACK_NODE(w);
 }
 
 

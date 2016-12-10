@@ -1,0 +1,14 @@
+int function printf( string $str ... );
+
+int $a = 0;
+int $b = 5;
+int $c = 0;
+
+do {
+	$a += 1;
+	printf( "%i\n", $a );
+} while( $a > $b );
+
+
+do $c += 1; while( $c > $b );
+printf( "%i\n", $a );

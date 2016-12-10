@@ -700,6 +700,51 @@ namespace exo
 			return( builder.CreateBr( exitBlock ) );
 		}
 
+
+		llvm::Value* Codegen::Generate( exo::ast::StmtDo* stmt, bool inMem )
+		{
+			EXO_CODEGEN_LOG( stmt, "Do" );
+
+			llvm::Function* scope			= stack->Block()->getParent();
+			llvm::BasicBlock* doLoop		= llvm::BasicBlock::Create( module->getContext(), "do-loop", scope );
+			llvm::BasicBlock* doCondition	= llvm::BasicBlock::Create( module->getContext(), "do-condition", scope );
+			llvm::BasicBlock* doExit		= llvm::BasicBlock::Create( module->getContext(), "do-exit", scope );
+
+			doLoop->moveAfter( stack->Block() );
+			doCondition->moveAfter( doLoop );
+			doExit->moveAfter( doCondition );
+
+			// execute our loop
+			builder.CreateBr( doLoop );
+			builder.SetInsertPoint( stack->Push( doLoop, doExit, doCondition ) );
+			stmt->scope->Generate( this );
+
+			// flow might have been altered by i.e. a break
+			if( stack->Block()->getTerminator() == nullptr ) {
+				// branch into check condition
+				builder.CreateBr( doCondition );
+			}
+
+			builder.SetInsertPoint( stack->Push( doCondition ) );
+
+			// branch into check condition to see if we enter loop another time
+			llvm::Value* condition = stmt->expression->Generate( this, false );
+			builder.CreateCondBr( condition, doLoop, doExit );
+
+			stack->Pop(); // condition
+			stack->Pop(); // loop
+
+			builder.SetInsertPoint( stack->Join( doExit ) );
+
+			if( inMem ) {
+				llvm::AllocaInst* memory = builder.CreateAlloca( condition->getType() );
+				builder.CreateStore( condition, memory );
+				return( memory );
+			}
+
+			return( condition );
+		}
+
 		llvm::Value* Codegen::Generate( exo::ast::StmtExpr* stmt, bool inMem )
 		{
 			EXO_CODEGEN_LOG( stmt, "Expression statement" );
@@ -713,45 +758,45 @@ namespace exo
 			// setup basic blocks for loop statments and exit
 			llvm::Function* scope			= stack->Block()->getParent();
 			llvm::BasicBlock* forBlock		= llvm::BasicBlock::Create( module->getContext(), "for-init", scope );
-			llvm::BasicBlock* condBlock		= llvm::BasicBlock::Create( module->getContext(), "for-condition", scope );
-			llvm::BasicBlock* loopBlock		= llvm::BasicBlock::Create( module->getContext(), "for-loop", scope );
-			llvm::BasicBlock* updateBlock	= llvm::BasicBlock::Create( module->getContext(), "for-update", scope );
-			llvm::BasicBlock* contBlock		= llvm::BasicBlock::Create( module->getContext(), "for-continue", scope );
+			llvm::BasicBlock* forCondition	= llvm::BasicBlock::Create( module->getContext(), "for-condition", scope );
+			llvm::BasicBlock* forLoop		= llvm::BasicBlock::Create( module->getContext(), "for-loop", scope );
+			llvm::BasicBlock* forUpdate		= llvm::BasicBlock::Create( module->getContext(), "for-update", scope );
+			llvm::BasicBlock* forExit		= llvm::BasicBlock::Create( module->getContext(), "for-exit", scope );
 
 			forBlock->moveAfter( stack->Block() );
-			condBlock->moveAfter( forBlock );
-			loopBlock->moveAfter( condBlock );
-			updateBlock->moveAfter( loopBlock );
-			contBlock->moveAfter( updateBlock );
+			forCondition->moveAfter( forBlock );
+			forLoop->moveAfter( forCondition );
+			forUpdate->moveAfter( forLoop );
+			forExit->moveAfter( forUpdate );
 
 			// initialize loop variables
 			builder.CreateBr( forBlock );
-			builder.SetInsertPoint( stack->Push( forBlock, contBlock, updateBlock ) );
+			builder.SetInsertPoint( stack->Push( forBlock, forExit, forUpdate ) );
 			for( auto &statement : stmt->initialization->list ) {
 				statement->Generate( this, false );
 			}
 
 			// evaluate loop condition
-			builder.CreateBr( condBlock );
-			builder.SetInsertPoint( stack->Push( condBlock ) );
+			builder.CreateBr( forCondition );
+			builder.SetInsertPoint( stack->Push( forCondition ) );
 			llvm::Value* condition = stmt->expression->Generate( this, false );
-			builder.CreateCondBr( condition, loopBlock, contBlock );
+			builder.CreateCondBr( condition, forLoop, forExit );
 
 			// execute loop
-			builder.SetInsertPoint( stack->Push( loopBlock ) );
+			builder.SetInsertPoint( stack->Push( forLoop ) );
 			stmt->scope->Generate( this );
 
 			// flow might have been altered by i.e. a break
 			if( stack->Block()->getTerminator() == nullptr ) {
 				// update loop variables
-				builder.CreateBr( updateBlock );
-				builder.SetInsertPoint( stack->Push( updateBlock ) );
+				builder.CreateBr( forUpdate );
+				builder.SetInsertPoint( stack->Push( forUpdate ) );
 				for( auto &statement : stmt->update->list ) {
 					statement->Generate( this, false );
 				}
 
 				// evaluate loop again
-				builder.CreateBr( condBlock );
+				builder.CreateBr( forCondition );
 				stack->Pop();
 			}
 
@@ -759,7 +804,7 @@ namespace exo
 			stack->Pop();
 			stack->Pop();
 
-			builder.SetInsertPoint( stack->Join( contBlock ) );
+			builder.SetInsertPoint( stack->Join( forExit ) );
 
 			if( inMem ) {
 				llvm::AllocaInst* memory = builder.CreateAlloca( condition->getType() );
@@ -978,7 +1023,7 @@ namespace exo
 			llvm::Function* scope				= stack->Block()->getParent();
 			llvm::BasicBlock* whileCondition	= llvm::BasicBlock::Create( module->getContext(), "while-condition", scope );
 			llvm::BasicBlock* whileLoop			= llvm::BasicBlock::Create( module->getContext(), "while-loop", scope );
-			llvm::BasicBlock* whileExit			= llvm::BasicBlock::Create( module->getContext(), "while-continue", scope );
+			llvm::BasicBlock* whileExit			= llvm::BasicBlock::Create( module->getContext(), "while-exit", scope );
 
 			whileCondition->moveAfter( stack->Block() );
 			whileLoop->moveAfter( whileCondition );

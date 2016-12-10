@@ -51,6 +51,7 @@ namespace exo
 		class OpUnaryRef;
 		class StmtBreak;
 		class StmtCont;
+		class StmtDo;
 		class StmtExpr;
 		class StmtFor;
 		class StmtIf;
@@ -124,6 +125,7 @@ namespace exo
 				llvm::Value*	Generate( exo::ast::OpUnaryNew* op, bool inMem );
 				llvm::Value*	Generate( exo::ast::OpUnaryRef* op, bool inMem );
 				llvm::Value*	Generate( exo::ast::StmtBreak* stmt, bool inMem );
+				llvm::Value*	Generate( exo::ast::StmtDo* stmt, bool inMem );
 				llvm::Value*	Generate( exo::ast::StmtCont* stmt, bool inMem );
 				llvm::Value*	Generate( exo::ast::StmtExpr* stmt, bool inMem );
 				llvm::Value*	Generate( exo::ast::StmtFor* stmt, bool inMem );

@@ -86,6 +86,7 @@ mode EXO:
 	"while"							=> QUEX_TKN_T_WHILE;
 	"for"							=> QUEX_TKN_T_FOR;
 	"break"							=> QUEX_TKN_T_BREAK;
+	"do"							=> QUEX_TKN_T_DO;
 	"continue"						=> QUEX_TKN_T_CONTINUE;
 
 	"class"							=> QUEX_TKN_T_CLASS;
