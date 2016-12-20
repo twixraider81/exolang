@@ -1,3 +1,5 @@
 module custom::test;
 
-__MODULE__;
+int function puts( string $str );
+
+puts( __MODULE__ );

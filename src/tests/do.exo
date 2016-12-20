@@ -11,4 +11,4 @@ do {
 
 
 do $c += 1; while( $c > $b );
-printf( "%i\n", $a );
+printf( "%i\n", $c );

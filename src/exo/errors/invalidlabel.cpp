@@ -21,9 +21,9 @@ namespace exo
 {
 	namespace exceptions
 	{
-		const char* InvalidExpr::what()
+		const char* InvalidLabel::what()
 		{
-			msg = "Invalid expression";
+			msg = "Invalid label";
 
 			if( const std::string *fileName = boost::get_error_info<boost::errinfo_file_name>( *this ) ) {
 				msg.append( " in " ).append( *fileName );

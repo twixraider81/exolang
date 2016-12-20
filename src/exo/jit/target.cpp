@@ -78,9 +78,9 @@ namespace exo
 			return( targetMachine->getTargetTriple().str() );
 		}
 
-		std::unique_ptr<llvm::Module> Target::createModule( std::string moduleName, llvm::LLVMContext* context )
+		std::unique_ptr<llvm::Module> Target::createModule( std::string moduleName )
 		{
-			std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>( moduleName, *context );
+			std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>( moduleName, context );
 			module->setTargetTriple( targetMachine->getTargetTriple().str() );
 			module->setDataLayout( targetMachine->createDataLayout() );
 			return( std::move( module ) );

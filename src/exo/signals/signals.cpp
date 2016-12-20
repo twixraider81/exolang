@@ -43,7 +43,7 @@ namespace exo
 					unw_get_reg( &cursor, UNW_REG_IP, &ip );
 					unw_get_reg( &cursor, UNW_REG_SP, &sp);
 
-					std::string demangled =  boost::units::detail::demangle( name );
+					std::string demangled = boost::units::detail::demangle( name );
 
 					if( demangled == "demangle :: error - unable to demangle specified symbol" ) {
 						demangled = name;

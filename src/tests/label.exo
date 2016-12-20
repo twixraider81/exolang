@@ -1,0 +1,11 @@
+int function printf( string $str ... );
+int function puts( string $str );
+
+1 : puts( "labeled statement" );
+
+1.500000558 : puts( "another labeled statement" );
+
+"scoped" :
+{
+	puts( "scoped statement block" );
+}

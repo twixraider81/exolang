@@ -9,7 +9,7 @@ int $a = test1( 1 );
 printf( "%i\n", $a );
 
 
-int function test2( int $e )
+int fn test2( int $e )
 {
 	return( $e + 1 );
 };

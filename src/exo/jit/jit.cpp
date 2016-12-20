@@ -22,9 +22,9 @@ namespace exo
 {
 	namespace jit
 	{
-		JIT::JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t, std::set<std::string>	i ) :
+		JIT::JIT( std::unique_ptr<llvm::Module> m, std::shared_ptr<Target> t, std::set<std::string>	i ) :
 			module( std::move( m ) ),
-			target( std::move( t ) ),
+			target( t ),
 			imports( i )
 		{
 			std::string buffer;
@@ -65,6 +65,11 @@ namespace exo
 
 		JIT::~JIT()
 		{
+		}
+
+		int JIT::Execute()
+		{
+			return( Execute( module->getModuleIdentifier() ) );
 		}
 
 		int JIT::Execute( std::string fName )

@@ -41,7 +41,7 @@ namespace exo
 				/**
 				 * llvm context
 				 */
-				//llvm::LLVMContext						context;
+				llvm::LLVMContext						context;
 
 				/**
 				 * Constructs the targetmachine (thru LLVM) based, based upon architecture, cpu type and optimizatzion level
@@ -52,7 +52,7 @@ namespace exo
 				/**
 				 * Create a module, suitable for our target
 				 */
-				std::unique_ptr<llvm::Module>	createModule( std::string moduleName, llvm::LLVMContext* context );
+				std::unique_ptr<llvm::Module>	createModule( std::string moduleName );
 
 				/**
 				 * String representation/Name of our Target

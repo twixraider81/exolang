@@ -26,7 +26,7 @@ namespace exo
 {
 	namespace ast
 	{
-		Tree::Tree() : fileName( "?" ), currentLineNo( 0 ), currentColumnNo( 0 )
+		Tree::Tree( std::shared_ptr<exo::jit::Target> t ) : target( t ), fileName( "?" ), currentLineNo( 0 ), currentColumnNo( 0 )
 		{
 #ifndef EXO_GC_DISABLE
 			parser = ::ParseAlloc( GC_malloc );
@@ -53,13 +53,9 @@ namespace exo
 #endif
 		}
 
-		void Tree::Parse( std::string fName, std::string target )
+		std::unique_ptr<llvm::Module> Tree::Parse( std::string fName )
 		{
 			fileName = fName;
-			targetMachine = target;
-
-			// as base we take the filename we, the extension( should be .exo ) and replace path delimiters ( / ) with namespace delimiters
-			moduleName = boost::replace_all_copy( boost::filesystem::change_extension( boost::filesystem::path( fileName ).string(), "" ).string(), "/", "::" );
 
 			if( !boost::filesystem::exists( fileName ) || !boost::filesystem::is_regular_file( fileName ) ) {
 				EXO_THROW( NotFound() << exo::exceptions::RessouceName( fileName ) );
@@ -69,6 +65,10 @@ namespace exo
 
 			// this is a pointer to a region in the buffer, no need to alloc
 			quex::Token* currentToken = nullptr;
+
+
+			// as basename for our module we take the filename, the extension( should be .exo ) and replace path delimiters ( / ) with namespace delimiters
+			moduleName = boost::replace_all_copy( boost::filesystem::change_extension( boost::filesystem::path( fileName ).string(), "" ).string(), "/", "::" );
 
 			try {
 				quex::lexer lexer( fileName );
@@ -83,9 +83,16 @@ namespace exo
 
 				::Parse( parser, 0, nullptr, this );
 			} catch( boost::exception &exception ) {
-				exception << boost::errinfo_file_name( fileName ) << boost::errinfo_at_line( currentLineNo ) << exo::exceptions::ColumnNo( currentColumnNo );
+				exception << boost::errinfo_file_name( fileName );
 				throw;
 			}
+
+			return( std::move( target->createModule( moduleName ) ) );
 		}
+
+		void Tree::accept( Visitor* visitor )
+		{
+			visitor->visit( *this );
+		};
 	}
 }

@@ -26,14 +26,15 @@ namespace exo
 		class JIT
 		{
 			std::unique_ptr<llvm::Module>	module;
-			std::unique_ptr<Target>			target;
+			std::shared_ptr<Target>			target;
 			llvm::legacy::PassManager		passManager;
 			std::set<std::string>			imports;
 
 			public:
-				JIT( std::unique_ptr<llvm::Module> m, std::unique_ptr<Target> t, std::set<std::string> i );
+				JIT( std::unique_ptr<llvm::Module> m, std::shared_ptr<Target> t, std::set<std::string> i );
 				~JIT();
 
+				int Execute();
 				int Execute( std::string fName );
 				int Emit( int type = 0, std::string fileName = "" );
 		};

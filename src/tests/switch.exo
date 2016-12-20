@@ -1,0 +1,20 @@
+int function printf( string $str ... );
+int function puts( string $str );
+
+int $a = 0;
+int $b = 1;
+int $c = 2;
+
+switch( $a ) {
+	case 0:
+		break;
+
+	case 1:
+//	case 2:
+	{
+		break;
+	}
+
+	default:
+		puts( "not expression matched" );
+};

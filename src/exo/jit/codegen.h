@@ -19,57 +19,13 @@
 #include "exo/exo.h"
 #include "exo/jit/llvm.h"
 #include "exo/jit/stack.h"
+#include "exo/ast/nodes.h"
 
 namespace exo
 {
-	// forward declarations
-	namespace ast
-	{
-		class ConstBool;
-		class ConstFloat;
-		class ConstInt;
-		class ConstNull;
-		class ConstStr;
-		class DeclClass;
-		class DeclFunProto;
-		class DeclFun;
-		class DeclMod;
-		class DeclVar;
-		class DeclVarList;
-		class Expr;
-		class ExprCallFun;
-		class ExprCallMethod;
-		class ExprList;
-		class ExprVar;
-		class ExprProp;
-		class Id;
-		class OpBinary;
-		class OpBinaryAssign;
-		class OpBinaryAssignShort;
-		class OpUnaryDel;
-		class OpUnaryNew;
-		class OpUnaryRef;
-		class StmtBreak;
-		class StmtCont;
-		class StmtDo;
-		class StmtExpr;
-		class StmtFor;
-		class StmtIf;
-		class StmtImport;
-		class StmtList;
-		class StmtReturn;
-		class StmtScope;
-		class StmtUse;
-		class StmtWhile;
-		class Type;
-		class Tree;
-	}
-
 	namespace jit
 	{
-		class Block;
-
-		class Codegen
+		class Codegen : public virtual exo::ast::Visitor
 		{
 			private:
 				std::unique_ptr<Stack> stack;
@@ -89,10 +45,20 @@ namespace exo
 				std::unordered_map< std::string, std::unordered_map< std::string, std::pair<int, llvm::Function*> > >	methods;
 
 				std::string												currentFile;
-				std::string												currentTarget;
+				std::shared_ptr<exo::jit::Target>						target;
 
 				std::vector<std::string>								includePaths;
 				std::vector<std::string>								libraryPaths;
+
+				/**
+				 * result of the current/last codgen visit operation
+				 */
+				llvm::Value*											currentResult;
+
+				/**
+				 * defines wether to store the result of the codgen visit operation in memory or register
+				 */
+				bool													generateInMem = false;
 
 			public:
 				std::unique_ptr<llvm::Module>	module;
@@ -100,44 +66,9 @@ namespace exo
 				std::set<std::string>			imports;
 
 				Codegen( std::unique_ptr<llvm::Module> m, std::vector<std::string> i, std::vector<std::string> l );
-				~Codegen();
+				virtual ~Codegen();
 
 				llvm::Type*		getType( exo::ast::Type* type );
-				llvm::Value*	Generate( exo::ast::ConstBool* val, bool inMem );
-				llvm::Value*	Generate( exo::ast::ConstInt* val, bool inMem );
-				llvm::Value*	Generate( exo::ast::ConstFloat* val, bool inMem );
-				llvm::Value*	Generate( exo::ast::ConstNull* val, bool inMem );
-				llvm::Value*	Generate( exo::ast::ConstStr* val, bool inMem );
-				llvm::Value*	Generate( exo::ast::DeclClass* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::DeclFunProto* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::DeclFun* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::DeclMod* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::DeclVar* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::DeclVarList* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::ExprCallFun* call, bool inMem );
-				llvm::Value*	Generate( exo::ast::ExprCallMethod* call, bool inMem );
-				llvm::Value*	Generate( exo::ast::ExprProp* expr, bool inMem );
-				llvm::Value*	Generate( exo::ast::ExprVar* expr, bool inMem );
-				llvm::Value*	Generate( exo::ast::OpBinary* op, bool inMem );
-				llvm::Value*	Generate( exo::ast::OpBinaryAssign* op, bool inMem );
-				llvm::Value*	Generate( exo::ast::OpBinaryAssignShort* op, bool inMem );
-				llvm::Value*	Generate( exo::ast::OpUnaryDel* op, bool inMem );
-				llvm::Value*	Generate( exo::ast::OpUnaryNew* op, bool inMem );
-				llvm::Value*	Generate( exo::ast::OpUnaryRef* op, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtBreak* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtDo* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtCont* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtExpr* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtFor* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtIf* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtImport* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtList* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtReturn* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtScope* stmts, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtUse* dec, bool inMem );
-				llvm::Value*	Generate( exo::ast::StmtWhile* stmt, bool inMem );
-				llvm::Value*	Generate( exo::ast::Tree* tree );
-
 				std::string		toString( llvm::Value* value );
 				std::string		toString( llvm::Type* type );
 
@@ -148,6 +79,56 @@ namespace exo
 				llvm::Value* 	invokeMethod( llvm::Value* callee, std::string methodName, exo::ast::ExprList* expressions, bool isOptional, bool inMem );
 				int				getPropPos( std::string className, std::string propName );
 				int				getMethodPos( std::string className, std::string methodName );
+
+				virtual void visit( exo::ast::ConstBool& );
+				virtual void visit( exo::ast::ConstFloat& );
+				virtual void visit( exo::ast::ConstInt& );
+				virtual void visit( exo::ast::ConstNull& );
+				virtual void visit( exo::ast::ConstStr& );
+				virtual void visit( exo::ast::DeclClass& );
+				virtual void visit( exo::ast::DeclFunProto& );
+				virtual void visit( exo::ast::DeclFun& );
+				virtual void visit( exo::ast::DeclMod& );
+				virtual void visit( exo::ast::DeclVar& );
+				virtual void visit( exo::ast::DeclVarList& );
+				virtual void visit( exo::ast::ExprCallFun& );
+				virtual void visit( exo::ast::ExprCallMethod& );
+				virtual void visit( exo::ast::ExprVar& );
+				virtual void visit( exo::ast::ExprProp& );
+				virtual void visit( exo::ast::Node& );
+				virtual void visit( exo::ast::OpBinaryAdd& );
+				virtual void visit( exo::ast::OpBinaryAssign& );
+				virtual void visit( exo::ast::OpBinaryAssignAdd& );
+				virtual void visit( exo::ast::OpBinaryAssignDiv& );
+				virtual void visit( exo::ast::OpBinaryAssignMul& );
+				virtual void visit( exo::ast::OpBinaryAssignSub& );
+				virtual void visit( exo::ast::OpBinaryDiv& );
+				virtual void visit( exo::ast::OpBinaryEq& );
+				virtual void visit( exo::ast::OpBinaryGe& );
+				virtual void visit( exo::ast::OpBinaryGt& );
+				virtual void visit( exo::ast::OpBinaryLe& );
+				virtual void visit( exo::ast::OpBinaryLt& );
+				virtual void visit( exo::ast::OpBinaryMul& );
+				virtual void visit( exo::ast::OpBinaryNeq& );
+				virtual void visit( exo::ast::OpBinarySub& );
+				virtual void visit( exo::ast::OpUnaryDel& );
+				virtual void visit( exo::ast::OpUnaryNew& );
+				virtual void visit( exo::ast::OpUnaryRef& );
+				virtual void visit( exo::ast::StmtBreak& );
+				virtual void visit( exo::ast::StmtCont& );
+				virtual void visit( exo::ast::StmtDo& );
+				virtual void visit( exo::ast::StmtExpr& );
+				virtual void visit( exo::ast::StmtFor& );
+				virtual void visit( exo::ast::StmtIf& );
+				virtual void visit( exo::ast::StmtImport& );
+				virtual void visit( exo::ast::StmtLabel& );
+				virtual void visit( exo::ast::StmtList& );
+				virtual void visit( exo::ast::StmtReturn& );
+				virtual void visit( exo::ast::StmtScope& );
+				virtual void visit( exo::ast::StmtSwitch& );
+				virtual void visit( exo::ast::StmtUse& );
+				virtual void visit( exo::ast::StmtWhile& );
+				virtual void visit( exo::ast::Tree& );
 		};
 	}
 }
@@ -155,7 +136,7 @@ namespace exo
 #define EXO_CLASS(n)				( "__class_" + n )
 #define EXO_METHOD(c,m)				EXO_CLASS(c) + "_method_" + m
 #define EXO_VTABLE(n)				EXO_CLASS(n) + "_vtbl"
-#define EXO_CODEGEN_LOG(node,msg)	EXO_DEBUG_LOG(trace, msg << " in " << currentFile << "#" << node->lineNo << ":" << node->columnNo/* << " (" << stack->blockName() << ")"*/ )
+#define EXO_CODEGEN_LOG(node,msg)	EXO_DEBUG_LOG(trace, msg << " in " << currentFile << "#" << node.lineNo << ":" << node.columnNo )
 
 #ifndef EXO_GC_DISABLE
 # define EXO_ALLOC "GC_malloc"

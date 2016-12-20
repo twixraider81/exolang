@@ -25,8 +25,9 @@
 
 /*
  * TODO: 1. implement type system
- * TODO: 2. document ast and jit
- * TODO: 3. register signal handlers in standard library, to i.e. allow signaled program termination
+ * TODO: 2. register signal handlers in standard library, to i.e. allow signaled program termination
+ * TODO: 3. get rid of generateInMem in codegen and use proper lvalue/rvalue semantics for expressions
+ * TODO: 4. implement REPL
  */
 int main( int argc, char **argv )
 {
@@ -38,7 +39,6 @@ int main( int argc, char **argv )
 	// llvm native information
 	std::string nativeCpu = llvm::sys::getHostCPUName();
 	llvm::Triple nativeTriple( llvm::sys::getDefaultTargetTriple() );
-	llvm::LLVMContext context;
 
 	// build optionlist
 	boost::program_options::options_description availOptions( "Options" );
@@ -126,18 +126,17 @@ int main( int argc, char **argv )
 		boost::filesystem::path fileName = boost::filesystem::path( inputFile ).filename();
 
 		// create our target information
-		std::unique_ptr<exo::jit::Target> target = std::make_unique<exo::jit::Target>( archName, cpuName, optimizeLvl );
+		std::shared_ptr<exo::jit::Target> target = std::make_shared<exo::jit::Target>( archName, cpuName, optimizeLvl );
 
 		// create our abstract syntax tree
-		std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>();
-		ast->Parse( inputFile, target->getName() );
+		std::unique_ptr<exo::ast::Tree> ast = std::make_unique<exo::ast::Tree>( target );
 
 		// generate llvm ir code
-		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move( target->createModule( ast->moduleName, &context ) ), includePaths, libraryPaths );
-		generator->Generate( ast.get() );
+		std::unique_ptr<exo::jit::Codegen> generator = std::make_unique<exo::jit::Codegen>( std::move( ast->Parse( inputFile ) ), includePaths, libraryPaths );
+		generator->visit( *(ast.get()) );
 
 		// create jit and eventually execute our module
-		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( std::move(generator->module), std::move(target), generator->imports );
+		std::unique_ptr<exo::jit::JIT> jit = std::make_unique<exo::jit::JIT>( std::move( generator->module ), target, generator->imports );
 
 		if( commandLine.count( "emit-llvm" ) ) {
 			retval = jit->Emit( 0, emitFile );
@@ -160,7 +159,7 @@ int main( int argc, char **argv )
 
 			retval = jit->Emit( 3, emitFile );
 		} else {
-			retval = jit->Execute( ast->moduleName );
+			retval = jit->Execute();
 		}
 	} catch( exo::exceptions::UnsafeException& e ) {
 		try{

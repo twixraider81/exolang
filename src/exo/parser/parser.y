@@ -91,17 +91,17 @@ program ::= . {
 %type stmts { std::unique_ptr<exo::ast::StmtList> }
 stmts(a) ::= stmt(b). {
 	a = std::make_unique<exo::ast::StmtList>();
-	a->list.push_back( std::move(b) );
+	a->addStmt( std::move(b) );
 	EXO_TRACK_NODE(a);
 }
 stmts(s) ::= stmts(a) stmt(b). {
-	a->list.push_back( std::move(b) );
+	a->addStmt( std::move(b) );
 	s = std::move(a);
 }
 
 
 /*
- * a statement can be a declaration-, delete-, return-, if-, while-, for-, break, use-, import-, continue-statement or an expression.
+ * a statement can be a break, do-while-loop, continue, declaration, expression, for-loop, if-else-elseif, import, label, return, scope, use or while-loop statement
  * statements are terminated by a semicolon
  */
 %type stmt { std::unique_ptr<exo::ast::Stmt> }
@@ -129,16 +129,22 @@ stmt(s) ::= stmtif(i). { /* ends with a statement */
 stmt(s) ::= stmtimport(v) T_SEMICOLON. {
 	s = std::move(v);
 }
+stmt(s) ::= stmtlabel(u). { /* ends with a statement */
+	s = std::move(u);
+}
 stmt(s) ::= stmtreturn(r) T_SEMICOLON. {
 	s = std::move(r);
 }
 stmt(s) ::= stmtscope(b). { /* no implicit termination wanted */
 	s = std::move(b);
 }
+stmt(s) ::= stmtswitch(b) T_SEMICOLON. {
+	s = std::move(b);
+}
 stmt(s) ::= stmtuse(u) T_SEMICOLON. {
 	s = std::move(u);
 }
-stmt(s) ::= stmtwhile(w). {  /* ends with a statement */
+stmt(s) ::= stmtwhile(w). { /* ends with a statement */
 	s = std::move(w);
 }
 
@@ -195,6 +201,13 @@ stmtimport(i) ::= T_IMPORT string(s). {
 	EXO_TRACK_NODE(i);
 }
 
+/* a label is a constant identifier followed by a colon and is bound to a statement */
+%type stmtlabel { std::unique_ptr<exo::ast::StmtLabel> }
+stmtlabel(l) ::= constant(c) T_COLON stmt(s). {
+	l = std::make_unique<exo::ast::StmtLabel>( std::move(s), std::move(c) );
+	EXO_TRACK_NODE(l);
+}
+
 /* a return has an expression */
 %type stmtreturn { std::unique_ptr<exo::ast::StmtReturn> }
 stmtreturn(r) ::= T_RETURN expr(e). {
@@ -211,6 +224,32 @@ stmtscope(b) ::= T_LBRACKET stmts(s) T_RBRACKET. {
 stmtscope(b) ::= T_LBRACKET T_RBRACKET. {
 	b = std::make_unique<exo::ast::StmtScope>();
 	EXO_TRACK_NODE(b);
+}
+
+/* a switch */
+%type stmtswitch { std::unique_ptr<exo::ast::StmtSwitch> }
+stmtswitch(s) ::= T_SWITCH T_LANGLE expr(e) T_RANGLE T_LBRACKET stmtswitchcases(l) T_RBRACKET. {
+	s = std::move(l);
+	s->setCondition( std::move(e) );
+}
+%type stmtswitchcases { std::unique_ptr<exo::ast::StmtSwitch> }
+stmtswitchcases(c) ::= T_CASE stmtlabel(l). {
+	c = std::make_unique<exo::ast::StmtSwitch>();
+	c->addCase( std::move(l) );
+	EXO_TRACK_NODE(c);
+}
+stmtswitchcases(c) ::= stmtswitchcases(a) T_CASE stmtlabel(l). {
+	c = std::move(a);
+	c->addCase( std::move(l) );
+}
+stmtswitchcases(c) ::= T_DEFAULT T_COLON stmt(d). {
+	c = std::make_unique<exo::ast::StmtSwitch>();
+	c->setDefaultCase( std::move(d) );
+	EXO_TRACK_NODE(c);
+}
+stmtswitchcases(c) ::= stmtswitchcases(a) T_DEFAULT T_COLON stmt(d). {
+	c = std::move(a);
+	c->setDefaultCase( std::move(d) );
 }
 
 /* a use declaration has a module identifier */
@@ -230,9 +269,9 @@ stmtwhile(w) ::= T_WHILE T_LANGLE expr(e) T_RANGLE stmt(s). {
 
 /*
  * a declaration can be a class-, function prototype-, function-, module-, variable-, variable-list- declaration
- * a declaration is basically a statement.
+ * a declaration is a statement.
  */
-%type decl { std::unique_ptr<exo::ast::Decl> }
+%type decl { std::unique_ptr<exo::ast::Stmt> }
 decl(d) ::= declclass(c). {
 	d = std::move(c);
 }
@@ -249,48 +288,48 @@ decl(d) ::= declvarlist(v). { /* also catches variable declarations */
 	d = std::move(v);
 }
 
-/* a block declaration contains the declarations properties and methods. (only used by class declarations for now) */
-%type declblock { std::unique_ptr<exo::ast::DeclBlock> }
-declblock(b) ::= declprop(d) T_SEMICOLON. {
-	b = std::make_unique<exo::ast::DeclBlock>();
-	b->properties.push_back( std::move(d) );
+/* a class declaration block contains the declarations properties and methods */
+%type declclassblock { std::unique_ptr<exo::ast::DeclClass> }
+declclassblock(b) ::= declprop(d) T_SEMICOLON. {
+	b = std::make_unique<exo::ast::DeclClass>();
+	b->addProperty( std::move(d) );
 	EXO_TRACK_NODE(b);
 }
-declblock(b) ::= declfun(d) T_SEMICOLON. {
-	b = std::make_unique<exo::ast::DeclBlock>();
-	b->methods.push_back( std::move(d) );
+declclassblock(b) ::= declfun(d) T_SEMICOLON. {
+	b = std::make_unique<exo::ast::DeclClass>();
+	b->addMethod( std::move(d) );
 	EXO_TRACK_NODE(b);
 }
-declblock(b) ::= declblock(l) declprop(d) T_SEMICOLON. {
-	l->properties.push_back( std::move(d) );
+declclassblock(b) ::= declclassblock(l) declprop(d) T_SEMICOLON. {
 	b = std::move(l);
+	b->addProperty( std::move(d) );
 }
-declblock(b) ::= declblock(l) declfun(d) T_SEMICOLON. {
-	l->methods.push_back( std::move(d) );
+declclassblock(b) ::= declclassblock(l) declfun(d) T_SEMICOLON. {
 	b = std::move(l);
+	b->addMethod( std::move(d) );
 }
 
 /* a class declaration is a class keyword, followed by an identifier, optionally an extend with a classname, and and associated class block */
 %type declclass { std::unique_ptr<exo::ast::DeclClass> }
-declclass(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET declblock(b) T_RBRACKET. {
-	c = std::make_unique<exo::ast::DeclClass>( std::move(i), std::move(p) );
-	c->properties = std::move(b->properties);
-	c->methods = std::move(b->methods);
+declclass(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET declclassblock(b) T_RBRACKET. {
+	c = std::move(b);
 	EXO_TRACK_NODE(c);
+	c->setId( std::move(i), std::move(p) );
 }
-declclass(c) ::= T_CLASS id(i) T_LBRACKET declblock(b) T_RBRACKET. {
-	c = std::make_unique<exo::ast::DeclClass>( std::move(i) );
-	c->properties = std::move(b->properties);
-	c->methods = std::move(b->methods);
+declclass(c) ::= T_CLASS id(i) T_LBRACKET declclassblock(b) T_RBRACKET. {
+	c = std::move(b);
 	EXO_TRACK_NODE(c);
+	c->setId( std::move(i) );
 }
 declclass(c) ::= T_CLASS id(i) T_EXTENDS id(p) T_LBRACKET T_RBRACKET. {
-	c = std::make_unique<exo::ast::DeclClass>( std::move(i), std::move(p) );
+	c = std::make_unique<exo::ast::DeclClass>();
 	EXO_TRACK_NODE(c);
+	c->setId( std::move(i), std::move(p) );
 }
 declclass(c) ::= T_CLASS id(i) T_LBRACKET T_RBRACKET. {
-	c = std::make_unique<exo::ast::DeclClass>( std::move(i) );
+	c = std::make_unique<exo::ast::DeclClass>();
 	EXO_TRACK_NODE(c);
+	c->setId( std::move(i) );
 }
 
 /*
@@ -394,12 +433,12 @@ declvarlist(l)::= . {
 }
 declvarlist(l) ::= declvar(d). {
 	l = std::make_unique<exo::ast::DeclVarList>();
-	l->list.push_back( std::move(d) );
+	l->addDecl( std::move(d) );
 	EXO_TRACK_NODE(l);
 }
 declvarlist(e) ::= declvarlist(l) T_COMMA declvar(d). {
-	l->list.push_back( std::move(d) );
 	e = std::move(l);
+	e->addDecl( std::move(d) );
 }
 
 
@@ -459,12 +498,12 @@ exprlist(l) ::= . {
 }
 exprlist(l) ::= expr(e). {
 	l = std::make_unique<exo::ast::ExprList>();
-	l->list.push_back( std::move(e) );
+	l->addExpr( std::move(e) );
 	EXO_TRACK_NODE(l);
 }
 exprlist(f) ::= exprlist(l) T_COMMA expr(e). {
-	l->list.push_back( std::move(e) );
 	f = std::move(l);
+	f->addExpr( std::move(e) );
 }
 
 
@@ -565,7 +604,7 @@ call(c) ::= expr(v) T_PTR S_ID(i) T_LANGLE exprlist(a) T_RANGLE. {
 }
 
 /* a constant can be a builtin (null, true, false, __*__), number or string */
-%type constant { std::unique_ptr<exo::ast::Expr> }
+%type constant { std::unique_ptr<exo::ast::ConstExpr> }
 constant(c) ::= T_CONST_FILE. {
 	c = std::make_unique<exo::ast::ConstStr>( ast->fileName );
 	EXO_TRACK_NODE(c);
@@ -579,7 +618,7 @@ constant(c) ::= T_CONST_COLUMN(l). {
 	EXO_TRACK_NODE(c);
 }
 constant(c) ::= T_CONST_TARGET. {
-	c = std::make_unique<exo::ast::ConstStr>( ast->targetMachine );
+	c = std::make_unique<exo::ast::ConstStr>( ast->target->getName() );
 	EXO_TRACK_NODE(c);
 }
 constant(c) ::= T_CONST_VERSION. {
@@ -609,7 +648,7 @@ constant(c) ::= string(s). {
 	c = std::move(s);
 }
 /* a number can be an integer or a float */
-%type number { std::unique_ptr<exo::ast::Expr> }
+%type number { std::unique_ptr<exo::ast::ConstExpr> }
 number(n) ::= S_INT(i). {
 	n = std::make_unique<exo::ast::ConstInt>( boost::lexical_cast<long>( TOKENSTR(i) ) );
 	EXO_TRACK_NODE(n);

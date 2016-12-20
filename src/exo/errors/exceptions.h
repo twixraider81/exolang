@@ -18,7 +18,7 @@
 
 #define EXO_THROW_MSG(m)			BOOST_THROW_EXCEPTION( exo::exceptions::SafeException() << exo::exceptions::Message( m ) )
 #define EXO_THROW(e)				BOOST_THROW_EXCEPTION( exo::exceptions::e )
-#define EXO_THROW_AT(e,n)			BOOST_THROW_EXCEPTION( exo::exceptions::e << boost::errinfo_at_line( n->lineNo ) << exo::exceptions::ColumnNo( n->columnNo ) )
+#define EXO_THROW_AT(e,n)			BOOST_THROW_EXCEPTION( exo::exceptions::e << boost::errinfo_at_line( n.lineNo ) << exo::exceptions::ColumnNo( n.columnNo ) )
 
 namespace exo
 {
@@ -191,6 +191,14 @@ namespace exo
 		};
 
 		/**
+		 * Exception that will be thrown in case the IR generator stumbles across an invalid label.
+		 */
+		struct InvalidLabel : public virtual UnsafeException
+		{
+			public: virtual const char* what();
+		};
+
+		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid function call.
 		 */
 		struct ArgumentsMismatch : public virtual UnsafeException
@@ -209,9 +217,9 @@ namespace exo
 		/**
 		 * Exception that will be thrown in case the IR generator stumbles across an invalid expression.
 		 */
-		struct InvalidExpr : public virtual SafeException
+		struct InvalidExpr : public virtual UnsafeException
 		{
-			public: virtual const char* what() const noexcept;
+			public: virtual const char* what();
 		};
 
 		/**

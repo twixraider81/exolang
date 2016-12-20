@@ -82,12 +82,14 @@ mode EXO:
 
 	"if"							=> QUEX_TKN_T_IF;
 	"else"							=> QUEX_TKN_T_ELSE;
-
 	"while"							=> QUEX_TKN_T_WHILE;
 	"for"							=> QUEX_TKN_T_FOR;
-	"break"							=> QUEX_TKN_T_BREAK;
 	"do"							=> QUEX_TKN_T_DO;
+	"switch"						=> QUEX_TKN_T_SWITCH;
 	"continue"						=> QUEX_TKN_T_CONTINUE;
+	"break"							=> QUEX_TKN_T_BREAK;
+	"case"							=> QUEX_TKN_T_CASE;
+	"default"						=> QUEX_TKN_T_DEFAULT;
 
 	"class"							=> QUEX_TKN_T_CLASS;
 	"method"						=> QUEX_TKN_T_FUNCTION;
@@ -102,6 +104,7 @@ mode EXO:
 	"unset"							=> QUEX_TKN_T_DELETE;
 
 	";"								=> QUEX_TKN_T_SEMICOLON;
+	":"								=> QUEX_TKN_T_COLON;
 	","								=> QUEX_TKN_T_COMMA;
 	"..."							=> QUEX_TKN_T_VARG;
 

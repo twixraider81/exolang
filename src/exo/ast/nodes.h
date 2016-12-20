@@ -18,27 +18,12 @@
 
 #include "exo/exo.h"
 #include "exo/jit/llvm.h"
-#include "exo/jit/codegen.h"
+#include "exo/jit/target.h"
 
 namespace exo
 {
 	namespace ast
 	{
-		class Node
-		{
-			public:
-				long long lineNo;
-				long long columnNo;
-
-				Node() : lineNo( 0 ), columnNo( 0 ) { };
-				virtual ~Node() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { EXO_THROW( UnexpectedNode() ); };
-		};
-
-		class Expr : public virtual Node { };
-		class Stmt : public virtual Node { };
-		class Decl : public virtual Stmt { };
-
 		// forward declare
 		class ConstBool;
 		class ConstFloat;
@@ -59,9 +44,23 @@ namespace exo
 		class ExprVar;
 		class Id;
 		class ModAccess;
+		class Node;
 		class OpBinary;
+		class OpBinaryAdd;
 		class OpBinaryAssign;
-		class OpBinaryAssignShort;
+		class OpBinaryAssignAdd;
+		class OpBinaryAssignDiv;
+		class OpBinaryAssignMul;
+		class OpBinaryAssignSub;
+		class OpBinaryDiv;
+		class OpBinaryEq;
+		class OpBinaryGe;
+		class OpBinaryGt;
+		class OpBinaryLe;
+		class OpBinaryLt;
+		class OpBinaryMul;
+		class OpBinaryNeq;
+		class OpBinarySub;
 		class OpUnaryDel;
 		class OpUnaryNew;
 		class OpUnaryRef;
@@ -72,121 +71,289 @@ namespace exo
 		class StmtFor;
 		class StmtImport;
 		class StmtIf;
+		class StmtLabel;
 		class StmtList;
 		class StmtReturn;
 		class StmtScope;
+		class StmtSwitch;
 		class StmtUse;
 		class StmtWhile;
 		class Type;
 		class Tree;
 
-
-		class ConstBool : public virtual Expr
+		/**
+		 * abstract class to hold our visitor double dispatched methods
+		 */
+		class Visitor
 		{
 			public:
+				virtual void visit( ConstBool& ) = 0;
+				virtual void visit( ConstFloat& ) = 0;
+				virtual void visit( ConstInt& ) = 0;
+				virtual void visit( ConstNull& ) = 0;
+				virtual void visit( ConstStr& ) = 0;
+				virtual void visit( DeclClass& ) = 0;
+				virtual void visit( DeclFunProto& ) = 0;
+				virtual void visit( DeclFun& ) = 0;
+				virtual void visit( DeclMod& ) = 0;
+				virtual void visit( DeclVar& ) = 0;
+				virtual void visit( DeclVarList& ) = 0;
+				virtual void visit( ExprCallFun& ) = 0;
+				virtual void visit( ExprCallMethod& ) = 0;
+				virtual void visit( ExprVar& ) = 0;
+				virtual void visit( ExprProp& ) = 0;
+				virtual void visit( Node& ) = 0;
+				virtual void visit( OpBinaryAdd& ) = 0;
+				virtual void visit( OpBinaryAssign& ) = 0;
+				virtual void visit( OpBinaryAssignAdd& ) = 0;
+				virtual void visit( OpBinaryAssignDiv& ) = 0;
+				virtual void visit( OpBinaryAssignMul& ) = 0;
+				virtual void visit( OpBinaryAssignSub& ) = 0;
+				virtual void visit( OpBinaryDiv& ) = 0;
+				virtual void visit( OpBinaryEq& ) = 0;
+				virtual void visit( OpBinaryGe& ) = 0;
+				virtual void visit( OpBinaryGt& ) = 0;
+				virtual void visit( OpBinaryLe& ) = 0;
+				virtual void visit( OpBinaryLt& ) = 0;
+				virtual void visit( OpBinaryMul& ) = 0;
+				virtual void visit( OpBinaryNeq& ) = 0;
+				virtual void visit( OpBinarySub& ) = 0;
+				virtual void visit( OpUnaryDel& ) = 0;
+				virtual void visit( OpUnaryNew& ) = 0;
+				virtual void visit( OpUnaryRef& ) = 0;
+				virtual void visit( StmtBreak& ) = 0;
+				virtual void visit( StmtCont& ) = 0;
+				virtual void visit( StmtDo& ) = 0;
+				virtual void visit( StmtExpr& ) = 0;
+				virtual void visit( StmtFor& ) = 0;
+				virtual void visit( StmtIf& ) = 0;
+				virtual void visit( StmtImport& ) = 0;
+				virtual void visit( StmtLabel& ) = 0;
+				virtual void visit( StmtList& ) = 0;
+				virtual void visit( StmtReturn& ) = 0;
+				virtual void visit( StmtScope& ) = 0;
+				virtual void visit( StmtSwitch& ) = 0;
+				virtual void visit( StmtUse& ) = 0;
+				virtual void visit( StmtWhile& ) = 0;
+				virtual void visit( Tree& ) = 0;
+
+				virtual ~Visitor() {};
+		};
+
+		/**
+		 * root node for every node in our syntax tree
+		 */
+		class Node
+		{
+			public:
+				/**
+				 * line in wich the node occured
+				 */
+				long long lineNo;
+
+				/**
+				 * column in wich the node occured
+				 */
+				long long columnNo;
+
+				Node();
+				virtual ~Node();
+				virtual void accept( Visitor* v );
+		};
+
+		/**
+		 * root node for every expression
+		 */
+		class Expr : public virtual Node { };
+
+		/**
+		 * root node for every statement
+		 */
+		class Stmt : public virtual Node { };
+
+		/**
+		 * a constant expression
+		 */
+		class ConstExpr : public virtual Expr
+		{
+			public:
+				virtual std::string getAsString();
+		};
+
+		/**
+		 * a constant boolean (true/false)
+		 */
+		class ConstBool : public virtual ConstExpr
+		{
+			public:
+				/**
+				 * actual value
+				 */
 				bool value;
 
-				ConstBool( bool v ) : value( v ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ConstBool( bool v );
+				void setTrue();
+				void setFalse();
+				virtual void accept( Visitor* v );
+				virtual std::string getAsString();
 		};
 
-		class ConstFloat : public virtual Expr
+		/**
+		 * a constant float
+		 */
+		class ConstFloat : public virtual ConstExpr
 		{
 			public:
+				/**
+				 * actual value
+				 */
 				double value;
 
-				ConstFloat( double v ) : value( v ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ConstFloat( double v );
+				void setValue( double v );
+				virtual void accept( Visitor* v );
+				virtual std::string getAsString();
 		};
 
-		class ConstInt : public virtual Expr
+		/**
+		 * a constant integer
+		 */
+		class ConstInt : public virtual ConstExpr
 		{
 			public:
+				/**
+				 * actual value
+				 */
 				long long value;
 
-				ConstInt( long long v ) : value( v ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ConstInt( long long v );
+				void setValue( long long v );
+				virtual void accept( Visitor* v );
+				virtual std::string getAsString();
 		};
 
-		class ConstNull : public virtual Expr
+		/**
+		 * null constant value
+		 */
+		class ConstNull : public virtual ConstExpr
 		{
 			public:
-				ConstNull() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ConstNull();
+				virtual void accept( Visitor* v );
 		};
 
-		class ConstStr : public virtual Expr
+		/**
+		 * constant string
+		 */
+		class ConstStr : public virtual ConstExpr
 		{
 			public:
+				/**
+				 * actual value
+				 */
 				std::string value;
 
-				ConstStr( std::string v ): value( v ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ConstStr( std::string v );
+				void setValue( std::string v );
+				virtual void accept( Visitor* v );
+				virtual std::string getAsString();
 		};
 
-
-		class DeclBlock : public virtual Decl
+		/**
+		 * a class delcaration
+		 */
+		class DeclClass : public virtual Stmt
 		{
 			public:
+
+				/**
+				 * the class identifier/name
+				 */
+				std::unique_ptr<Id>							id;
+
+				/**
+				 * the parent class identifier/name (if any)
+				 */
+				std::unique_ptr<Id>							parent;
+
+				/**
+				 * the own class properties, sans inherited (if any)
+				 */
 				std::vector< std::unique_ptr<DeclProp> >	properties;
+
+				/**
+				 * the own class methods, sans inherited (if any)
+				 */
 				std::vector< std::unique_ptr<DeclFun> >		methods;
 
-				DeclBlock() { };
+				DeclClass();
+				virtual void setId( std::unique_ptr<Id> i, std::unique_ptr<Id> p );
+				virtual void setId( std::unique_ptr<Id> i );
+				virtual void addProperty( std::unique_ptr<DeclProp> p );
+				virtual void addMethod( std::unique_ptr<DeclFun> m );
+				virtual void accept( Visitor* v );
 		};
 
-		class DeclClass : public virtual DeclBlock
+		/**
+		 * a function prototype definition
+		 */
+		class DeclFunProto : public virtual Stmt
 		{
 			public:
-				std::unique_ptr<Id>			id;
-				std::unique_ptr<Id>			parent;
-
-				DeclClass( std::unique_ptr<Id> i, std::unique_ptr<Id> p ) : id( std::move( i ) ), parent( std::move( p ) ) { };
-				DeclClass( std::unique_ptr<Id> i ) : id( std::move( i ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
-		};
-
-		class DeclFunProto : public virtual Decl
-		{
-			public:
+				/**
+				 * the function name
+				 */
 				std::unique_ptr<Id>				id;
 				std::unique_ptr<Type>			returnType;
 				std::unique_ptr<DeclVarList>	arguments;
 				bool							hasVaArg;
 
-				DeclFunProto( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, bool va = false ) : id( std::move( i ) ), returnType( std::move( r ) ), arguments( std::move( a ) ), hasVaArg( va ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				DeclFunProto( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, bool va = false );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a function definition, has a function body
+		 */
 		class DeclFun : public virtual DeclFunProto
 		{
 			public:
 				std::unique_ptr<StmtScope>	scope;
 				std::unique_ptr<ModAccess>	access;
 
-				DeclFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<StmtScope> b, bool va = false ) : DeclFunProto( std::move( i ), std::move( r ), std::move( a ), va ), scope( std::move( b ) ), access( std::make_unique<ModAccess>() ) { };
-				DeclFun( std::unique_ptr<Id> i, std::unique_ptr<ModAccess> m, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<StmtScope> b, bool va = false ) : DeclFunProto( std::move( i ), std::move( r ), std::move( a ), va ), scope( std::move( b ) ), access( std::move( m ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				DeclFun( std::unique_ptr<Id> i, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<StmtScope> b, bool va = false );
+				DeclFun( std::unique_ptr<Id> i, std::unique_ptr<ModAccess> m, std::unique_ptr<Type> r, std::unique_ptr<DeclVarList> a, std::unique_ptr<StmtScope> b, bool va = false );
+				virtual void accept( Visitor* v );
 		};
 
-		class DeclMod : public virtual Decl
+		/**
+		 * a module declaration, naming the module
+		 */
+		class DeclMod : public virtual Stmt
 		{
 			public:
 				std::unique_ptr<Id>			id;
 
-				DeclMod( std::unique_ptr<Id> i ) : id( std::move( i ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				DeclMod( std::unique_ptr<Id> i );
+				virtual void accept( Visitor* v );
 		};
 
-		class DeclProp : public virtual Decl
+		/**
+		 * a class property declaration
+		 */
+		class DeclProp : public virtual Stmt
 		{
 			public:
 				std::unique_ptr<ModAccess>	access;
 				std::unique_ptr<DeclVar>	property;
 
-				DeclProp( std::unique_ptr<DeclVar> d, std::unique_ptr<ModAccess> a ) : access( std::move( a ) ), property( std::move( d ) ) { };
+				DeclProp( std::unique_ptr<DeclVar> d, std::unique_ptr<ModAccess> a );
 		};
 
-		class DeclVar : public virtual Decl
+		/**
+		 * a variable declaration
+		 */
+		class DeclVar : public virtual Stmt
 		{
 			public:
 				std::string					name;
@@ -194,65 +361,88 @@ namespace exo
 				std::unique_ptr<Expr>		expression;
 				bool						isRef;
 
-				DeclVar( std::string n, std::unique_ptr<Type> t, std::unique_ptr<Expr> e, bool r = false ) : name( n ), type( std::move( t ) ), expression( std::move( e ) ), isRef( r ) { };
-				DeclVar( std::string n, std::unique_ptr<Type> t, bool r = false ) : name( n ), type( std::move( t ) ), isRef( r ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				DeclVar( std::string n, std::unique_ptr<Type> t, std::unique_ptr<Expr> e, bool r = false );
+				DeclVar( std::string n, std::unique_ptr<Type> t, bool r = false );
+				virtual void accept( Visitor* v );
 		};
 
-		class DeclVarList : public virtual Decl
+		/**
+		 * a list of variable declarations
+		 */
+		class DeclVarList : public virtual Stmt
 		{
 			public:
 				std::vector< std::unique_ptr<DeclVar> >	list;
 
-				DeclVarList() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				DeclVarList();
+				void addDecl( std::unique_ptr<DeclVar> d );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a function call
+		 */
 		class ExprCallFun : public virtual Expr
 		{
 			public:
 				std::unique_ptr<Id>			id;
 				std::unique_ptr<ExprList>	arguments;
 
-				ExprCallFun( std::unique_ptr<Id> i, std::unique_ptr<ExprList> a ) : id( std::move( i ) ), arguments( std::move( a ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ExprCallFun( std::unique_ptr<Id> i, std::unique_ptr<ExprList> a );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a method invocation
+		 */
 		class ExprCallMethod : public virtual ExprCallFun
 		{
 			public:
 				std::unique_ptr<Expr> expression;
 
-				ExprCallMethod( std::unique_ptr<Id> i, std::unique_ptr<Expr> e, std::unique_ptr<ExprList> a ) : ExprCallFun( std::move( i ), std::move( a ) ), expression( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ExprCallMethod( std::unique_ptr<Id> i, std::unique_ptr<Expr> e, std::unique_ptr<ExprList> a );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a list of expression
+		 */
 		class ExprList : public virtual Expr
 		{
 			public:
 				std::vector< std::unique_ptr<Expr> > list;
 
-				ExprList() { };
+				ExprList();
+				void addExpr( std::unique_ptr<Expr> e );
 		};
 
+		/**
+		 * a variable access
+		 */
 		class ExprVar : public virtual Expr
 		{
 			public:
 				std::string name;
 
-				ExprVar( std::string vName ) : name( vName ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ExprVar( std::string vName );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a class property access
+		 */
 		class ExprProp : public virtual ExprVar
 		{
 			public:
 				std::unique_ptr<Expr> expression;
 
-				ExprProp( std::string pName, std::unique_ptr<Expr> e ) : ExprVar( pName ), expression( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				ExprProp( std::string pName, std::unique_ptr<Expr> e );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * an access modifier
+		 */
 		class ModAccess : public virtual Node
 		{
 			public:
@@ -260,179 +450,259 @@ namespace exo
 				bool isPublic;
 				bool isPrivate;
 				bool isProtected;
-				ModAccess() : isPublic( false ), isPrivate( false ), isProtected( true ) { };
+				ModAccess();
 		};
 
+		/**
+		 * a binary operation, operating on 2 expressions/operands
+		 */
 		class OpBinary : public virtual Expr
 		{
 			public:
 				std::unique_ptr<Expr> lhs;
 				std::unique_ptr<Expr> rhs;
 
-				OpBinary( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : lhs( std::move( a ) ), rhs( std::move( b ) ) { };
-				OpBinary() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				OpBinary( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				OpBinary();
 		};
 
+		/**
+		 * a binary add operation
+		 */
 		class OpBinaryAdd : public virtual OpBinary
 		{
 			public:
-				OpBinaryAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary assign operation
+		 */
 		class OpBinaryAssign : public virtual OpBinary
 		{
 			public:
-				OpBinaryAssign( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
-				OpBinaryAssign() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); }
+				OpBinaryAssign( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				OpBinaryAssign();
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary division operation
+		 */
 		class OpBinaryDiv : public virtual OpBinary
 		{
 			public:
-				OpBinaryDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary equal comparisson
+		 */
 		class OpBinaryEq : public virtual OpBinary
 		{
 			public:
-				OpBinaryEq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryEq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary greater equal comparisson
+		 */
 		class OpBinaryGe : public virtual OpBinary
 		{
 			public:
-				OpBinaryGe( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryGe( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary greater than comparisson
+		 */
 		class OpBinaryGt : public virtual OpBinary
 		{
 			public:
-				OpBinaryGt( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryGt( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary lower equal comparisson
+		 */
 		class OpBinaryLe : public virtual OpBinary
 		{
 			public:
-				OpBinaryLe( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryLe( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary lower than comparisson
+		 */
 		class OpBinaryLt : public virtual OpBinary
 		{
 			public:
-				OpBinaryLt( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryLt( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary multiplication operation
+		 */
 		class OpBinaryMul : public virtual OpBinary
 		{
 			public:
-				OpBinaryMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary non equal operation
+		 */
 		class OpBinaryNeq : public virtual OpBinary
 		{
 			public:
-				OpBinaryNeq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryNeq( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a binary subtraction operation
+		 */
 		class OpBinarySub : public virtual OpBinary
 		{
 			public:
-				OpBinarySub( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinarySub( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
-		class OpBinaryAssignShort : public virtual OpBinaryAssign
+		/**
+		 * a binary shorthand addition/assign
+		 */
+		class OpBinaryAssignAdd : public virtual OpBinary
 		{
 			public:
-				OpBinaryAssignShort( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
-				OpBinaryAssignShort() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); }
+				OpBinaryAssignAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
-		class OpBinaryAssignAdd : public virtual OpBinaryAssignShort
+		/**
+		 * a binary shorthand subtraction/assign
+		 */
+		class OpBinaryAssignSub : public virtual OpBinary
 		{
 			public:
-				OpBinaryAssignAdd( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryAssignSub( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
-		class OpBinaryAssignSub : public virtual OpBinaryAssignShort
+		/**
+		 * a binary shorthand multiplication/assign
+		 */
+		class OpBinaryAssignMul : public virtual OpBinary
 		{
 			public:
-				OpBinaryAssignSub( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryAssignMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
-		class OpBinaryAssignMul : public virtual OpBinaryAssignShort
+		/**
+		 * a binary shorthand division/assign
+		 */
+		class OpBinaryAssignDiv : public virtual OpBinary
 		{
 			public:
-				OpBinaryAssignMul( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
+				OpBinaryAssignDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b );
+				virtual void accept( Visitor* v );
 		};
 
-		class OpBinaryAssignDiv : public virtual OpBinaryAssignShort
-		{
-			public:
-				OpBinaryAssignDiv( std::unique_ptr<Expr> a, std::unique_ptr<Expr> b ) : OpBinary( std::move( a ), std::move( b ) ) { };
-		};
-
+		/**
+		 * an unary operation, has one operand
+		 */
 		class OpUnary : public virtual Expr
 		{
 			public:
 				std::unique_ptr<Expr> rhs;
 
-				OpUnary( std::unique_ptr<Expr> e ) : rhs( std::move( e ) ) { };
+				OpUnary( std::unique_ptr<Expr> e );
 		};
 
+		/**
+		 * an unary delete operation, has one operand of type object/expression
+		 */
 		class OpUnaryDel : public virtual OpUnary
 		{
 			public:
-				OpUnaryDel( std::unique_ptr<Expr> e ) : OpUnary( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				OpUnaryDel( std::unique_ptr<Expr> e );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * an unary new operation, has one operand of type object/expression
+		 */
 		class OpUnaryNew : public virtual OpUnary
 		{
 			public:
-				OpUnaryNew( std::unique_ptr<Expr> e ) : OpUnary( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				OpUnaryNew( std::unique_ptr<Expr> e );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * an unary reference operation
+		 */
 		class OpUnaryRef : public virtual OpUnary
 		{
 			public:
-				OpUnaryRef( std::unique_ptr<Expr> e ) : OpUnary( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				OpUnaryRef( std::unique_ptr<Expr> e );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a break statement
+		 */
 		class StmtBreak : public virtual Stmt
 		{
 			public:
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a continue statement
+		 */
 		class StmtCont : public virtual Stmt
 		{
 			public:
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a statement with a generic expression
+		 */
 		class StmtExpr : public virtual Stmt
 		{
 			public:
 				std::unique_ptr<Expr> expression;
 
-				StmtExpr( std::unique_ptr<Expr> e ) : expression( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtExpr( std::unique_ptr<Expr> e );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a do/while loop
+		 */
 		class StmtDo : public virtual StmtExpr
 		{
 			public:
 				std::unique_ptr<Stmt> scope;
 
-				StmtDo( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> b ) : StmtExpr( std::move( e ) ), scope( std::move( b ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtDo( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a for loop
+		 */
 		class StmtFor : public virtual StmtExpr
 		{
 			public:
@@ -440,112 +710,171 @@ namespace exo
 				std::unique_ptr<DeclVarList>	initialization;
 				std::unique_ptr<ExprList>		update;
 
-				StmtFor( std::unique_ptr<Expr> e, std::unique_ptr<DeclVarList> i, std::unique_ptr<ExprList> u, std::unique_ptr<Stmt> b ) : StmtExpr( std::move( e ) ), initialization( std::move( i ) ), update( std::move( u ) ), scope( std::move( b ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtFor( std::unique_ptr<Expr> e, std::unique_ptr<DeclVarList> i, std::unique_ptr<ExprList> u, std::unique_ptr<Stmt> b );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a if/else statement
+		 */
 		class StmtIf : public virtual StmtExpr
 		{
 			public:
 				std::unique_ptr<Stmt> onTrue;
 				std::unique_ptr<Stmt> onFalse;
 
-				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> t, std::unique_ptr<Stmt> f ) : StmtExpr( std::move( e ) ), onTrue( std::move( t ) ), onFalse( std::move( f ) ) { } ;
-				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> t ) : StmtExpr( std::move( e ) ), onTrue( std::move( t ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> t, std::unique_ptr<Stmt> f );
+				StmtIf( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> t );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a import statement
+		 */
 		class StmtImport : public virtual Stmt
 		{
 			public:
 				std::unique_ptr<ConstStr>	library;
 
-				StmtImport( std::unique_ptr<ConstStr> l ) : library( std::move( l ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtImport( std::unique_ptr<ConstStr> l );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a labeled statement
+		 */
+		class StmtLabel : public virtual StmtExpr
+		{
+			public:
+				std::unique_ptr<Stmt>		stmt;
+				std::unique_ptr<ConstExpr>	expression;
+
+				StmtLabel( std::unique_ptr<Stmt> s, std::unique_ptr<ConstExpr> e );
+				virtual void accept( Visitor* v );
+		};
+
+		/**
+		 * a list of statements
+		 */
 		class StmtList : public virtual Stmt
 		{
 			public:
 				std::vector< std::unique_ptr<Stmt> > list;
 
-				StmtList() { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtList();
+				void addStmt( std::unique_ptr<Stmt> s );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a return statement
+		 */
 		class StmtReturn : public virtual StmtExpr
 		{
 			public:
-				StmtReturn( std::unique_ptr<Expr> e ) : StmtExpr( std::move( e ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtReturn( std::unique_ptr<Expr> e );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a scoped/compound statement
+		 */
 		class StmtScope : public virtual Stmt
 		{
 			public:
 				std::unique_ptr<StmtList>	stmts;
 
-				StmtScope() : stmts( std::make_unique<StmtList>() ) { };
-				StmtScope( std::unique_ptr<StmtList> l ) : stmts( std::move( l ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtScope( std::unique_ptr<StmtList> l );
+				StmtScope();
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a switch statement
+		 */
+		class StmtSwitch : public virtual StmtExpr
+		{
+			public:
+				std::unique_ptr<Stmt>						defaultCase;
+				std::vector< std::unique_ptr<StmtLabel> >	cases;
+
+				StmtSwitch();
+				virtual void accept( Visitor* v );
+				void setDefaultCase( std::unique_ptr<Stmt> d );
+				void addCase( std::unique_ptr<StmtLabel> l );
+				void setCondition( std::unique_ptr<Expr> e );
+		};
+
+		/**
+		 * a use statement
+		 */
 		class StmtUse : public virtual Stmt
 		{
 			public:
 				std::unique_ptr<Id>			id;
 
-				StmtUse( std::unique_ptr<Id> i ) : id( std::move( i ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtUse( std::unique_ptr<Id> i );
+				virtual void accept( Visitor* v );
 		};
 
+		/**
+		 * a while statement
+		 */
 		class StmtWhile : public virtual StmtExpr
 		{
 			public:
 				std::unique_ptr<Stmt> scope;
 
-				StmtWhile( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> b ) : StmtExpr( std::move( e ) ), scope( std::move( b ) ) { };
-				virtual llvm::Value* Generate( exo::jit::Codegen* ctx, bool inMem = false ) { return( ctx->Generate( this, inMem ) ); };
+				StmtWhile( std::unique_ptr<Expr> e, std::unique_ptr<Stmt> b );
+				virtual void accept( Visitor* v );
 		};
 
-
+		/**
+		 * an identifier to identify/name things (functions,classes,variables)
+		 */
 		class Id : public virtual Node
 		{
 			public:
 				std::string name;
 				std::string inNamespace;
 
-				Id( std::string n, std::string ns = "" ) : name( n ), inNamespace( ns ) { };
+				Id( std::string n, std::string ns = "" );
 		};
 
+		/**
+		 * a type specifier for expressions/variables
+		 */
 		class Type : public virtual Node
 		{
 			public:
 				bool isPrimitive;
 				std::unique_ptr<Id> id;
 
-				Type( std::unique_ptr<Id> i, bool p = false ) : id( std::move( i ) ), isPrimitive( p ) { };
+				Type( std::unique_ptr<Id> i, bool p = false );
 		};
 
-
+		/**
+		 * the abstract syntax tree
+		 */
 		class Tree
 		{
 			private:
-				void* parser;
+				void*								parser;
 
 			public:
-				long long currentLineNo;
-				long long currentColumnNo;
+				long long							currentLineNo;
+				long long							currentColumnNo;
 
-				std::string		moduleName;
-				std::string		fileName;
-				std::string		targetMachine;
+				std::string							fileName;
+				std::string							moduleName;
 
-				std::unique_ptr<StmtList> stmts;
+				std::shared_ptr<exo::jit::Target>	target;
+				std::unique_ptr<StmtList>			stmts;
 
-				Tree();
-				~Tree();
-				void Parse( std::string fName, std::string target );
+				Tree( std::shared_ptr<exo::jit::Target> t );
+				virtual ~Tree();
+				virtual void accept( Visitor* v );
+				std::unique_ptr<llvm::Module> Parse( std::string fName );
 		};
 	}
 }
